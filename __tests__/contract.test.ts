@@ -1,9 +1,12 @@
 import {
+  FOOD_THRESHOLD,
   NUTRITION_KEYS,
   TYPICAL_ERROR,
   checkTensors,
   exactBuffer,
+  looksLikeFood,
   maxAbsDiff,
+  parseOutput,
   roundForDisplay,
   toNutrition,
   typicalRange,
@@ -20,7 +23,7 @@ describe('toNutrition', () => {
     });
   });
   it('rejects the wrong length and non-finite values', () => {
-    expect(() => toNutrition([1, 2, 3])).toThrow(/5 output values/);
+    expect(() => toNutrition([1, 2, 3])).toThrow(/5 or 6 output values/);
     expect(() => toNutrition([1, 2, 3, 4, NaN])).toThrow(/protein/);
   });
 });
@@ -63,5 +66,32 @@ describe('exactBuffer', () => {
     const buffer = exactBuffer(big.subarray(2, 5));
     expect(buffer.byteLength).toBe(3);
     expect(Array.from(new Uint8Array(buffer))).toEqual([1, 2, 3]);
+  });
+});
+
+describe('food output', () => {
+  it('parses a five-value output as having no food probability', () => {
+    expect(parseOutput([350, 234, 11, 9, 50]).food).toBeNull();
+  });
+  it('parses a six-value output into nutrition plus the food probability', () => {
+    expect(parseOutput(Float32Array.from([350, 234, 11, 9, 50, 0.25]))).toEqual({
+      nutrition: { calories: 350, mass: 234, fat: 11, carb: 9, protein: 50 },
+      food: Math.fround(0.25),
+    });
+  });
+  it('rejects a food value outside 0-1 and any other length', () => {
+    expect(() => parseOutput([1, 2, 3, 4, 5, 1.5])).toThrow(/out of range/);
+    expect(() => parseOutput([1, 2, 3, 4, 5, NaN])).toThrow(/out of range/);
+    expect(() => parseOutput([1, 2, 3, 4, 5, 0.5, 0.5])).toThrow(/5 or 6/);
+  });
+  it('turns away photos below the threshold, accepts the rest, and cannot judge without the output', () => {
+    expect(looksLikeFood(FOOD_THRESHOLD - 0.01)).toBe(false);
+    expect(looksLikeFood(FOOD_THRESHOLD)).toBe(true);
+    expect(looksLikeFood(0.99)).toBe(true);
+    expect(looksLikeFood(null)).toBe(true);
+  });
+  it('accepts either output shape when checking tensors', () => {
+    expect(checkTensors(goodInputs, [{ name: 'o', dataType: 'float32', shape: [1, 6] }])).toEqual([]);
+    expect(checkTensors(goodInputs, [{ name: 'o', dataType: 'float32', shape: [1, 7] }])[0]).toMatch(/\[1,5\] or \[1,6\]/);
   });
 });

@@ -5,13 +5,15 @@
  * Input:  one uint8 tensor [1, 224, 224, 3], RGB, NHWC, raw 0-255 pixels. The photo is
  *         squashed to 224 x 224 (no crop, aspect ratio not preserved). Scaling and
  *         normalisation are inside the model, so none happens here.
- * Output: one float32 tensor [1, 5] in the order of NUTRITION_KEYS.
+ * Output: one float32 tensor in the order of NUTRITION_KEYS, [1, 5]; or [1, 6] when the model has the
+ *         food output, whose last value is the probability (0-1) that the photo shows food.
  */
 
 export const INPUT_SIZE = 224;
 export const INPUT_BYTES = INPUT_SIZE * INPUT_SIZE * 3;
 
 export const NUTRITION_KEYS = ['calories', 'mass', 'fat', 'carb', 'protein'] as const;
+const OUTPUT_COUNTS = [NUTRITION_KEYS.length, NUTRITION_KEYS.length + 1]; // without / with the food output
 export type NutritionKey = (typeof NUTRITION_KEYS)[number];
 export type Nutrition = Record<NutritionKey, number>;
 
@@ -44,22 +46,46 @@ export const TYPICAL_ERROR: Nutrition = {
   protein: 5.2,
 };
 
+/**
+ * A photo whose food probability is below this is treated as "not food": the app shows that instead of
+ * calories. Pick it from the held-out food / not-food results in the model card, not by feel: raising it
+ * rejects more non-food but also turns away more real food.
+ */
+export const FOOD_THRESHOLD = 0.5;
+
 /** Display rounding, coarser than the model's error so we do not imply false precision. */
 const ROUND_TO: Nutrition = { calories: 10, mass: 5, fat: 1, carb: 1, protein: 1 };
 
 export type TensorInfo = { name: string; dataType: string; shape: number[] };
 
-export function toNutrition(values: ArrayLike<number>): Nutrition {
-  if (values.length !== NUTRITION_KEYS.length) {
-    throw new Error(`Expected ${NUTRITION_KEYS.length} output values, got ${values.length}`);
+export type ModelOutput = {
+  nutrition: Nutrition;
+  /** Probability the photo shows food, or null for a model without the food output. */
+  food: number | null;
+};
+
+/** Split the model's output tensor into the five nutrition values and the optional food probability. */
+export function parseOutput(values: ArrayLike<number>): ModelOutput {
+  if (!OUTPUT_COUNTS.includes(values.length)) {
+    throw new Error(`Expected ${OUTPUT_COUNTS.join(' or ')} output values, got ${values.length}`);
   }
-  const out = {} as Nutrition;
+  const nutrition = {} as Nutrition;
   NUTRITION_KEYS.forEach((key, i) => {
     const v = values[i] as number;
     if (!Number.isFinite(v)) throw new Error(`Model returned a non-finite ${key}: ${v}`);
-    out[key] = v;
+    nutrition[key] = v;
   });
-  return out;
+  if (values.length === NUTRITION_KEYS.length) return { nutrition, food: null };
+  const food = values[NUTRITION_KEYS.length] as number;
+  if (!Number.isFinite(food) || food < 0 || food > 1) throw new Error(`Food probability out of range: ${food}`);
+  return { nutrition, food };
+}
+
+export const toNutrition = (values: ArrayLike<number>): Nutrition => parseOutput(values).nutrition;
+
+/** True unless the model is confident the photo is not food. A model without the food output cannot tell. */
+export function looksLikeFood(food: number | null): boolean {
+  return food === null || food >= FOOD_THRESHOLD;
 }
 
 const sameShape = (a: number[], b: number[]) => a.length === b.length && a.every((n, i) => n === b[i]);
@@ -79,8 +105,8 @@ export function checkTensors(inputs: TensorInfo[], outputs: TensorInfo[]): strin
   const output = outputs[0];
   if (output) {
     if (output.dataType !== 'float32') problems.push(`output should be float32, is ${output.dataType}`);
-    if (!sameShape(output.shape, [1, NUTRITION_KEYS.length])) {
-      problems.push(`output shape should be [1,${NUTRITION_KEYS.length}], is [${output.shape}]`);
+    if (!OUTPUT_COUNTS.some((n) => sameShape(output.shape, [1, n]))) {
+      problems.push(`output shape should be [1,${OUTPUT_COUNTS.join('] or [1,')}], is [${output.shape}]`);
     }
   }
   return problems;

@@ -97,11 +97,22 @@ gallery flow, and whether the app's resizing matches training closely enough. Sp
 `src/imaging/pngToRgb.ts` -> raw RGB bytes -> `src/model/nutritionModel.ts` -> 5 numbers
 (`src/model/contract.ts` maps them to calories, weight, fat, carbs, protein).
 
+## Food / not-food ("it gave my dog 200 calories")
+
+The bundled v0 model was trained only on food, so it will "estimate" anything, a dog included. The app is
+ready for a model with a sixth output, the probability the photo shows food: below `FOOD_THRESHOLD`
+(`src/model/contract.ts`) it shows "This doesn't look like food" with an "Estimate anyway" button instead of
+calories. It accepts either output shape, so nothing changes until the new model file is in `assets/`. The
+model itself still has to be trained (ML repo: `docs/train-on-pc.md`, "Teaching the model what is NOT food").
+Until then there is no way for this app to refuse a non-food photo.
+
 ## Updating the model
 
 Copy the new `.tflite`, `MODEL_CARD.md` and `golden/` from the ML repo's `models/` folder into
-`assets/`, update `TYPICAL_ERROR` in `src/model/contract.ts` from the new model card, then re-run the
-in-app self-test.
+`assets/`, run `node scripts/embed-golden.mjs` (the golden photos are embedded in the code), point
+`MODEL_ASSET` in `src/model/nutritionModel.ts` at the new file name if it changed, update `TYPICAL_ERROR` and
+`FOOD_THRESHOLD` in `src/model/contract.ts` from the new model card, then re-run the in-app self-test. With a
+food output the self-test also checks that the golden photo is accepted as food.
 
 ## Before releasing
 

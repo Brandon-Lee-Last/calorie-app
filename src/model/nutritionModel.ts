@@ -1,7 +1,7 @@
 import { Asset } from 'expo-asset';
 import { loadTensorflowModel, type TfliteModel } from 'react-native-fast-tflite';
 
-import { INPUT_BYTES, type Nutrition, checkTensors, exactBuffer, toNutrition } from './contract';
+import { INPUT_BYTES, type ModelOutput, checkTensors, exactBuffer, parseOutput } from './contract';
 
 // The model is a bundled asset; metro.config.js registers the .tflite extension.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -46,7 +46,7 @@ export async function loadNutritionModel(delegate: Delegate): Promise<LoadedMode
   };
 }
 
-export type Estimate = { nutrition: Nutrition; inferenceMs: number };
+export type Estimate = ModelOutput & { inferenceMs: number };
 
 /** Run the model on raw RGB bytes (INPUT_SIZE x INPUT_SIZE x 3). */
 export async function estimate(model: TfliteModel, rgb: Uint8Array): Promise<Estimate> {
@@ -58,5 +58,5 @@ export async function estimate(model: TfliteModel, rgb: Uint8Array): Promise<Est
   const inferenceMs = Date.now() - start;
   const first = outputs[0];
   if (!first) throw new Error('Model returned no output tensor');
-  return { nutrition: toNutrition(new Float32Array(first)), inferenceMs };
+  return { ...parseOutput(new Float32Array(first)), inferenceMs };
 }

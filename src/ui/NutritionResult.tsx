@@ -15,6 +15,8 @@ const MACROS: NutritionKey[] = ['protein', 'carb', 'fat', 'mass'];
 
 type Props = {
   nutrition: Nutrition;
+  /** Set when the user asked for an estimate although the model said this is not food. */
+  overridden?: boolean;
   previewUri: string;
   prepMs: number;
   inferenceMs: number;
@@ -35,10 +37,15 @@ function Row({ k, value }: { k: NutritionKey; value: number }) {
   );
 }
 
-export function NutritionResult({ nutrition, previewUri, prepMs, inferenceMs }: Props) {
+export function NutritionResult({ nutrition, overridden, previewUri, prepMs, inferenceMs }: Props) {
   const { calories } = nutrition;
   return (
     <Card title="Estimate">
+      {overridden ? (
+        <Text style={styles.warning}>
+          The model thought this was not food, so treat these numbers as meaningless.
+        </Text>
+      ) : null}
       <View style={styles.top}>
         <View style={styles.previewWrap}>
           <Image source={{ uri: previewUri }} style={styles.preview} />
@@ -86,4 +93,5 @@ const styles = StyleSheet.create({
   macroValue: { fontSize: 18, fontWeight: '700', color: colors.text },
   macroRange: { fontSize: 12, color: colors.muted },
   muted: { fontSize: 12, color: colors.muted },
+  warning: { fontSize: 13, fontWeight: '600', color: colors.bad },
 });

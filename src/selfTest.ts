@@ -4,7 +4,7 @@ import type { TfliteModel } from 'react-native-fast-tflite';
 import { GOLDEN_224_PNG_BASE64, GOLDEN_256_JPG_BASE64 } from './golden/goldenData';
 import { photoToRgb } from './imaging/photoToRgb';
 import { pngToRgb } from './imaging/pngToRgb';
-import { type Nutrition, maxAbsDiff } from './model/contract';
+import { FOOD_THRESHOLD, type Nutrition, looksLikeFood, maxAbsDiff } from './model/contract';
 import { estimate } from './model/nutritionModel';
 import { base64ToBytes } from './util/base64';
 
@@ -47,11 +47,15 @@ export async function runSelfTests(model: TfliteModel, tensorProblems: string[])
   };
 
   const exact = await guard('Golden photo (224 px, exact pixels)', async () => {
-    const { nutrition } = await estimate(model, pngToRgb(base64ToBytes(GOLDEN_224_PNG_BASE64)));
+    const { nutrition, food } = await estimate(model, pngToRgb(base64ToBytes(GOLDEN_224_PNG_BASE64)));
     const diff = maxAbsDiff(nutrition, GOLDEN_EXPECTED.expected);
+    // The golden photo is food, so a model with the food output must accept it.
+    const foodOk = looksLikeFood(food);
     return {
-      ok: diff <= EXACT_TOLERANCE,
-      detail: `largest difference from expected: ${diff.toFixed(3)} (must be <= ${EXACT_TOLERANCE})`,
+      ok: diff <= EXACT_TOLERANCE && foodOk,
+      detail:
+        `largest difference from expected: ${diff.toFixed(3)} (must be <= ${EXACT_TOLERANCE})` +
+        (food === null ? '' : `; food probability ${food.toFixed(2)} (must be >= ${FOOD_THRESHOLD})`),
     };
   });
 

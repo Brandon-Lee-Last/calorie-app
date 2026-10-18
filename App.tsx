@@ -6,14 +6,15 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 
 import { photoToRgb } from './src/imaging/photoToRgb';
 import { type Delegate, type LoadedModel, estimate, loadNutritionModel } from './src/model/nutritionModel';
+import { NotFoodCard } from './src/ui/NotFoodCard';
 import { type CheckResult, runSelfTests } from './src/selfTest';
 import { Button } from './src/ui/Button';
 import { Card } from './src/ui/Card';
 import { NutritionResult } from './src/ui/NutritionResult';
 import { colors, spacing } from './src/ui/theme';
-import type { Nutrition } from './src/model/contract';
+import { type Nutrition, looksLikeFood } from './src/model/contract';
 
-type Result = { nutrition: Nutrition; previewUri: string; prepMs: number; inferenceMs: number };
+type Result = { nutrition: Nutrition; food: number | null; previewUri: string; prepMs: number; inferenceMs: number };
 
 const message = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
@@ -35,6 +36,7 @@ function Screen() {
   const [testing, setTesting] = useState(false);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
+  const [estimateAnyway, setEstimateAnyway] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -83,8 +85,9 @@ function Screen() {
       const start = Date.now();
       const { rgb, previewUri } = await photoToRgb(asset.uri);
       const prepMs = Date.now() - start;
-      const { nutrition, inferenceMs } = await estimate(model.model, rgb);
-      setResult({ nutrition, previewUri, prepMs, inferenceMs });
+      const { nutrition, food, inferenceMs } = await estimate(model.model, rgb);
+      setEstimateAnyway(false);
+      setResult({ nutrition, food, previewUri, prepMs, inferenceMs });
     } catch (e) {
       setError(message(e));
     } finally {
@@ -163,7 +166,19 @@ function Screen() {
         {error ? <Text style={styles.bad}>{error}</Text> : null}
       </Card>
 
-      {result ? <NutritionResult {...result} /> : null}
+      {result ? (
+        looksLikeFood(result.food) || estimateAnyway ? (
+          <NutritionResult
+            nutrition={result.nutrition}
+            overridden={!looksLikeFood(result.food)}
+            previewUri={result.previewUri}
+            prepMs={result.prepMs}
+            inferenceMs={result.inferenceMs}
+          />
+        ) : (
+          <NotFoodCard food={result.food} previewUri={result.previewUri} onEstimateAnyway={() => setEstimateAnyway(true)} />
+        )
+      ) : null}
 
       <View style={styles.notice}>
         <Text style={styles.noticeText}>
