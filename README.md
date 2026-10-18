@@ -11,7 +11,25 @@ a photo of food, **entirely on the phone**. The model is `assets/nutrition_v0.tf
 
 ## Run it on your phone
 
-You need a development build, not Expo Go: the TFLite library is native code that Expo Go does not contain.
+**This will not work in the Expo Go app.** Scanning the QR code from `expo start` in Expo Go fails with a
+missing-native-module error, because Expo Go does not contain the TFLite library. You need a development
+build: your own version of the app with the native code included, installed once on the phone. After
+that it works like Expo Go (start the dev server, open the installed app, JavaScript reloads live).
+Two ways to make it:
+
+- **A. On your PC** with Android Studio (steps below): `npx expo run:android`.
+- **B. In Expo's cloud (EAS), no Android Studio**: needs a free Expo account.
+  ```bash
+  npx eas-cli login
+  npx eas-cli build:configure        # creates eas.json; keep a profile with developmentClient true
+  npx eas-cli build --profile development --platform android
+  ```
+  Install the `.apk` from the link it gives you (allow installs from unknown sources). Not tried yet: this
+  was written without access to Expo's servers. If it does not produce an `.apk`, set
+  `"android": { "buildType": "apk" }` in that profile.
+
+Either way, day to day: `npm install`, `npx expo start --dev-client`, then open the installed
+**Calorie App** (not Expo Go) on the phone, on the same Wi-Fi as the PC.
 
 1. Install Node.js (LTS), a JDK, and Android Studio with the Android SDK. Follow Expo's official guide
    for setting up Android development; I could not open it from my environment, so check it for the
