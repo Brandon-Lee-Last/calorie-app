@@ -1,3 +1,4 @@
+import { Asset } from 'expo-asset';
 import { loadTensorflowModel, type TfliteModel } from 'react-native-fast-tflite';
 
 import { INPUT_BYTES, type Nutrition, checkTensors, exactBuffer, toNutrition } from './contract';
@@ -17,10 +18,26 @@ export type LoadedModel = {
   problems: string[];
 };
 
+/**
+ * A real file URL for the bundled model.
+ *
+ * react-native-fast-tflite reads the model with Java's `URL(path).readBytes()`, so it needs a proper
+ * URL. `require()` alone is not enough: in a development build it resolves to an http:// address, but
+ * in a standalone APK it resolves to a bare Android resource name, which that loader rejects. Expo's
+ * asset module handles both: it downloads (dev) or copies out of the APK (standalone) into the cache
+ * and returns a file:// URI.
+ */
+async function modelFileUrl(): Promise<string> {
+  const [asset] = await Asset.loadAsync(MODEL_ASSET);
+  if (!asset?.localUri) throw new Error('The bundled model has no local file');
+  return asset.localUri;
+}
+
 export async function loadNutritionModel(delegate: Delegate): Promise<LoadedModel> {
   const start = Date.now();
+  const url = await modelFileUrl();
   // In fast-tflite v3 the delegates argument is an array; an empty array means plain CPU.
-  const model = await loadTensorflowModel(MODEL_ASSET, delegate === 'cpu' ? [] : [delegate]);
+  const model = await loadTensorflowModel({ url }, delegate === 'cpu' ? [] : [delegate]);
   return {
     model,
     delegate,

@@ -1,17 +1,15 @@
-import { Asset } from 'expo-asset';
-import { File } from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
 import type { TfliteModel } from 'react-native-fast-tflite';
 
+import { GOLDEN_224_PNG_BASE64, GOLDEN_256_JPG_BASE64 } from './golden/goldenData';
 import { photoToRgb } from './imaging/photoToRgb';
 import { pngToRgb } from './imaging/pngToRgb';
 import { type Nutrition, maxAbsDiff } from './model/contract';
 import { estimate } from './model/nutritionModel';
+import { base64ToBytes } from './util/base64';
 
-/* eslint-disable @typescript-eslint/no-require-imports */
-const GOLDEN_224: number = require('../assets/golden/example_224.png');
-const GOLDEN_256: number = require('../assets/golden/example_256.jpg');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const GOLDEN_EXPECTED: { expected: Nutrition } = require('../assets/golden/example_expected.json');
-/* eslint-enable @typescript-eslint/no-require-imports */
 
 /** The 224 px golden photo must reproduce the model's own output almost exactly. */
 const EXACT_TOLERANCE = 0.5;
@@ -20,10 +18,12 @@ const RESIZE_TOLERANCE_KCAL = 20;
 
 export type CheckResult = { name: string; ok: boolean; detail: string };
 
-async function localUri(assetModule: number): Promise<string> {
-  const [asset] = await Asset.loadAsync(assetModule);
-  if (!asset?.localUri) throw new Error('asset has no local file');
-  return asset.localUri;
+/** The golden JPEG written to the cache as a real file, which is what the photo pipeline takes. */
+function goldenJpegUri(): string {
+  const file = new File(Paths.cache, 'golden_example_256.jpg');
+  file.create({ overwrite: true });
+  file.write(base64ToBytes(GOLDEN_256_JPG_BASE64));
+  return file.uri;
 }
 
 async function guard(name: string, run: () => Promise<Omit<CheckResult, 'name'>>): Promise<CheckResult> {
@@ -47,8 +47,7 @@ export async function runSelfTests(model: TfliteModel, tensorProblems: string[])
   };
 
   const exact = await guard('Golden photo (224 px, exact pixels)', async () => {
-    const bytes = new Uint8Array(await new File(await localUri(GOLDEN_224)).arrayBuffer());
-    const { nutrition } = await estimate(model, pngToRgb(bytes));
+    const { nutrition } = await estimate(model, pngToRgb(base64ToBytes(GOLDEN_224_PNG_BASE64)));
     const diff = maxAbsDiff(nutrition, GOLDEN_EXPECTED.expected);
     return {
       ok: diff <= EXACT_TOLERANCE,
@@ -57,7 +56,7 @@ export async function runSelfTests(model: TfliteModel, tensorProblems: string[])
   });
 
   const resize = await guard('Golden photo (256 px, app resizes it)', async () => {
-    const { rgb } = await photoToRgb(await localUri(GOLDEN_256));
+    const { rgb } = await photoToRgb(goldenJpegUri());
     const { nutrition } = await estimate(model, rgb);
     const dCal = nutrition.calories - GOLDEN_EXPECTED.expected.calories;
     return {

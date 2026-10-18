@@ -36,6 +36,14 @@
           "photosPermission": "Allow Calorie App to read a food photo you choose.",
           "microphonePermission": false
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": false
+          }
+        }
       ]
     ]
   }

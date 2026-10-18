@@ -12,40 +12,43 @@ a photo of food, **entirely on the phone**. The model is `assets/nutrition_v0.tf
 ## Run it on your phone
 
 **This will not work in the Expo Go app.** Scanning the QR code from `expo start` in Expo Go fails with a
-missing-native-module error, because Expo Go does not contain the TFLite library. You need a development
-build: your own version of the app with the native code included, installed once on the phone. After
-that it works like Expo Go (start the dev server, open the installed app, JavaScript reloads live).
-Two ways to make it:
+missing-native-module error, because Expo Go does not contain the TFLite library. You need your own build
+of the app. There are two kinds.
 
-- **A. On your PC** with Android Studio (steps below): `npx expo run:android`.
-- **B. In Expo's cloud (EAS), no Android Studio**: needs a free Expo account.
-  ```bash
-  npx eas-cli login
-  npx eas-cli build:configure        # creates eas.json; keep a profile with developmentClient true
-  npx eas-cli build --profile development --platform android
-  ```
-  Install the `.apk` from the link it gives you (allow installs from unknown sources). Not tried yet: this
-  was written without access to Expo's servers. If it does not produce an `.apk`, set
-  `"android": { "buildType": "apk" }` in that profile.
+### Option 1: standalone APK (simplest for testing)
 
-Either way, day to day: `npm install`, `npx expo start --dev-client`, then open the installed
-**Calorie App** (not Expo Go) on the phone, on the same Wi-Fi as the PC.
+The JavaScript is built into the app, so there is no dev server and no PC connection: install it and tap
+the icon. No live reloading, but this app shows its own errors on screen. It is signed with a debug key
+(fine for testing, not for the Play Store). Release minification is switched off in `app.json` on purpose,
+to rule it out while checking that the native model library works; turn it back on later to shrink the APK.
 
-1. Install Node.js (LTS), a JDK, and Android Studio with the Android SDK. Follow Expo's official guide
-   for setting up Android development; I could not open it from my environment, so check it for the
-   currently required versions.
-2. Turn on USB debugging on your phone (or create an emulator) and plug it in.
-3. Keep the project path short (for example `C:\dev\calorie-app`). On Windows, long paths are a common
-   cause of React Native native-build failures.
-4. In this folder:
-   ```bash
-   npm install
-   npx expo run:android      # first build is slow (many minutes); installs the dev build on the device
-   ```
-   After that, `npm start` and open the installed app to reload JavaScript changes quickly.
+**In Expo's cloud (EAS), no Android Studio needed.** Free Expo account:
+```bash
+npm install
+npx eas-cli login
+npx eas-cli build --platform android --profile preview
+```
+The first run asks to create an EAS project for this app (say yes). When the build finishes it prints a
+link to the `.apk`. Open it on the phone, download, and install (allow "install unknown apps" for your
+browser when asked). Not tried yet: `eas.json` and these steps were written without access to Expo's
+servers. If the CLI rejects `eas.json`, run `npx eas-cli build:configure` to regenerate it.
 
-A cloud build with EAS (`npx eas-cli@latest build --profile development --platform android`) also
-works in principle, but `eas.json` is not set up yet.
+**On your PC (needs Android Studio, the Android SDK and a JDK; follow Expo's own guide for the current
+versions, which I could not open from my environment).** With the phone plugged in and USB debugging on:
+```bash
+npm install
+npx expo run:android --variant release
+```
+This builds the release APK and installs it. Keep the project path short (for example `C:\dev\calorie-app`):
+long Windows paths often break React Native native builds. The first build takes many minutes.
+
+### Option 2: development build (live coding)
+
+For editing the JavaScript with instant reload, build a development client once, then reuse it:
+- On your PC: `npx expo run:android` (debug variant), or in the cloud:
+  `npx eas-cli build --platform android --profile development` and install the `.apk` it links to.
+- Day to day: `npm install`, `npx expo start --dev-client`, then open the installed **Calorie App** (not
+  Expo Go) on the phone, on the same Wi-Fi as the PC.
 
 ## First thing to do in the app
 
@@ -82,6 +85,11 @@ gallery flow, and whether the app's resizing matches training closely enough. Sp
 - **Photo orientation.** Whether camera photos arrive upright (EXIF rotation) was not checked.
 - **GPU delegate** support for this model on your phone.
 - **First native build** with the New Architecture and the Nitro modules library.
+- **Model loading in a standalone APK.** The app copies the bundled model out of the APK into the cache
+  with `expo-asset` and gives the TFLite library a `file://` URL, because that library cannot read a bare
+  Android resource name. This is reasoned from both libraries' source code and works in the bundle and
+  prebuild checks, but has not run on a device. The golden photos are embedded in the code as base64 for
+  the same reason (image assets resolve to drawable names in a standalone build).
 
 ## How a photo becomes an estimate
 
