@@ -3,6 +3,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 import { GOLDEN_224_PNG_BASE64, GOLDEN_256_JPG_BASE64 } from '../src/golden/goldenData';
+import { gradientRgb } from '../src/model/syntheticImage';
 import { base64ToBytes } from '../src/util/base64';
 
 const sha = (b: Uint8Array | Buffer) => createHash('sha256').update(b).digest('hex');
@@ -13,9 +14,19 @@ describe('embedded golden data', () => {
     expect(sha(base64ToBytes(GOLDEN_224_PNG_BASE64))).toBe(sha(asset('example_224.png')));
     expect(sha(base64ToBytes(GOLDEN_256_JPG_BASE64))).toBe(sha(asset('example_256.jpg')));
   });
-  it('the expected values file has the five outputs', () => {
-    const expected = JSON.parse(asset('example_expected.json').toString()).expected;
-    expect(Object.keys(expected)).toEqual(['calories', 'mass', 'fat', 'carb', 'protein']);
+  it('the expected values file has the five outputs, the food probability and the gradient check', () => {
+    const json = JSON.parse(asset('example_expected.json').toString());
+    expect(Object.keys(json.expected)).toEqual(['calories', 'mass', 'fat', 'carb', 'protein']);
+    expect(json.expected_food).toBeGreaterThan(0.5);
+    expect(json.gradient.expected_food).toBeLessThan(0.5);
+  });
+});
+
+describe('gradientRgb', () => {
+  it('is the same image Python built when it recorded the expected value (numpy sha256)', () => {
+    const rgb = gradientRgb();
+    expect(rgb.length).toBe(224 * 224 * 3);
+    expect(sha(rgb)).toBe('cc2bc00f2b3dfd2cbe06d81d60d3fea1d63e5bb35aceecafd479c76c2d77e189');
   });
 });
 

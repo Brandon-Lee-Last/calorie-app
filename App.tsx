@@ -104,7 +104,7 @@ function Screen() {
     >
       <View>
         <Text style={styles.title}>Calorie App</Text>
-        <Text style={styles.subtitle}>v0 test build · rough estimates from a photo, all on this phone</Text>
+        <Text style={styles.subtitle}>v1 test build · rough estimates from a photo, all on this phone</Text>
       </View>
 
       <Card title="Model">

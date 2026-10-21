@@ -14,10 +14,10 @@ using an API. The Expo docs site may be unreachable from sandboxed environments.
 
 ## The model
 
-`assets/nutrition_v0.tflite`: input uint8 `[1,224,224,3]` RGB, photo squashed (not cropped) to 224x224,
-no scaling in the app; output float32 `[1,5]` = calories (kcal), mass, fat, carb, protein (g). The contract
+`assets/nutrition_v1.tflite`: input uint8 `[1,224,224,3]` RGB, photo squashed (not cropped) to 224x224,
+no scaling in the app; output float32 `[1,6]` = calories (kcal), mass, fat, carb, protein (g), then the probability (0-1) the photo is food. The contract
 lives in `src/model/contract.ts` and `assets/MODEL_CARD.md`. react-native-fast-tflite v3: `delegates` is an
 array (`[]` = CPU), `run()` takes and returns `ArrayBuffer[]`.
 
-Do not present estimates as exact. The model's typical error is ~74 kcal (29%) on cafeteria photos; phone
+Do not present estimates as exact. The model's typical error is ~77 kcal (30%) on cafeteria photos; phone
 photos are untested.

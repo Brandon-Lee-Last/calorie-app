@@ -1,11 +1,11 @@
 # Calorie App
 
 Android app (React Native + Expo) that estimates calories, weight and macros (fat, carbs, protein) from
-a photo of food, **entirely on the phone**. The model is `assets/nutrition_v0.tflite` from
+a photo of food, **entirely on the phone**. The model is `assets/nutrition_v1.tflite` from
 [local-calorie-ai-model](https://github.com/Brandon-Lee-Last/local-calorie-ai-model); see
 `assets/MODEL_CARD.md` for what it takes, what it returns and how accurate it is.
 
-> **Status: v0 test build, not yet run on a phone.** The code type-checks, the logic tests pass and
+> **Status: v1 test build (model with a not-food check), not yet confirmed on a phone by me.** The code type-checks, the logic tests pass and
 > the JavaScript bundles, but the native build and the model running on a device are still to be
 > tried. See "What is and is not verified".
 
@@ -99,12 +99,12 @@ gallery flow, and whether the app's resizing matches training closely enough. Sp
 
 ## Food / not-food ("it gave my dog 200 calories")
 
-The bundled v0 model was trained only on food, so it will "estimate" anything, a dog included. The app is
-ready for a model with a sixth output, the probability the photo shows food: below `FOOD_THRESHOLD`
-(`src/model/contract.ts`) it shows "This doesn't look like food" with an "Estimate anyway" button instead of
-calories. It accepts either output shape, so nothing changes until the new model file is in `assets/`. The
-model itself still has to be trained (ML repo: `docs/train-on-pc.md`, "Teaching the model what is NOT food").
-Until then there is no way for this app to refuse a non-food photo.
+The first model (v0) was trained only on food, so it would "estimate" anything, a dog included. The bundled
+`nutrition_v1.tflite` has a sixth output, the probability the photo shows food: below `FOOD_THRESHOLD`
+(`src/model/contract.ts`, 0.5) the app shows "This doesn't look like food" with an "Estimate anyway" button
+instead of calories. On 3,000 held-out Open Images photos the model rejected 98.8% of dogs and cats and
+98.2% of people and accepted 91.5% of real food (`assets/MODEL_CARD.md`), so some real food will be turned
+away; that is what the button is for. How it does on photos from your phone is not measured yet.
 
 ## Updating the model
 

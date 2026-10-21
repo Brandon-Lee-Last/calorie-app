@@ -6,14 +6,15 @@ import { photoToRgb } from './imaging/photoToRgb';
 import { pngToRgb } from './imaging/pngToRgb';
 import { FOOD_THRESHOLD, type Nutrition, looksLikeFood, maxAbsDiff } from './model/contract';
 import { estimate } from './model/nutritionModel';
+import { gradientRgb } from './model/syntheticImage';
 import { base64ToBytes } from './util/base64';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const GOLDEN_EXPECTED: { expected: Nutrition } = require('../assets/golden/example_expected.json');
+const GOLDEN_EXPECTED: { expected: Nutrition; expected_food: number; gradient: { expected_food: number } } = require('../assets/golden/example_expected.json');
 
 /** The 224 px golden photo must reproduce the model's own output almost exactly. */
 const EXACT_TOLERANCE = 0.5;
-/** Resize differences are expected to be small next to the model's ~74 kcal typical error. */
+/** Resize differences are expected to be small next to the model's ~77 kcal typical error. */
 const RESIZE_TOLERANCE_KCAL = 20;
 
 export type CheckResult = { name: string; ok: boolean; detail: string };
@@ -43,7 +44,7 @@ export async function runSelfTests(model: TfliteModel, tensorProblems: string[])
   const tensors: CheckResult = {
     name: 'Model tensors',
     ok: tensorProblems.length === 0,
-    detail: tensorProblems.length === 0 ? 'uint8 [1,224,224,3] in, float32 [1,5] out' : tensorProblems.join('; '),
+    detail: tensorProblems.length === 0 ? 'uint8 [1,224,224,3] in, float32 [1,5] or [1,6] out' : tensorProblems.join('; '),
   };
 
   const exact = await guard('Golden photo (224 px, exact pixels)', async () => {
@@ -56,6 +57,17 @@ export async function runSelfTests(model: TfliteModel, tensorProblems: string[])
       detail:
         `largest difference from expected: ${diff.toFixed(3)} (must be <= ${EXACT_TOLERANCE})` +
         (food === null ? '' : `; food probability ${food.toFixed(2)} (must be >= ${FOOD_THRESHOLD})`),
+    };
+  });
+
+  // A synthetic colour gradient is not food, so a model with the food output must be able to say so.
+  const notFood = await guard('Synthetic gradient is rejected as not food', async () => {
+    const { food } = await estimate(model, gradientRgb());
+    if (food === null) return { ok: true, detail: 'this model has no food output (nothing to check)' };
+    const ok = !looksLikeFood(food) && Math.abs(food - GOLDEN_EXPECTED.gradient.expected_food) <= 0.05;
+    return {
+      ok,
+      detail: `food probability ${food.toFixed(3)} (desktop says ${GOLDEN_EXPECTED.gradient.expected_food}; must be < ${FOOD_THRESHOLD})`,
     };
   });
 
@@ -72,5 +84,5 @@ export async function runSelfTests(model: TfliteModel, tensorProblems: string[])
     };
   });
 
-  return [tensors, exact, resize];
+  return [tensors, exact, notFood, resize];
 }

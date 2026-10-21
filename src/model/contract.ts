@@ -34,22 +34,23 @@ export const UNITS: Record<NutritionKey, string> = {
 };
 
 /**
- * Mean absolute error per dish on the official Nutrition5k test split for nutrition_v0
+ * Mean absolute error per dish on the official Nutrition5k test split for nutrition_v1
  * (MODEL_CARD.md, "all test images"). This is an average error on cafeteria photos, not a
- * guarantee and not a confidence interval; phone photos are untested.
+ * guarantee and not a confidence interval; phone photos and South African food are untested.
  */
 export const TYPICAL_ERROR: Nutrition = {
-  calories: 74.1,
-  mass: 44.5,
-  fat: 5.9,
-  carb: 6.9,
-  protein: 5.2,
+  calories: 77.5,
+  mass: 46.0,
+  fat: 6.1,
+  carb: 7.3,
+  protein: 5.4,
 };
 
 /**
  * A photo whose food probability is below this is treated as "not food": the app shows that instead of
- * calories. Pick it from the held-out food / not-food results in the model card, not by feel: raising it
- * rejects more non-food but also turns away more real food.
+ * calories. Picked from the held-out food / not-food results in the model card (0.2 to 0.8 moves food
+ * accepted 92.7% -> 89.7% and non-food rejected 95.8% -> 97.1%, so 0.5 stays): raising it rejects more
+ * non-food but also turns away more real food.
  */
 export const FOOD_THRESHOLD = 0.5;
 
