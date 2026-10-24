@@ -1,0 +1,447 @@
+<svg class="pg pg-pose-{{pose}} {{stillClass}}" viewBox="{{viewBox}}" width="{{width}}" height="{{height}}" role="img" aria-label="{{label}}" style="overflow: {{overflow}}">
+<defs>
+<g id="pg-sc-{{uid}}">
+<path d="M0 -11 C 8.5 -11 12.5 -4.5 12 2.5 C 11.4 8.8 6.2 13.2 0 15.5 C -6.2 13.2 -11.4 8.8 -12 2.5 C -12.5 -4.5 -8.5 -11 0 -11 Z" fill="{{skin.scale}}" stroke="{{skin.edge}}" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M-6.5 -5.2 C -3.5 -8.2 3.5 -8.2 6.5 -5.2" fill="none" stroke="{{skin.hi}}" stroke-width="2.1" stroke-linecap="round"/>
+<path d="M-5.5 9.6 C -2.5 12 2.5 12 5.5 9.6" fill="none" stroke="{{skin.lo}}" stroke-width="1.4" stroke-linecap="round"/>
+</g>
+<g id="pg-cl-{{uid}}" fill="#EFE3CF" stroke="#4A2E1D" stroke-width="1.5" stroke-linejoin="round">
+<path d="M-1 -5 C 4 -7.6 8.6 -6.2 10.8 -2.2 C 7.4 -3.2 3.4 -2.6 0 -1.6 Z"/>
+<path d="M0 -1.2 C 5.4 -2.2 9.8 0.2 11.4 4.2 C 7.6 2.4 3.4 2.4 0 2.6 Z"/>
+<path d="M-1 2.4 C 3.6 3.2 7 5.8 8 9.2 C 4.8 7.6 1.6 7.2 -1.4 6.8 Z"/>
+</g>
+<clipPath id="pg-body-{{uid}}"><path d="M104 92 C111 86.3 121.3 83 130 84 C138.7 85 149 90.3 156 98 C163 105.7 168.7 118.7 172 130 C175.3 141.3 177 155 176 166 C175 177 172 188.3 166 196 C160 203.7 149.7 210 140 212 C130.3 214 117 212.3 108 208 C99 203.7 90.7 195.3 86 186 C81.3 176.7 79.7 163.3 80 152 C80.3 140.7 84 128 88 118 C92 108 97 97.7 104 92 Z"/></clipPath>
+<clipPath id="pg-crown-{{uid}}"><path d="M46 68 C46.7 66 55.3 56.2 62 52 C68.7 47.8 78.5 43 86 43 C93.5 43 102.3 47.2 107 52 C111.7 56.8 114.2 69 114 72 C113.8 75 109.7 71.7 106 70 C102.3 68.3 97.3 63.7 92 62 C86.7 60.3 79.7 59.7 74 60 C68.3 60.3 62.7 62.7 58 64 C53.3 65.3 45.3 70 46 68 Z"/></clipPath>
+<clipPath id="pg-head-{{uid}}"><path d="M112 70 C112 62.3 110.3 56.5 106 52 C101.7 47.5 93 43.3 86 43 C79 42.7 70.3 46.2 64 50 C57.7 53.8 53 60.3 48 66 C43 71.7 38.3 79 34 84 C29.7 89 23.5 92.7 22 96 C20.5 99.3 22 102.2 25 104 C28 105.8 34.2 106.2 40 107 C45.8 107.8 52.7 108.3 60 109 C67.3 109.7 76.3 112.8 84 111 C91.7 109.2 101.3 104.8 106 98 C110.7 91.2 112 77.7 112 70 Z"/></clipPath>
+<clipPath id="pg-tailc-{{uid}}"><path d="M134.8 208.5 C133.3 214.8 140 211.2 144.3 213.1 C148.6 215 155.2 218.3 160.6 219.8 C166 221.3 171.5 222 176.7 222.2 C182 222.5 187.2 222.2 192.1 221.3 C197 220.4 201.9 218.8 206.2 216.8 C210.4 214.8 214.4 212.2 217.7 209.1 C221.1 206.1 224.1 202.5 226.5 198.7 C228.8 194.9 230.6 190.6 231.6 186.4 C232.7 182.2 233.1 177.5 232.6 173.5 C232.1 169.5 230.3 165.6 228.7 162.4 C227 159.2 225.1 156.4 222.8 154.1 C220.6 151.8 217.8 149.8 215.1 148.5 C212.4 147.1 209.5 146 206.7 146 C204 145.9 200.7 147.5 198.8 148.3 C196.8 149.1 195.6 150.3 195 150.7 C194.4 151.2 195.5 150 195 150.7 C194.5 151.5 191.9 154.4 192.3 155.5 C192.6 156.5 196.2 157 197 157.3 C197.8 157.5 196.2 157.5 197 157.3 C197.8 157 200.5 156.2 201.9 155.9 C203.4 155.7 204.5 155.4 205.7 155.7 C206.9 156.1 207.9 157 209 158.1 C210.2 159.2 211.7 160.7 212.6 162.4 C213.6 164.1 214.3 166.1 214.8 168.2 C215.3 170.3 215.8 172.9 215.6 174.9 C215.4 176.9 214.8 178.1 213.7 180 C212.6 181.9 210.8 184.7 209.1 186.4 C207.4 188.1 205.8 189.3 203.7 190.4 C201.7 191.5 199.2 192.4 196.8 193 C194.4 193.5 192.3 193.7 189.5 193.6 C186.8 193.4 183.3 192.9 180.4 192.1 C177.4 191.4 174.9 190.6 172 189 C169 187.5 165.9 184.9 162.7 182.6 C159.6 180.3 157.8 171.2 153.2 175.5 C148.5 179.8 136.3 202.2 134.8 208.5 Z"/></clipPath>
+<clipPath id="pg-ballc-{{uid}}"><circle cx="124" cy="160" r="60"/></clipPath>
+<radialGradient id="pg-vol-{{uid}}" cx="0.34" cy="0.26" r="0.9"><stop offset="0.42" stop-color="#3B2214" stop-opacity="0"/><stop offset="1" stop-color="#3B2214" stop-opacity="0.42"/></radialGradient>
+<radialGradient id="pg-volskin-{{uid}}" cx="0.4" cy="0.3" r="0.8"><stop offset="0.55" stop-color="#9A6A45" stop-opacity="0"/><stop offset="1" stop-color="#9A6A45" stop-opacity="0.32"/></radialGradient>
+<pattern id="pg-stripe-{{uid}}" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(40)"><rect width="3" height="7" fill="{{scarf.ink}}"/></pattern>
+<pattern id="pg-dot-{{uid}}" width="7.5" height="7.5" patternUnits="userSpaceOnUse"><circle cx="3.75" cy="3.75" r="1.9" fill="{{scarf.ink}}"/></pattern>
+</defs>
+
+<ellipse class="pg-shadow" cx="124" cy="224" rx="74" ry="7" fill="#000000" opacity="0.35"/>
+
+<g display="{{d.stand}}">
+<g display="{{d.scanProps}}">
+<g class="pg-beam"><path d="M64 121 L 6 204 L 60 214 Z" fill="#B8F25B" fill-opacity="0.09"/><path d="M64 121 L 6 204 M64 121 L 60 214" fill="none" stroke="#B8F25B" stroke-width="1.6" stroke-dasharray="3 4"/></g>
+<ellipse cx="33" cy="212" rx="29" ry="9" fill="#EFE8DA" stroke="#4A2E1D" stroke-width="2.3"/>
+<ellipse cx="33" cy="210.5" rx="20" ry="5.6" fill="#E2D9C6"/>
+<ellipse cx="24" cy="208" rx="6" ry="4.4" fill="#FFF6E2" stroke="#4A2E1D" stroke-width="1.5"/>
+<circle cx="35" cy="206.5" r="4.6" fill="#9BD15A" stroke="#4A2E1D" stroke-width="1.5"/>
+<ellipse cx="43" cy="210" rx="6" ry="4" fill="#C9763E" stroke="#4A2E1D" stroke-width="1.5"/>
+<g class="pg-scanline"><path d="M9 198 L9 222" stroke="#B8F25B" stroke-width="2.8" stroke-linecap="round"/></g>
+<g fill="none" stroke="#B8F25B" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 201 L1 194 L9 194"/><path d="M65 201 L65 194 L57 194"/><path d="M1 223 L1 230 L9 230"/><path d="M65 223 L65 230 L57 230"/></g>
+</g>
+
+<g class="pg-figure">
+<g class="pg-tail">
+<path d="M134.8 208.5 C133.3 214.8 140 211.2 144.3 213.1 C148.6 215 155.2 218.3 160.6 219.8 C166 221.3 171.5 222 176.7 222.2 C182 222.5 187.2 222.2 192.1 221.3 C197 220.4 201.9 218.8 206.2 216.8 C210.4 214.8 214.4 212.2 217.7 209.1 C221.1 206.1 224.1 202.5 226.5 198.7 C228.8 194.9 230.6 190.6 231.6 186.4 C232.7 182.2 233.1 177.5 232.6 173.5 C232.1 169.5 230.3 165.6 228.7 162.4 C227 159.2 225.1 156.4 222.8 154.1 C220.6 151.8 217.8 149.8 215.1 148.5 C212.4 147.1 209.5 146 206.7 146 C204 145.9 200.7 147.5 198.8 148.3 C196.8 149.1 195.6 150.3 195 150.7 C194.4 151.2 195.5 150 195 150.7 C194.5 151.5 191.9 154.4 192.3 155.5 C192.6 156.5 196.2 157 197 157.3 C197.8 157.5 196.2 157.5 197 157.3 C197.8 157 200.5 156.2 201.9 155.9 C203.4 155.7 204.5 155.4 205.7 155.7 C206.9 156.1 207.9 157 209 158.1 C210.2 159.2 211.7 160.7 212.6 162.4 C213.6 164.1 214.3 166.1 214.8 168.2 C215.3 170.3 215.8 172.9 215.6 174.9 C215.4 176.9 214.8 178.1 213.7 180 C212.6 181.9 210.8 184.7 209.1 186.4 C207.4 188.1 205.8 189.3 203.7 190.4 C201.7 191.5 199.2 192.4 196.8 193 C194.4 193.5 192.3 193.7 189.5 193.6 C186.8 193.4 183.3 192.9 180.4 192.1 C177.4 191.4 174.9 190.6 172 189 C169 187.5 165.9 184.9 162.7 182.6 C159.6 180.3 157.8 171.2 153.2 175.5 C148.5 179.8 136.3 202.2 134.8 208.5 Z" fill="{{skin.gap}}"/>
+<g clip-path="url(#pg-tailc-{{uid}})">
+<use href="#pg-sc-{{uid}}" transform="translate(211.2 152.8) rotate(-240.3) scale(0.3)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(216.3 156.6) rotate(-225.2) scale(0.4)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(220.1 161.9) rotate(-208.4) scale(0.4)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(223.1 169) rotate(-196.3) scale(0.5)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(224.1 176.8) rotate(-176.9) scale(0.5)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(217.8 183.5) rotate(-156.7) scale(0.6)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(225.9 187) rotate(-156.7) scale(0.6)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(213 190.8) rotate(-142.3) scale(0.6)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(220.7 196.7) rotate(-142.3) scale(0.6)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(206.5 196.2) rotate(-124.5) scale(0.7)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(212.6 205) rotate(-124.5) scale(0.7)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(198.1 199.9) rotate(-109.2) scale(0.8)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(201.9 210.9) rotate(-109.2) scale(0.8)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(188 201.2) rotate(-92.3) scale(0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(188.6 214) rotate(-92.3) scale(0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(176.2 199.8) rotate(-80) scale(0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(173.7 213.5) rotate(-80) scale(0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(165.1 195.6) rotate(-63.8) scale(1)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(158.4 209.3) rotate(-63.8) scale(1)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(153 187.8) rotate(-57.8) scale(1.1)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(144.2 201.8) rotate(-57.8) scale(1.1)"/>
+<rect x="130" y="140" width="110" height="86" fill="url(#pg-vol-{{uid}})"/>
+</g>
+<path d="M134.8 208.5 C133.3 214.8 140 211.2 144.3 213.1 C148.6 215 155.2 218.3 160.6 219.8 C166 221.3 171.5 222 176.7 222.2 C182 222.5 187.2 222.2 192.1 221.3 C197 220.4 201.9 218.8 206.2 216.8 C210.4 214.8 214.4 212.2 217.7 209.1 C221.1 206.1 224.1 202.5 226.5 198.7 C228.8 194.9 230.6 190.6 231.6 186.4 C232.7 182.2 233.1 177.5 232.6 173.5 C232.1 169.5 230.3 165.6 228.7 162.4 C227 159.2 225.1 156.4 222.8 154.1 C220.6 151.8 217.8 149.8 215.1 148.5 C212.4 147.1 209.5 146 206.7 146 C204 145.9 200.7 147.5 198.8 148.3 C196.8 149.1 195.6 150.3 195 150.7 C194.4 151.2 195.5 150 195 150.7 C194.5 151.5 191.9 154.4 192.3 155.5 C192.6 156.5 196.2 157 197 157.3 C197.8 157.5 196.2 157.5 197 157.3 C197.8 157 200.5 156.2 201.9 155.9 C203.4 155.7 204.5 155.4 205.7 155.7 C206.9 156.1 207.9 157 209 158.1 C210.2 159.2 211.7 160.7 212.6 162.4 C213.6 164.1 214.3 166.1 214.8 168.2 C215.3 170.3 215.8 172.9 215.6 174.9 C215.4 176.9 214.8 178.1 213.7 180 C212.6 181.9 210.8 184.7 209.1 186.4 C207.4 188.1 205.8 189.3 203.7 190.4 C201.7 191.5 199.2 192.4 196.8 193 C194.4 193.5 192.3 193.7 189.5 193.6 C186.8 193.4 183.3 192.9 180.4 192.1 C177.4 191.4 174.9 190.6 172 189 C169 187.5 165.9 184.9 162.7 182.6 C159.6 180.3 157.8 171.2 153.2 175.5 C148.5 179.8 136.3 202.2 134.8 208.5 Z" fill="none" stroke="#4A2E1D" stroke-width="2.6" stroke-linejoin="round"/>
+</g>
+
+<g stroke="#4A2E1D" stroke-linejoin="round" stroke-linecap="round">
+<path d="M84.6 214.8 C 81.2 215, 78.8 217, 78 219.8 C 80.2 218.6, 82.2 218.2, 84.6 218.4 Z" fill="#EFE3CF" stroke-width="1.3"/>
+<path d="M84.4 219.2 C 81 219.6, 78.8 221.6, 78.2 224.4 C 80.4 223.2, 82.4 222.8, 84.8 223 Z" fill="#EFE3CF" stroke-width="1.3"/>
+<path d="M84 221.5 C 82.5 216.5, 87 211.5, 95 211 L 106 210.5 C 112 210.5, 115.5 214.5, 115 219.5 C 114.6 222.8, 112 224.5, 108 224.5 L 88.5 224.5 C 86 224.5, 84.5 223.5, 84 221.5 Z" fill="#E6C59C" stroke-width="2.4"/>
+<path d="M91.5 218 Q 92.3 221 91.9 224.2 M98 217 Q 98.8 220.5 98.5 224.2" fill="none" stroke="#C9A27A" stroke-width="1.5"/>
+</g>
+
+<g class="pg-lift"><g display="{{d.farIdle}}"><path d="M90 124 C 83 132, 77 140, 75 148" fill="none" stroke="#4A2E1D" stroke-width="14.5" stroke-linecap="round"/><path d="M90 124 C 83 132, 77 140, 75 148" fill="none" stroke="#E6C59C" stroke-width="9.5" stroke-linecap="round"/><use href="#pg-cl-{{uid}}" transform="translate(74 150) rotate(125) scale(0.9)"/></g><g display="{{d.farScan}}"><path d="M88 124 C 82 128, 76 128, 70 123" fill="none" stroke="#4A2E1D" stroke-width="14.5" stroke-linecap="round"/><path d="M88 124 C 82 128, 76 128, 70 123" fill="none" stroke="#E6C59C" stroke-width="9.5" stroke-linecap="round"/><use href="#pg-cl-{{uid}}" transform="translate(68 122) rotate(205) scale(0.9)"/></g><g display="{{d.farEat}}"><path d="M88 124 C 80 130, 72 128, 66 122" fill="none" stroke="#4A2E1D" stroke-width="14.5" stroke-linecap="round"/><path d="M88 124 C 80 130, 72 128, 66 122" fill="none" stroke="#E6C59C" stroke-width="9.5" stroke-linecap="round"/><use href="#pg-cl-{{uid}}" transform="translate(64 121) rotate(210) scale(0.9)"/></g><g display="{{d.farCheer}}"><path d="M88 122 C 66 100, 46 80, 33 59" fill="none" stroke="#4A2E1D" stroke-width="14.5" stroke-linecap="round"/><path d="M88 122 C 66 100, 46 80, 33 59" fill="none" stroke="#E6C59C" stroke-width="9.5" stroke-linecap="round"/><use href="#pg-cl-{{uid}}" transform="translate(32 57) rotate(-126) scale(0.9)"/></g><g display="{{d.farOops}}"><path d="M88 124 C 77 130, 69 138, 65 146" fill="none" stroke="#4A2E1D" stroke-width="14.5" stroke-linecap="round"/><path d="M88 124 C 77 130, 69 138, 65 146" fill="none" stroke="#E6C59C" stroke-width="9.5" stroke-linecap="round"/><use href="#pg-cl-{{uid}}" transform="translate(64 148) rotate(118) scale(0.9)"/></g></g>
+
+<g class="pg-breathe">
+<path d="M104 92 C111 86.3 121.3 83 130 84 C138.7 85 149 90.3 156 98 C163 105.7 168.7 118.7 172 130 C175.3 141.3 177 155 176 166 C175 177 172 188.3 166 196 C160 203.7 149.7 210 140 212 C130.3 214 117 212.3 108 208 C99 203.7 90.7 195.3 86 186 C81.3 176.7 79.7 163.3 80 152 C80.3 140.7 84 128 88 118 C92 108 97 97.7 104 92 Z" fill="{{skin.gap}}"/>
+<g clip-path="url(#pg-body-{{uid}})">
+<path d="M56 84 C65 61.3 101.8 88.7 110 96 C118.2 103.3 105.7 117.3 105 128 C104.3 138.7 104.5 149.7 106 160 C107.5 170.3 110.3 180.7 114 190 C117.7 199.3 137.7 209 128 216 C118.3 223 68 254 56 232 C44 210 47 106.7 56 84 Z" fill="#F4DDBE"/>
+<path d="M108 98 C 107.3 103 104.5 117.7 104 128 C 103.5 138.3 103.5 149.7 105 160 C 106.5 170.3 109.8 181.7 113 190 C 116.2 198.3 122.2 206.7 124 210" fill="none" stroke="#E6C59C" stroke-width="10" stroke-linecap="round"/>
+<ellipse cx="91" cy="156" rx="7" ry="20" fill="#FFF3E2" opacity="0.7"/>
+<use href="#pg-sc-{{uid}}" transform="translate(143.9 214) rotate(-4.3) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(128.9 214) rotate(-0.2) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(159.4 201.5) rotate(-8.5) scale(0.8 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(144.4 201.5) rotate(-4.4) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(129.4 201.5) rotate(-0.4) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(175.7 189) rotate(-12.9) scale(0.5 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(160.7 189) rotate(-8.9) scale(0.7 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(145.7 189) rotate(-4.8) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(130.7 189) rotate(-0.7) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(115.7 189) rotate(3.3) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(179.4 176.5) rotate(-13) scale(0.5 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(164.4 176.5) rotate(-9.9) scale(0.7 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(149.4 176.5) rotate(-5.8) scale(0.8 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(134.4 176.5) rotate(-1.7) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(119.4 176.5) rotate(2.3) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(168.6 164) rotate(-11) scale(0.6 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(153.6 164) rotate(-6.9) scale(0.8 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(138.6 164) rotate(-2.9) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(123.6 164) rotate(1.2) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(108.6 164) rotate(5.2) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(175.1 151.5) rotate(-12.7) scale(0.5 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(160.1 151.5) rotate(-8.7) scale(0.7 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(145.1 151.5) rotate(-4.6) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(130.1 151.5) rotate(-0.6) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(115.1 151.5) rotate(3.5) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(166.6 139) rotate(-10.5) scale(0.7 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(151.6 139) rotate(-6.4) scale(0.8 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(136.6 139) rotate(-2.3) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(121.6 139) rotate(1.7) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(106.6 139) rotate(5.8) scale(0.8 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(160.1 126.5) rotate(-8.7) scale(0.7 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(145.1 126.5) rotate(-4.6) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(130.1 126.5) rotate(-0.6) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(115.1 126.5) rotate(3.5) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(168.8 114) rotate(-11.1) scale(0.6 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(153.8 114) rotate(-7) scale(0.8 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(138.8 114) rotate(-2.9) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(123.8 114) rotate(1.1) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(108.8 114) rotate(5.2) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(149 101.5) rotate(-5.7) scale(0.8 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(134 101.5) rotate(-1.6) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(119 101.5) rotate(2.4) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(127 89) rotate(0.3) scale(0.8 0.8)"/>
+<rect x="76" y="80" width="104" height="136" fill="url(#pg-vol-{{uid}})"/>
+</g>
+<path d="M104 92 C111 86.3 121.3 83 130 84 C138.7 85 149 90.3 156 98 C163 105.7 168.7 118.7 172 130 C175.3 141.3 177 155 176 166 C175 177 172 188.3 166 196 C160 203.7 149.7 210 140 212 C130.3 214 117 212.3 108 208 C99 203.7 90.7 195.3 86 186 C81.3 176.7 79.7 163.3 80 152 C80.3 140.7 84 128 88 118 C92 108 97 97.7 104 92 Z" fill="none" stroke="#4A2E1D" stroke-width="2.6" stroke-linejoin="round"/>
+</g>
+
+<g stroke="#4A2E1D" stroke-linejoin="round" stroke-linecap="round">
+<path d="M107 213 C 103 213.2, 100.4 215.6, 99.6 218.8 C 102 217.4, 104.2 217, 106.8 217.2 Z" fill="#EFE3CF" stroke-width="1.4"/>
+<path d="M106.6 218.2 C 102.8 218.6, 100.2 221, 99.6 224.2 C 102 222.8, 104.4 222.4, 107 222.6 Z" fill="#EFE3CF" stroke-width="1.4"/>
+<path d="M106 221.5 C 104.5 215.5, 110 209.5, 119 209 L 135 208.5 C 143 208.5, 147.5 213.5, 146.5 219.5 C 146 223, 142.5 224.8, 138 224.8 L 111 224.8 C 108 224.8, 106.5 223.6, 106 221.5 Z" fill="#F4DDBE" stroke-width="2.6"/>
+<path d="M114 217 Q 115 220.5 114.6 224.4 M121.5 216 Q 122.5 220 122.1 224.4" fill="none" stroke="#C9A27A" stroke-width="1.6"/>
+<path d="M131 212.5 C 136 211.6, 141 212.4, 143.5 215.5" fill="none" stroke="#FFF6E9" stroke-width="2" stroke-opacity="0.8"/>
+</g>
+
+<g class="pg-lift">
+<g class="pg-scarf-tails">
+<path d="M130 116.5 C 137 121.5, 143 129, 148.5 137.5 L 151.5 145.2 L 146 141.8 L 140.8 144.8 C 138.8 136.6, 134.4 129, 127.8 123 Z" fill="{{scarf.dark}}"/>
+<path d="M130 116.5 C 137 121.5, 143 129, 148.5 137.5 L 151.5 145.2 L 146 141.8 L 140.8 144.8 C 138.8 136.6, 134.4 129, 127.8 123 Z" fill="url(#pg-{{patternId}}-{{uid}})" display="{{d.scarfPattern}}"/>
+<path d="M131.4 120.6 C 137.2 126, 142 132.6, 145.6 141.4" fill="none" stroke="{{scarf.shade}}" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+<path d="M130 116.5 C 137 121.5, 143 129, 148.5 137.5 L 151.5 145.2 L 146 141.8 L 140.8 144.8 C 138.8 136.6, 134.4 129, 127.8 123 Z" fill="none" stroke="#4A2E1D" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M124.8 118.4 C 127.4 126.4, 127.6 135.4, 125 146 L 128.7 142.8 L 132.4 147.6 C 134.6 137.2, 134.2 127.4, 131.2 119.2 Z" fill="{{scarf.main}}"/>
+<path d="M124.8 118.4 C 127.4 126.4, 127.6 135.4, 125 146 L 128.7 142.8 L 132.4 147.6 C 134.6 137.2, 134.2 127.4, 131.2 119.2 Z" fill="url(#pg-{{patternId}}-{{uid}})" display="{{d.scarfPattern}}"/>
+<path d="M128.4 121.4 C 130.2 129, 130.4 136.4, 128.8 142.4" fill="none" stroke="{{scarf.shade}}" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+<path d="M124.8 118.4 C 127.4 126.4, 127.6 135.4, 125 146 L 128.7 142.8 L 132.4 147.6 C 134.6 137.2, 134.2 127.4, 131.2 119.2 Z" fill="none" stroke="#4A2E1D" stroke-width="2.2" stroke-linejoin="round"/>
+</g>
+<path d="M80 106 C 94 117, 116 116, 132 100 C 136 106, 136 113, 131 118 C 116 130, 94 130, 80 119 C 77 115, 77 110, 80 106 Z" fill="{{scarf.main}}"/>
+<path d="M80 106 C 94 117, 116 116, 132 100 C 136 106, 136 113, 131 118 C 116 130, 94 130, 80 119 C 77 115, 77 110, 80 106 Z" fill="url(#pg-{{patternId}}-{{uid}})" display="{{d.scarfPattern}}"/>
+<path d="M84 119.5 C 98 127.5, 116 126.5, 129 115.5" fill="none" stroke="{{scarf.shade}}" stroke-width="3" stroke-linecap="round" opacity="0.75"/>
+<path d="M86 110 C 98 117, 114 116, 126 106" fill="none" stroke="{{scarf.light}}" stroke-width="2.4" stroke-linecap="round"/>
+<path d="M80 106 C 94 117, 116 116, 132 100 C 136 106, 136 113, 131 118 C 116 130, 94 130, 80 119 C 77 115, 77 110, 80 106 Z" fill="none" stroke="#4A2E1D" stroke-width="2.4" stroke-linejoin="round"/>
+<path d="M119.6 109.4 C 120.4 104.4, 126.6 102.6, 131 105.4 C 135 102.8, 140.8 104.8, 141 110 C 141.2 115.2, 135.6 118.4, 130.8 116.4 C 126.4 119, 120 117, 119.4 112.4 C 119.3 111.4, 119.4 110.4, 119.6 109.4 Z" fill="{{scarf.main}}"/>
+<path d="M119.6 109.4 C 120.4 104.4, 126.6 102.6, 131 105.4 C 135 102.8, 140.8 104.8, 141 110 C 141.2 115.2, 135.6 118.4, 130.8 116.4 C 126.4 119, 120 117, 119.4 112.4 C 119.3 111.4, 119.4 110.4, 119.6 109.4 Z" fill="url(#pg-{{patternId}}-{{uid}})" display="{{d.scarfPattern}}"/>
+<path d="M131 105.8 C 129.8 108.8, 130 112.8, 130.8 116" fill="none" stroke="{{scarf.shade}}" stroke-width="2" stroke-linecap="round"/>
+<path d="M122.6 108 C 124.4 106.2, 127 105.6, 129 106.4 M133.6 106.8 C 135.8 106, 138.2 106.8, 139 108.6" fill="none" stroke="{{scarf.light}}" stroke-width="1.8" stroke-linecap="round"/>
+<path d="M119.6 109.4 C 120.4 104.4, 126.6 102.6, 131 105.4 C 135 102.8, 140.8 104.8, 141 110 C 141.2 115.2, 135.6 118.4, 130.8 116.4 C 126.4 119, 120 117, 119.4 112.4 C 119.3 111.4, 119.4 110.4, 119.6 109.4 Z" fill="none" stroke="#4A2E1D" stroke-width="2.4" stroke-linejoin="round"/>
+<g display="{{d.pin}}">
+<g transform="translate(89 118.5) scale(1.25) translate(-90 -119)" stroke="#4A2E1D" stroke-linejoin="round" stroke-linecap="round">
+<circle cx="90" cy="119" r="6.6" fill="#FFF6E6" stroke-width="1.5"/>
+<path display="{{d.pinStar}}" d="M90.0 114.4 L91.2 117.3 L94.4 117.6 L92.0 119.6 L92.7 122.7 L90.0 121.1 L87.3 122.7 L88.0 119.6 L85.6 117.6 L88.8 117.3 Z" fill="#B8F25B" stroke-width="1.1"/>
+<path display="{{d.pinHeart}}" d="M90 123 C 86 120.4, 85.2 117.6, 86.8 116.1 C 88 115, 89.4 115.4, 90 116.6 C 90.6 115.4, 92 115, 93.2 116.1 C 94.8 117.6, 94 120.4, 90 123 Z" fill="#FF5D73" stroke-width="1.1"/>
+<path display="{{d.pinBolt}}" d="M91 114 L 86.6 119.8 L 89.6 119.8 L 88.8 124 L 93.4 118 L 90.4 118 Z" fill="#FFC04D" stroke-width="1.1"/>
+<g display="{{d.pinLeaf}}"><path d="M86 123 C 86 117.5, 89 115, 94 114.5 C 94 120, 91 123, 86 123 Z" fill="#6FBF3A" stroke-width="1.1"/><path d="M86.8 122.2 L 91.6 117.2" fill="none" stroke-width="1"/></g>
+</g>
+</g>
+
+<g class="pg-head-pose"><g transform="matrix(1.08 0 0 1.08 -7.68 -8.48)">
+<path d="M112 70 C112 62.3 110.3 56.5 106 52 C101.7 47.5 93 43.3 86 43 C79 42.7 70.3 46.2 64 50 C57.7 53.8 53 60.3 48 66 C43 71.7 38.3 79 34 84 C29.7 89 23.5 92.7 22 96 C20.5 99.3 22 102.2 25 104 C28 105.8 34.2 106.2 40 107 C45.8 107.8 52.7 108.3 60 109 C67.3 109.7 76.3 112.8 84 111 C91.7 109.2 101.3 104.8 106 98 C110.7 91.2 112 77.7 112 70 Z" fill="#F4DDBE"/>
+<g clip-path="url(#pg-head-{{uid}})">
+<path d="M18 104 C 40 110, 70 114, 108 100 L 112 120 L 14 120 Z" fill="#E6C59C" opacity="0.8"/>
+<rect x="18" y="40" width="98" height="74" fill="url(#pg-volskin-{{uid}})"/>
+</g>
+<path d="M29 89 C 37 83, 45 79, 54 77" fill="none" stroke="#FFF6E9" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+<path d="M46 68 C46.7 66 55.3 56.2 62 52 C68.7 47.8 78.5 43 86 43 C93.5 43 102.3 47.2 107 52 C111.7 56.8 114.2 69 114 72 C113.8 75 109.7 71.7 106 70 C102.3 68.3 97.3 63.7 92 62 C86.7 60.3 79.7 59.7 74 60 C68.3 60.3 62.7 62.7 58 64 C53.3 65.3 45.3 70 46 68 Z" fill="{{skin.gap}}"/>
+<g clip-path="url(#pg-crown-{{uid}})">
+<use href="#pg-sc-{{uid}}" transform="translate(110 76) rotate(-7.8) scale(0.4 0.6)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(105 68.5) rotate(-6.4) scale(0.5 0.6)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(95 68.5) rotate(-3.6) scale(0.5 0.6)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(65 68.5) rotate(4.7) scale(0.5 0.6)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(55 68.5) rotate(7.5) scale(0.4 0.6)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(110 61) rotate(-7.8) scale(0.4 0.6)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(100 61) rotate(-5) scale(0.5 0.6)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(90 61) rotate(-2.2) scale(0.6 0.6)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(80 61) rotate(0.6) scale(0.6 0.6)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(70 61) rotate(3.3) scale(0.5 0.6)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(60 61) rotate(6.1) scale(0.5 0.6)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(105 53.5) rotate(-6.4) scale(0.5 0.6)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(95 53.5) rotate(-3.6) scale(0.5 0.6)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(85 53.5) rotate(-0.8) scale(0.6 0.6)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(75 53.5) rotate(1.9) scale(0.6 0.6)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(65 53.5) rotate(4.7) scale(0.5 0.6)"/>
+</g>
+<path d="M46 68 C46.7 66 55.3 56.2 62 52 C68.7 47.8 78.5 43 86 43 C93.5 43 102.3 47.2 107 52 C111.7 56.8 114.2 69 114 72 C113.8 75 109.7 71.7 106 70 C102.3 68.3 97.3 63.7 92 62 C86.7 60.3 79.7 59.7 74 60 C68.3 60.3 62.7 62.7 58 64 C53.3 65.3 45.3 70 46 68 Z" fill="none" stroke="#4A2E1D" stroke-width="2.3" stroke-linejoin="round"/>
+<path d="M112 70 C112 62.3 110.3 56.5 106 52 C101.7 47.5 93 43.3 86 43 C79 42.7 70.3 46.2 64 50 C57.7 53.8 53 60.3 48 66 C43 71.7 38.3 79 34 84 C29.7 89 23.5 92.7 22 96 C20.5 99.3 22 102.2 25 104 C28 105.8 34.2 106.2 40 107 C45.8 107.8 52.7 108.3 60 109 C67.3 109.7 76.3 112.8 84 111 C91.7 109.2 101.3 104.8 106 98 C110.7 91.2 112 77.7 112 70 Z" fill="none" stroke="#4A2E1D" stroke-width="2.6" stroke-linejoin="round"/>
+<ellipse cx="101" cy="85" rx="4.2" ry="5.6" fill="#E6C59C" stroke="#4A2E1D" stroke-width="2"/>
+<ellipse cx="81" cy="97" rx="7.4" ry="4.4" fill="#FF7A8A" opacity="0.5"/>
+<ellipse cx="24.5" cy="99.5" rx="5.2" ry="4.4" fill="#3A2419"/>
+<circle cx="22.6" cy="97.8" r="1.5" fill="#FFFFFF" opacity="0.8"/>
+
+<g class="pg-blink">
+<g class="pg-dart">
+<g display="{{d.eyesOpen}}">
+<ellipse cx="72" cy="80" rx="7.6" ry="9.6" fill="#241712"/><circle cx="69.4" cy="76.2" r="2.9" fill="#FFFFFF"/><circle cx="74.6" cy="84" r="1.3" fill="#FFFFFF"/>
+<ellipse cx="50.5" cy="79" rx="5.4" ry="8.6" fill="#241712"/><circle cx="48.8" cy="75.6" r="2.1" fill="#FFFFFF"/>
+</g>
+<g display="{{d.eyesUp}}">
+<ellipse cx="73" cy="78" rx="7.6" ry="9.6" fill="#241712"/><circle cx="71.4" cy="73.6" r="2.9" fill="#FFFFFF"/><circle cx="75.6" cy="82" r="1.3" fill="#FFFFFF"/>
+<ellipse cx="51.5" cy="77" rx="5.4" ry="8.6" fill="#241712"/><circle cx="50.4" cy="73" r="2.1" fill="#FFFFFF"/>
+</g>
+<g display="{{d.eyesWide}}">
+<ellipse cx="72" cy="80" rx="9.4" ry="11" fill="#FFFDF8" stroke="#4A2E1D" stroke-width="2"/><circle cx="70.6" cy="82" r="5.8" fill="#241712"/><circle cx="68.8" cy="79.6" r="2.1" fill="#FFFFFF"/>
+<ellipse cx="50.5" cy="79" rx="6.6" ry="10" fill="#FFFDF8" stroke="#4A2E1D" stroke-width="2"/><circle cx="49.6" cy="81" r="4.1" fill="#241712"/><circle cx="48.4" cy="78.8" r="1.6" fill="#FFFFFF"/>
+</g>
+<g display="{{d.eyesWorried}}">
+<ellipse cx="72" cy="81" rx="6.4" ry="8" fill="#241712"/><circle cx="70" cy="78" r="2.4" fill="#FFFFFF"/>
+<ellipse cx="50.5" cy="80" rx="4.6" ry="7.2" fill="#241712"/><circle cx="49.2" cy="77.4" r="1.7" fill="#FFFFFF"/>
+</g>
+</g>
+</g>
+<g display="{{d.eyesHappy}}" fill="none" stroke="#241712" stroke-width="3.6" stroke-linecap="round">
+<path d="M64.5 83 Q 72 72.5 79.5 83"/><path d="M45.6 82 Q 50.5 73.5 55.4 82"/>
+</g>
+<g fill="none" stroke="#7A4C2C" stroke-width="2.6" stroke-linecap="round">
+<g display="{{d.browFocus}}"><path d="M63.5 66.5 Q 72 63.5 80.5 66.5"/><path d="M45 66 Q 50 64 55 65.5"/></g>
+<g display="{{d.browThink}}"><path d="M64 63 Q 72 58 80.5 62"/><path d="M45.5 65.5 Q 50 64.5 55 66"/></g>
+<g display="{{d.browWorried}}"><path d="M64 63 Q 71 64 80 69"/><path d="M45 68.5 Q 50 65.5 55.5 62.5"/></g>
+</g>
+
+<g display="{{d.mouthSmile}}"><path d="M38 103.5 Q 46 109 54 105" fill="none" stroke="#3A2419" stroke-width="2.5" stroke-linecap="round"/></g>
+<g display="{{d.mouthOpen}}"><path d="M37.5 102.5 Q 46 116 56.5 103.5 Q 47 106.5 37.5 102.5 Z" fill="#7A2E3A" stroke="#3A2419" stroke-width="2.2" stroke-linejoin="round"/><path d="M42 107.6 Q 47 111.6 52 108" fill="none" stroke="#FF8DA1" stroke-width="2.6" stroke-linecap="round"/></g>
+<g display="{{d.mouthO}}"><ellipse cx="46.5" cy="105" rx="2.8" ry="2.4" fill="#7A2E3A" stroke="#3A2419" stroke-width="1.8"/></g>
+<g display="{{d.mouthHmm}}"><path d="M39.5 104.5 Q 46 106.5 52 104" fill="none" stroke="#3A2419" stroke-width="2.4" stroke-linecap="round"/></g>
+<g display="{{d.mouthWavy}}"><path d="M38.5 105.5 q 3 -3 6 0 q 3 3 6 0 q 2 -2 4 -1" fill="none" stroke="#3A2419" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g display="{{d.mouthChomp}}">
+<g class="pg-tongue"><path d="M41 106 C 33 110.5, 23 112.5, 14 110" fill="none" stroke="#FF8DA1" stroke-width="4.4" stroke-linecap="round"/><path d="M41 106 C 33 110.5, 23 112.5, 14 110" fill="none" stroke="#3A2419" stroke-width="0.9" stroke-linecap="round" opacity="0.35"/></g>
+<g class="pg-chomp"><path d="M38 102 Q 46 114 56 103.5 Q 47 106 38 102 Z" fill="#7A2E3A" stroke="#3A2419" stroke-width="2.2" stroke-linejoin="round"/></g>
+</g>
+
+<g display="{{d.glassesRound}}" fill="none" stroke="#3A2419" stroke-width="2.6" stroke-linecap="round">
+<path d="M85 78.5 L 99.5 82"/>
+<circle cx="72" cy="80" r="13" fill="#FFFFFF" fill-opacity="0.16"/>
+<ellipse cx="50" cy="79" rx="9" ry="12.4" fill="#FFFFFF" fill-opacity="0.16"/>
+<path d="M64.5 73 Q 67.5 69.6 71.5 69" stroke="#FFFFFF" stroke-width="1.8" stroke-opacity="0.85"/>
+</g>
+<g display="{{d.glassesSunnies}}" stroke="#241712" stroke-width="2.8" stroke-linecap="round">
+<path d="M85 78.5 L 99.5 82" fill="none"/>
+<circle cx="72" cy="80" r="13" fill="#1D2333"/>
+<ellipse cx="50" cy="79" rx="9" ry="12.4" fill="#1D2333"/>
+<path d="M64.5 77.5 L 71.5 70.5 M68 81.5 L 77 72.5" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.55"/>
+<path d="M45.5 77.5 L 50.5 71.5" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-opacity="0.5"/>
+</g>
+<g display="{{d.glassesStars}}" stroke="#3A2419" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">
+<path d="M85 76.5 L 99.5 82" fill="none"/>
+<path d="M72.0 65.5 L76.2 74.2 L85.8 75.5 L78.8 82.2 L80.5 91.7 L72.0 87.2 L63.5 91.7 L65.2 82.2 L58.2 75.5 L67.8 74.2 Z" fill="#FFD45E" fill-opacity="0.78"/>
+<path d="M50.5 65.5 L53.1 73.6 L59.0 74.8 L54.7 81.1 L55.7 89.9 L50.5 85.7 L45.3 89.9 L46.3 81.1 L42.0 74.8 L47.9 73.6 Z" fill="#FFD45E" fill-opacity="0.78"/>
+<path d="M68 72 L 70.5 69.5" fill="none" stroke="#FFFFFF" stroke-width="1.8"/>
+</g>
+
+<g display="{{d.hatBeanie}}" stroke="#4A2E1D" stroke-linejoin="round" stroke-linecap="round">
+<path d="M50 63 C 46 38, 64 22, 86 22 C 108 22, 122 38, 118 68 Q 84 42 50 63 Z" fill="{{hat.main}}" stroke-width="2.4"/>
+<path d="M68 28 Q 65 42 63 55 M86 23 Q 86 37 85 50 M103 27 Q 107 42 109 58" fill="none" stroke="{{hat.dark}}" stroke-width="2" stroke-opacity="0.7"/>
+<path d="M47 66 Q 84 42 120 71 L 119 59 Q 84 31 49 54 Z" fill="{{hat.dark}}" stroke-width="2.4"/>
+<path d="M58 59.5 L 57.5 50 M70 56 L 69.5 46.5 M84 54 L 84 45 M98 57 L 98.5 47 M110 62 L 110.5 52" fill="none" stroke="{{hat.main}}" stroke-width="1.6" stroke-opacity="0.8"/>
+<circle cx="88" cy="20" r="8" fill="#FFF6E6" stroke-width="2.2"/>
+</g>
+<g display="{{d.hatBucket}}" stroke="#4A2E1D" stroke-linejoin="round" stroke-linecap="round">
+<path d="M56 58 C 54 38, 66 26, 86 26 C 106 26, 116 40, 114 62 Q 86 44 56 58 Z" fill="{{hat.main}}" stroke-width="2.4"/>
+<path d="M55 58 Q 86 43 115 62 L 114.5 55 Q 86 36 55.5 51 Z" fill="{{hat.dark}}" stroke-width="2"/>
+<path d="M38 70 Q 86 34 130 74 Q 132 80 125 79 Q 86 50 43 75 Q 36 76 38 70 Z" fill="{{hat.main}}" stroke-width="2.4"/>
+<path d="M44 71.5 Q 86 40 124 75.5" fill="none" stroke="{{hat.light}}" stroke-width="1.6" stroke-dasharray="3 3"/>
+</g>
+<g display="{{d.hatCap}}" stroke="#4A2E1D" stroke-linejoin="round" stroke-linecap="round">
+<path d="M54 60 C 52 38, 68 26, 88 26 C 108 26, 118 40, 116 66 Q 84 44 54 60 Z" fill="{{hat.main}}" stroke-width="2.4"/>
+<path d="M88 27 Q 80 40 76 52 M88 27 Q 100 42 103 57" fill="none" stroke="{{hat.dark}}" stroke-width="1.8"/>
+<circle cx="88" cy="27" r="3" fill="{{hat.dark}}" stroke-width="1.6"/>
+<circle cx="68" cy="46" r="5" fill="#FFF6E6" stroke-width="1.6"/>
+<path d="M60 57 Q 42 55 28 64 Q 25 69 31 69.5 Q 46 64 64 63 Z" fill="{{hat.dark}}" stroke-width="2.4"/>
+</g>
+<g display="{{d.hatChef}}" stroke="#4A2E1D" stroke-linejoin="round" stroke-linecap="round">
+<path d="M57 47 C 46 40, 50 24, 64 26 C 66 14, 84 10, 90 20 C 98 10, 116 16, 112 30 C 124 34, 122 50, 115 53 Q 86 34 57 47 Z" fill="#FFFDF8" stroke-width="2.4"/>
+<path d="M72 42 Q 70 34 74 27 M93 38 Q 93 30 97 23" fill="none" stroke="#E2D9C6" stroke-width="2"/>
+<path d="M56 60 Q 86 44 116 66 L 115 52 Q 86 32 57 46 Z" fill="#FFFDF8" stroke-width="2.4"/>
+<path d="M60 55 Q 86 41 113 59" fill="none" stroke="#E2D9C6" stroke-width="1.6"/>
+</g>
+<g display="{{d.hatHeadband}}" stroke="#4A2E1D" stroke-linejoin="round" stroke-linecap="round">
+<path d="M117 62 C 125 63, 131 69, 133 78 C 128 76, 124 72, 119 68 Z" fill="{{hat.dark}}" stroke-width="2"/>
+<path d="M117 64 C 123 68, 126 75, 125 83 C 121 79, 119 74, 117 69 Z" fill="{{hat.main}}" stroke-width="2"/>
+<path d="M49 64 Q 84 41 119 69 L 118.5 60 Q 84 32 50.5 55 Z" fill="{{hat.main}}" stroke-width="2.4"/>
+<path d="M50 59.5 Q 84 36.5 118.7 64.5" fill="none" stroke="{{hat.light}}" stroke-width="2.6"/>
+</g>
+<g display="{{d.hatParty}}" stroke="#4A2E1D" stroke-linejoin="round" stroke-linecap="round">
+<path d="M66 52 L 93 16 L 108 54 Q 87 44 66 52 Z" fill="{{hat.main}}" stroke-width="2.4"/>
+<path d="M73.5 43 Q 88 38 103 42.5 M82.5 31 Q 90 28.5 98.5 30.5" fill="none" stroke="{{hat.light}}" stroke-width="3.4"/>
+<circle cx="93" cy="15" r="5" fill="#FFF6E6" stroke-width="2"/>
+</g>
+<g display="{{d.hatCrown}}" stroke="#4A2E1D" stroke-linejoin="round" stroke-linecap="round">
+<path d="M62 52 L 60 31 L 72 41 L 84 25 L 96 41 L 108 31 L 110 55 Q 86 43 62 52 Z" fill="#FFC04D" stroke-width="2.4"/>
+<path d="M63 47 Q 86 39 109 50" fill="none" stroke="#E09A22" stroke-width="2.2"/>
+<circle cx="60" cy="30" r="2.8" fill="#FFC04D" stroke-width="1.6"/>
+<circle cx="84" cy="24" r="3" fill="#FFC04D" stroke-width="1.6"/>
+<circle cx="108" cy="30" r="2.8" fill="#FFC04D" stroke-width="1.6"/>
+<circle cx="74" cy="45.5" r="2.6" fill="#FF5D73" stroke-width="1.4"/>
+<circle cx="86" cy="44" r="3" fill="#7C9CFF" stroke-width="1.4"/>
+<circle cx="98" cy="45.8" r="2.6" fill="#B8F25B" stroke-width="1.4"/>
+</g>
+<g display="{{d.hatProtea}}">
+<g transform="translate(109 57) rotate(18) scale(1.35)" stroke="#4A2E1D" stroke-linejoin="round" stroke-linecap="round">
+<path d="M-1 8 C -10 10, -17 6, -20 -1 C -11 -1, -5 2, -1 8 Z" fill="#6FBF3A" stroke-width="1.6"/>
+<path d="M1 8 C 9 11, 16 8, 19 2 C 11 1, 5 3, 1 8 Z" fill="#5AA62E" stroke-width="1.6"/>
+<path d="M0 4 C -5 -2, -5 -12, 0 -18 C 5 -12, 5 -2, 0 4 Z" transform="rotate(-56)" fill="#E8607E" stroke-width="1.6"/>
+<path d="M0 4 C -5 -2, -5 -12, 0 -18 C 5 -12, 5 -2, 0 4 Z" transform="rotate(56)" fill="#E8607E" stroke-width="1.6"/>
+<path d="M0 4 C -5 -2, -5 -12, 0 -18 C 5 -12, 5 -2, 0 4 Z" transform="rotate(-30)" fill="#F27B95" stroke-width="1.6"/>
+<path d="M0 4 C -5 -2, -5 -12, 0 -18 C 5 -12, 5 -2, 0 4 Z" transform="rotate(30)" fill="#F27B95" stroke-width="1.6"/>
+<ellipse cx="0" cy="-5" rx="6.5" ry="8.5" fill="#F7E3C6" stroke-width="1.6"/>
+<path d="M-3 -9 L -2 -6 M0 -11 L 0 -8 M3 -9 L 2 -6 M-1.5 -4 L -1 -1.5 M1.5 -4 L 1 -1.5" fill="none" stroke="#D9B98A" stroke-width="1.1"/>
+<path d="M0 7 C -4 2, -4 -5, 0 -9 C 4 -5, 4 2, 0 7 Z" transform="rotate(-24)" fill="#FF8FA8" stroke-width="1.6"/>
+<path d="M0 7 C -4 2, -4 -5, 0 -9 C 4 -5, 4 2, 0 7 Z" transform="rotate(24)" fill="#FF8FA8" stroke-width="1.6"/>
+<path d="M0 8 C -3.5 3, -3.5 -3, 0 -6 C 3.5 -3, 3.5 3, 0 8 Z" fill="#FFA3B8" stroke-width="1.6"/>
+</g>
+</g>
+</g></g>
+
+<g display="{{d.scanProps}}">
+<g transform="rotate(-14 72 124)"><rect x="61" y="107" width="22" height="34" rx="5" fill="#2E3650" stroke="#4A2E1D" stroke-width="2.2"/><rect x="63.2" y="109.2" width="17.6" height="29.6" rx="3.4" fill="none" stroke="#56618A" stroke-width="1.2"/><circle cx="66.5" cy="113.5" r="3.4" fill="#0B0E17" stroke="#7C9CFF" stroke-width="1.6"/><circle cx="74.5" cy="112.6" r="1.5" fill="#FFC04D"/></g>
+</g>
+<g display="{{d.fruit}}" class="pg-food">
+<path d="M106 128 C 96 135, 82 130, 72 120" fill="none" stroke="#4A2E1D" stroke-width="15.5" stroke-linecap="round"/><path d="M106 128 C 96 135, 82 130, 72 120" fill="none" stroke="#F4DDBE" stroke-width="10.5" stroke-linecap="round"/>
+<g transform="translate(58 112)"><circle r="11" fill="#B8F25B" stroke="#4A2E1D" stroke-width="2.3"/><path d="M-4 -5 C -2 -7.5 2 -7.5 4 -5" fill="none" stroke="#E2FFB0" stroke-width="2" stroke-linecap="round"/><path d="M0 -11 C 0 -15, 2 -18, 6 -19" fill="none" stroke="#4A2E1D" stroke-width="2.2" stroke-linecap="round"/><path d="M2 -14 C 6 -18, 11 -17, 13 -14 C 9 -11, 5 -11, 2 -14 Z" fill="#6FBF3A" stroke="#4A2E1D" stroke-width="1.8" stroke-linejoin="round"/></g>
+<use href="#pg-cl-{{uid}}" transform="translate(70 118) rotate(215) scale(1)"/>
+</g>
+<g display="{{d.nearIdle}}"><path d="M106 128 C 108 141, 102 148, 92 150" fill="none" stroke="#4A2E1D" stroke-width="15.5" stroke-linecap="round"/><path d="M106 128 C 108 141, 102 148, 92 150" fill="none" stroke="#F4DDBE" stroke-width="10.5" stroke-linecap="round"/><use href="#pg-cl-{{uid}}" transform="translate(90 151) rotate(165) scale(1)"/></g><g display="{{d.nearScan}}"><path d="M106 128 C 99 135, 89 133, 81 127" fill="none" stroke="#4A2E1D" stroke-width="15.5" stroke-linecap="round"/><path d="M106 128 C 99 135, 89 133, 81 127" fill="none" stroke="#F4DDBE" stroke-width="10.5" stroke-linecap="round"/><use href="#pg-cl-{{uid}}" transform="translate(79 126) rotate(200) scale(1)"/></g><g display="{{d.nearCheer}}"><path d="M106 126 C 118 113, 122 99, 120 83" fill="none" stroke="#4A2E1D" stroke-width="15.5" stroke-linecap="round"/><path d="M106 126 C 118 113, 122 99, 120 83" fill="none" stroke="#F4DDBE" stroke-width="10.5" stroke-linecap="round"/><use href="#pg-cl-{{uid}}" transform="translate(120 81) rotate(-88) scale(1)"/></g><g display="{{d.nearThink}}"><path d="M106 128 C 100 120, 86 116, 64 113" fill="none" stroke="#4A2E1D" stroke-width="15.5" stroke-linecap="round"/><path d="M106 128 C 100 120, 86 116, 64 113" fill="none" stroke="#F4DDBE" stroke-width="10.5" stroke-linecap="round"/><use href="#pg-cl-{{uid}}" transform="translate(62 113) rotate(190) scale(1)"/></g><g display="{{d.nearOops}}"><path d="M106 128 C 116 138, 123 146, 129 154" fill="none" stroke="#4A2E1D" stroke-width="15.5" stroke-linecap="round"/><path d="M106 128 C 116 138, 123 146, 129 154" fill="none" stroke="#F4DDBE" stroke-width="10.5" stroke-linecap="round"/><use href="#pg-cl-{{uid}}" transform="translate(130 156) rotate(55) scale(1)"/></g>
+<g display="{{d.nearWave}}"><g class="pg-wave"><path d="M107 127 C 122 119, 134 106, 140 91" fill="none" stroke="#4A2E1D" stroke-width="15.5" stroke-linecap="round"/><path d="M107 127 C 122 119, 134 106, 140 91" fill="none" stroke="#F4DDBE" stroke-width="10.5" stroke-linecap="round"/><use href="#pg-cl-{{uid}}" transform="translate(141 89) rotate(-68) scale(1)"/></g></g>
+</g>
+</g>
+
+<g display="{{d.sparks}}">
+<path class="pg-spark" d="M28 36 L30.5 43 L37.5 45.5 L30.5 48 L28 55 L25.5 48 L18.5 45.5 L25.5 43 Z" fill="#B8F25B" stroke="#4A2E1D" stroke-width="1.4" stroke-linejoin="round"/>
+<path class="pg-spark pg-spark-2" d="M156 22 L158 28 L164 30 L158 32 L156 38 L154 32 L148 30 L154 28 Z" fill="#FFC04D" stroke="#4A2E1D" stroke-width="1.4" stroke-linejoin="round"/>
+<path class="pg-spark pg-spark-3" d="M196 72 L197.6 76.4 L202 78 L197.6 79.6 L196 84 L194.4 79.6 L190 78 L194.4 76.4 Z" fill="#FF5D73" stroke="#4A2E1D" stroke-width="1.3" stroke-linejoin="round"/>
+<path class="pg-spark pg-spark-4" d="M16 124 L17.6 128.4 L22 130 L17.6 131.6 L16 136 L14.4 131.6 L10 130 L14.4 128.4 Z" fill="#7C9CFF" stroke="#4A2E1D" stroke-width="1.3" stroke-linejoin="round"/>
+</g>
+<g display="{{d.dots}}" fill="#FFFFFF" stroke="#4A2E1D" stroke-width="2">
+<circle class="pg-dot" cx="124" cy="48" r="3.4"/><circle class="pg-dot pg-dot-2" cx="137" cy="35" r="5"/><circle class="pg-dot pg-dot-3" cx="155" cy="20" r="7.4"/>
+</g>
+<g display="{{d.sweat}}"><g class="pg-sweat"><path d="M117 46 C 121 52, 123 56, 123 59.5 A 6 6 0 0 1 111 59.5 C 111 56, 113 52, 117 46 Z" fill="#8FD3FF" stroke="#4A2E1D" stroke-width="1.8" stroke-linejoin="round"/><path d="M114.5 58 A 2.6 2.6 0 0 0 116.5 60.6" fill="none" stroke="#FFFFFF" stroke-width="1.4" stroke-linecap="round"/></g></g>
+</g>
+
+<g display="{{d.ball}}">
+<g class="pg-ball-breathe"><g class="pg-ball-spin">
+<circle cx="124" cy="160" r="60" fill="{{skin.gap}}"/>
+<g clip-path="url(#pg-ballc-{{uid}})">
+<use href="#pg-sc-{{uid}}" transform="translate(93.5 211.5) rotate(11.2) scale(0.8 0.7)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(153.5 211.5) rotate(-10.8) scale(0.8 0.7)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(108.5 211.5) rotate(5.7) scale(0.9 0.7)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(138.5 211.5) rotate(-5.3) scale(0.9 0.7)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(123.5 211.5) rotate(0.2) scale(0.9 0.7)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(86 199) rotate(13.9) scale(0.8 0.8)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(161 199) rotate(-13.6) scale(0.8 0.8)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(101 199) rotate(8.4) scale(0.9 0.8)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(146 199) rotate(-8.1) scale(0.9 0.8)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(116 199) rotate(2.9) scale(0.9 0.8)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(131 199) rotate(-2.6) scale(0.9 0.8)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(78.5 186.5) rotate(16.7) scale(0.7 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(168.5 186.5) rotate(-16.3) scale(0.7 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(93.5 186.5) rotate(11.2) scale(0.8 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(153.5 186.5) rotate(-10.8) scale(0.8 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(108.5 186.5) rotate(5.7) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(138.5 186.5) rotate(-5.3) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(123.5 186.5) rotate(0.2) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(71 174) rotate(19.4) scale(0.7 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(176 174) rotate(-19.1) scale(0.7 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(86 174) rotate(13.9) scale(0.8 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(161 174) rotate(-13.6) scale(0.8 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(101 174) rotate(8.4) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(146 174) rotate(-8.1) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(116 174) rotate(2.9) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(131 174) rotate(-2.6) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(63.5 161.5) rotate(22.2) scale(0.4 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(183.5 161.5) rotate(-21.8) scale(0.5 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(78.5 161.5) rotate(16.7) scale(0.7 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(168.5 161.5) rotate(-16.3) scale(0.7 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(93.5 161.5) rotate(11.2) scale(0.8 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(153.5 161.5) rotate(-10.8) scale(0.8 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(108.5 161.5) rotate(5.7) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(138.5 161.5) rotate(-5.3) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(123.5 161.5) rotate(0.2) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(71 149) rotate(19.4) scale(0.7 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(176 149) rotate(-19.1) scale(0.7 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(86 149) rotate(13.9) scale(0.8 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(161 149) rotate(-13.6) scale(0.8 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(101 149) rotate(8.4) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(146 149) rotate(-8.1) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(116 149) rotate(2.9) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(131 149) rotate(-2.6) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(78.5 136.5) rotate(16.7) scale(0.7 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(168.5 136.5) rotate(-16.3) scale(0.7 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(93.5 136.5) rotate(11.2) scale(0.8 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(153.5 136.5) rotate(-10.8) scale(0.8 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(108.5 136.5) rotate(5.7) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(138.5 136.5) rotate(-5.3) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(123.5 136.5) rotate(0.2) scale(0.9 0.9)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(86 124) rotate(13.9) scale(0.8 0.8)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(161 124) rotate(-13.6) scale(0.8 0.8)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(101 124) rotate(8.4) scale(0.9 0.8)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(146 124) rotate(-8.1) scale(0.9 0.8)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(116 124) rotate(2.9) scale(0.9 0.8)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(131 124) rotate(-2.6) scale(0.9 0.8)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(93.5 111.5) rotate(11.2) scale(0.8 0.7)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(153.5 111.5) rotate(-10.8) scale(0.8 0.7)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(108.5 111.5) rotate(5.7) scale(0.9 0.7)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(138.5 111.5) rotate(-5.3) scale(0.9 0.7)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(123.5 111.5) rotate(0.2) scale(0.9 0.7)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(116 99) rotate(2.9) scale(0.9 0.4)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(131 99) rotate(-2.6) scale(0.9 0.4)"/>
+<rect x="64" y="100" width="120" height="120" fill="url(#pg-vol-{{uid}})"/>
+</g>
+<circle cx="124" cy="160" r="60" fill="none" stroke="#4A2E1D" stroke-width="2.6"/>
+<path d="M70 184 C 88 224, 162 228, 182 186" fill="none" stroke="#4A2E1D" stroke-width="25" stroke-linecap="round"/>
+<path d="M70 184 C 88 224, 162 228, 182 186" fill="none" stroke="{{skin.scale}}" stroke-width="20" stroke-linecap="round"/>
+<use href="#pg-sc-{{uid}}" transform="translate(73.8 190.8) rotate(-213.5) scale(0.43)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(83.5 201.2) rotate(-230.3) scale(0.46)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(95.9 208.9) rotate(-244.3) scale(0.48)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(110.1 213.8) rotate(-256.5) scale(0.51)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(125.2 215.8) rotate(-267.6) scale(0.53)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(140.5 214.7) rotate(81.0) scale(0.55)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(154.9 210.7) rotate(68.4) scale(0.58)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(167.7 203.5) rotate(53.6) scale(0.60)"/>
+<use href="#pg-sc-{{uid}}" transform="translate(177.8 193.1) rotate(36.4) scale(0.63)"/>
+</g></g>
+<g display="{{d.face}}">
+<g class="pg-ball-breathe">
+<ellipse cx="66" cy="173" rx="19" ry="13" transform="rotate(22 66 173)" fill="#F4DDBE" stroke="#4A2E1D" stroke-width="2.6"/>
+<ellipse cx="50.5" cy="182.5" rx="4.6" ry="3.9" fill="#3A2419"/>
+<path d="M63 166 Q 69 171 75 166" fill="none" stroke="#241712" stroke-width="3" stroke-linecap="round"/>
+<ellipse cx="74" cy="176" rx="5.4" ry="3.2" fill="#FF7A8A" opacity="0.5"/>
+</g>
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<g class="pg-z"><path d="M164 80 L176 80 L164 92 L176 92" stroke="#4A2E1D" stroke-width="6"/><path d="M164 80 L176 80 L164 92 L176 92" stroke="#B8F25B" stroke-width="3.4"/></g>
+<g class="pg-z pg-z-2"><path d="M184 58 L194 58 L184 68 L194 68" stroke="#4A2E1D" stroke-width="5.6"/><path d="M184 58 L194 58 L184 68 L194 68" stroke="#B8F25B" stroke-width="3"/></g>
+<g class="pg-z pg-z-3"><path d="M200 38 L208 38 L200 46 L208 46" stroke="#4A2E1D" stroke-width="5"/><path d="M200 38 L208 38 L200 46 L208 46" stroke="#B8F25B" stroke-width="2.6"/></g>
+</g>
+</g>
+</g>
+</svg>
