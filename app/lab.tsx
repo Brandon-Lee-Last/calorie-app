@@ -1,33 +1,26 @@
 import * as ImagePicker from 'expo-image-picker';
+import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { photoToRgb } from './src/imaging/photoToRgb';
-import { type Delegate, type LoadedModel, estimate, loadNutritionModel } from './src/model/nutritionModel';
-import { NotFoodCard } from './src/ui/NotFoodCard';
-import { type CheckResult, runSelfTests } from './src/selfTest';
-import { Button } from './src/ui/Button';
-import { Card } from './src/ui/Card';
-import { NutritionResult } from './src/ui/NutritionResult';
-import { colors, spacing } from './src/ui/theme';
-import { type Nutrition, looksLikeFood } from './src/model/contract';
+import { photoToRgb } from '../src/imaging/photoToRgb';
+import { Button } from '../src/lab/Button';
+import { Card } from '../src/lab/Card';
+import { NotFoodCard } from '../src/lab/NotFoodCard';
+import { NutritionResult } from '../src/lab/NutritionResult';
+import { colors, spacing } from '../src/lab/theme';
+import { type Nutrition, looksLikeFood } from '../src/model/contract';
+import { type Delegate, type LoadedModel, estimate, loadNutritionModel } from '../src/model/nutritionModel';
+import { type CheckResult, runSelfTests } from '../src/selfTest';
 
 type Result = { nutrition: Nutrition; food: number | null; previewUri: string; prepMs: number; inferenceMs: number };
 
 const message = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
-export default function App() {
-  return (
-    <SafeAreaProvider>
-      <StatusBar style="dark" />
-      <Screen />
-    </SafeAreaProvider>
-  );
-}
-
-function Screen() {
+/** Model lab: the v0 test screen, kept for checking the on-device model on a phone (self-test, CPU/GPU, raw estimate). */
+export default function ModelLab() {
   const insets = useSafeAreaInsets();
   const [delegate, setDelegate] = useState<Delegate>('cpu');
   const [model, setModel] = useState<LoadedModel | null>(null);
@@ -102,9 +95,15 @@ function Screen() {
       style={styles.screen}
       contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.xl }]}
     >
-      <View>
-        <Text style={styles.title}>Calorie App</Text>
-        <Text style={styles.subtitle}>v1 test build · rough estimates from a photo, all on this phone</Text>
+      <StatusBar style="dark" />
+      <View style={styles.header}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.title}>Model lab</Text>
+          <Text style={styles.subtitle}>Rough estimates from a photo, all on this phone</Text>
+        </View>
+        <Text accessibilityRole="button" onPress={() => router.back()} style={styles.close}>
+          Close
+        </Text>
       </View>
 
       <Card title="Model">
@@ -193,6 +192,8 @@ function Screen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { paddingHorizontal: spacing.lg, gap: spacing.lg },
+  header: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
+  close: { fontSize: 16, fontWeight: '700', color: colors.accent, paddingVertical: spacing.sm, paddingHorizontal: spacing.xs },
   title: { fontSize: 28, fontWeight: '800', color: colors.text },
   subtitle: { fontSize: 14, color: colors.muted, marginTop: 2 },
   row: { flexDirection: 'row', gap: spacing.md },

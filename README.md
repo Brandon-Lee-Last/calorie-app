@@ -5,9 +5,10 @@ a photo of food, **entirely on the phone**. The model is `assets/nutrition_v1.tf
 [local-calorie-ai-model](https://github.com/Brandon-Lee-Last/local-calorie-ai-model); see
 `assets/MODEL_CARD.md` for what it takes, what it returns and how accurate it is.
 
-> **Status: v1 test build (model with a not-food check), not yet confirmed on a phone by me.** The code type-checks, the logic tests pass and
-> the JavaScript bundles, but the native build and the model running on a device are still to be
-> tried. See "What is and is not verified".
+> **Status: app foundations in place (navigation, design system, Pango the mascot) on top of the v1 model build.**
+> Today shows sample numbers until the data layer lands. The code type-checks, the tests pass and the JavaScript
+> bundles, but the native build and the model running on a device are still to be tried. See "What is and is
+> not verified".
 
 ## Run it on your phone
 
@@ -52,6 +53,9 @@ For editing the JavaScript with instant reload, build a development client once,
 
 ## First thing to do in the app
 
+The app opens on **Today**. To check the model, tap the round **scan** button in the middle of the tab bar (or
+**Me > Model lab**), then:
+
 1. **Model** card should say `Ready · CPU · loaded in N ms`. If it shows a contract problem or an error,
    copy the text and send it over.
 2. Tap **Run self-test**. You want three green ticks:
@@ -70,9 +74,11 @@ For editing the JavaScript with instant reload, build a development client once,
 
 Verified (on a Linux dev box, no phone):
 - `npm run typecheck`: the code type-checks against the installed libraries' real types.
-- `npm test`: 13 tests, including that the JavaScript PNG decoder returns exactly the same pixels as
+- `npm test`: 54 tests, including that the JavaScript PNG decoder returns exactly the same pixels as
   Python/PIL for the golden photo (checked by hash), the output order and units, tensor checks and
-  display rounding.
+  display rounding; and for Pango, that every pose and outfit draws every visible part exactly once and renders.
+- A web build (`npx expo export --platform web`) was screenshotted: Today, Me and Pango studio match the design
+  canvas in dark and light, Pango's animations run, and they stop when the system asks for reduced motion.
 - `npm run bundle-check`: Metro bundles the JavaScript to Hermes with the model and golden assets.
 - `npx expo prebuild --platform android`: the plugins apply (GPU library entry, camera and photo
   permissions, microphone permission removed, New Architecture and Hermes on).
@@ -90,6 +96,29 @@ gallery flow, and whether the app's resizing matches training closely enough. Sp
   Android resource name. This is reasoned from both libraries' source code and works in the bundle and
   prebuild checks, but has not run on a device. The golden photos are embedded in the code as base64 for
   the same reason (image assets resolve to drawable names in a standalone build).
+
+## App structure
+
+- `app/`: screens, by route (Expo Router). `(tabs)/` holds Today, Train, Progress and Me; `studio` and `lab` are
+  pushed screens.
+- `src/theme/`: design tokens from the design canvas (colours for dark and light, spacing, radii, type), the theme
+  provider and fonts (Plus Jakarta Sans, SIL Open Font License).
+- `src/ui/`: shared pieces (Text, Button, Card, Chip, Segmented, ProgressBar, Ring, Icon, IconButton, Screen,
+  TabBar, EmptyState). Touch targets are at least 44 points.
+- `src/pango/`: the mascot (below).
+- `src/lab/`: the original v1 screen's pieces, used by the Model lab until the real scan flow replaces it.
+- `src/model/`, `src/imaging/`: the on-device model and photo preparation.
+
+## Pango (the mascot)
+
+`<Pango pose="wave" outfit="gym" size={160} />`. Poses: idle, wave, scan, eat, cheer, think, oops, sleep, roll.
+Outfits, hats, glasses, scarf colour and pattern, pins and scale colours are props too; `crop="face"` frames the
+head for avatars; `motion={false}` holds still (Pango also holds still when the phone asks for reduced motion).
+
+The art lives in one place: `design/pango/pango.svg`, copied from the design canvas. `npm run pango:sync` turns it
+into `src/pango/art.generated.ts`. Moving parts (tail, head, eyes, arms, scarf...) are drawn as separate stacked
+layers so native views can animate them, using the timings in `src/pango/motion.ts` (from
+`design/pango/pango.css`). **Me > Pango studio** shows every pose and outfit on the phone.
 
 ## How a photo becomes an estimate
 

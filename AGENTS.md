@@ -11,6 +11,22 @@ using an API. The Expo docs site may be unreachable from sandboxed environments.
 - Checks to run before calling something done: `npm run typecheck`, `npm test`, `npm run bundle-check`,
   and `npx expo prebuild --platform android --no-install` when `app.json` or native deps change.
 - Native modules (react-native-fast-tflite) need a development build; Expo Go cannot run them.
+- Pin `react-dom` to the exact React version (`19.3.0`), or npm refuses to install web packages.
+- Jest uses `react-native-reanimated/jest/resolver` and the Reanimated and Worklets mocks (`jest.setup.js`);
+  RNTL 14's `render` and `unmount` return promises, so await them.
+
+## Layout
+
+Routes in `app/` (Expo Router; tabs use `expo-router/js-tabs` with the custom `src/ui/TabBar`). Tokens in
+`src/theme/tokens.ts` come from the design canvas; use them, not raw colours. Text weights come from the font face
+(`fontFamily`), never `fontWeight`, so Android renders Plus Jakarta Sans properly.
+
+## Pango
+
+Art source: `design/pango/pango.svg` (copied from the design canvas, holes included). Run `npm run pango:sync`
+after changing it; never edit `src/pango/art.generated.ts`. Animated parts become stacked Reanimated views
+(`src/pango/layers.ts`) with CSS keyframes from `src/pango/motion.ts`. To check visually without a phone:
+`npx expo export --platform web`, serve `dist/` with an SPA fallback and screenshot `/studio`.
 
 ## The model
 
