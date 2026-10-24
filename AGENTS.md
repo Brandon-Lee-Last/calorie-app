@@ -13,13 +13,33 @@ using an API. The Expo docs site may be unreachable from sandboxed environments.
 - Native modules (react-native-fast-tflite) need a development build; Expo Go cannot run them.
 - Pin `react-dom` to the exact React version (`19.3.0`), or npm refuses to install web packages.
 - Jest uses `react-native-reanimated/jest/resolver` and the Reanimated and Worklets mocks (`jest.setup.js`);
-  RNTL 14's `render` and `unmount` return promises, so await them.
+  RNTL 14's `render`, `unmount` and `fireEvent` return promises, so await them. Only `__tests__/**/*.test.*` are
+  tests; `__tests__/helpers/` holds shared helpers.
+- Under jest-expo the global `fetch` is Expo's native fetch, stubbed out. Tests use `__tests__/helpers/fakeServer.ts`,
+  or `helpers/nodeFetch.ts` with `@jest-environment node` to reach a real server (`npm run test:backend`).
 
 ## Layout
 
 Routes in `app/` (Expo Router; tabs use `expo-router/js-tabs` with the custom `src/ui/TabBar`). Tokens in
 `src/theme/tokens.ts` come from the design canvas; use them, not raw colours. Text weights come from the font face
 (`fontFamily`), never `fontWeight`, so Android renders Plus Jakarta Sans properly.
+
+## Data layer
+
+- All database access goes through `Db` (`src/db/serial.ts` queues every statement and transaction on the one
+  connection). Inside `db.transaction(async (tx) => ...)` use `tx` only: calling `db.*` there waits for the
+  transaction it is in, forever.
+- Schema changes: append a step to `STEPS` in `src/db/migrations.ts`; never edit a released step.
+- A synced type with its own table needs a `TableSpec` in `src/data/tables.ts` (columns, and the fields sent in a
+  push, matching the backend's PUT body); other types are kept as JSON in `remote_records`.
+- Screens read through `useRepoQuery` hooks (`src/data/hooks.ts`), which re-read when `Repo` reports a change.
+  Writes go through `Repo`, which queues them for sync in the same transaction.
+- If the account changes, the sync engine uploads the phone's data to the new one. A deliberate sign-out must
+  therefore clear the database first.
+- After backend API changes, `npm run api:types` (backend running) regenerates `src/api/schema.d.ts`; never edit it.
+- Form limits in `src/data/entryForm.ts` mirror the backend's validation, so saved entries are never rejected on sync.
+- The web preview needs cross-origin isolation headers (COOP `same-origin`, COEP `require-corp`) for expo-sqlite's
+  WebAssembly build, and runs offline: the backend allows no browser origins.
 
 ## Pango
 

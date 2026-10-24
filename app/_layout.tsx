@@ -1,10 +1,12 @@
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useCallback } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { DataProvider } from '../src/data/DataProvider';
+import { openAppData } from '../src/data/appData';
 import { useAppFonts } from '../src/theme/fonts';
 import { ThemeProvider, useTheme } from '../src/theme/theme';
 
@@ -19,6 +21,7 @@ function Navigator() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="studio" options={{ presentation: 'modal' }} />
         <Stack.Screen name="lab" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="add" options={{ presentation: 'modal' }} />
       </Stack>
     </>
   );
@@ -26,15 +29,17 @@ function Navigator() {
 
 export default function RootLayout() {
   const ready = useAppFonts();
-  useEffect(() => {
-    if (ready) SplashScreen.hideAsync().catch(() => {});
-  }, [ready]);
+  const hideSplash = useCallback(() => {
+    SplashScreen.hideAsync().catch(() => {});
+  }, []);
   if (!ready) return null;
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <ThemeProvider>
-          <Navigator />
+          <DataProvider open={openAppData} onReady={hideSplash}>
+            <Navigator />
+          </DataProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

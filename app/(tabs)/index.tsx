@@ -1,34 +1,38 @@
+import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
+import { useData } from '../../src/data/DataProvider';
+import { mealForTime, type MealType } from '../../src/data/dates';
+import { mealLabel } from '../../src/data/entryForm';
+import { useDay, useGoals, useSettings, useStreak, useSyncStatus, useToday, useWater } from '../../src/data/hooks';
+import type { DiaryEntry } from '../../src/data/repo';
+import { describeSync } from '../../src/data/syncText';
 import { Pango } from '../../src/pango/Pango';
 import { useTheme } from '../../src/theme/theme';
 import { radius, spacing } from '../../src/theme/tokens';
-import { Card, Icon, ProgressBar, Ring, Screen, Text, type IconName } from '../../src/ui';
+import { Card, Icon, IconButton, ProgressBar, Ring, Screen, Text, type IconName } from '../../src/ui';
 
-// Sample numbers until the data layer (step 2) feeds this screen from the phone's database.
-const DAY = {
-  goal: 2000,
-  eaten: 1240,
-  streak: 6,
-  macros: [
-    { key: 'protein', label: 'Protein', eaten: 62, goal: 130 },
-    { key: 'carbs', label: 'Carbs', eaten: 148, goal: 220 },
-    { key: 'fat', label: 'Fat', eaten: 41, goal: 65 },
-  ] as const,
-  meals: [
-    { name: 'Oats with banana', meal: 'Breakfast', kcal: 320, icon: 'sun' as IconName, tint: 'carbs' as const },
-    { name: 'Chicken and rice', meal: 'Lunch, scanned', kcal: 540, icon: 'scan' as IconName, tint: 'good' as const },
-    { name: 'Rusks and coffee', meal: 'Snack', kcal: 380, icon: 'flame' as IconName, tint: 'fat' as const },
-  ],
-  water: { glasses: 4, goal: 8, litres: 1.2, goalLitres: 2.5 },
-};
+const MEAL_ICON: Record<MealType, IconName> = { breakfast: 'sun', lunch: 'flame', dinner: 'flame', snack: 'sparkle' };
+const MEAL_TINT = { breakfast: 'carbs', lunch: 'good', dinner: 'protein', snack: 'fat' } as const;
+const fmt = (n: number) => Math.round(n).toLocaleString('en-ZA');
+const time = (at: number) => new Date(at).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' });
 
 export default function Today() {
   const { colors } = useTheme();
-  const left = Math.max(0, DAY.goal - DAY.eaten);
+  const today = useToday();
+  const day = useDay(today);
+  const goals = useGoals();
+  const streak = useStreak(today) ?? 0;
+  const totals = day?.totals ?? { entries: 0, calories: 0, proteinG: 0, carbG: 0, fatG: 0 };
+  const left = goals.calories - totals.calories;
   const date = new Date().toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long' });
-  const tint = { carbs: colors.carbs, good: colors.good, fat: colors.fat };
+  const nextMeal = mealLabel(mealForTime()).toLowerCase();
+  const macros = [
+    { key: 'protein', label: 'Protein', eaten: totals.proteinG, goal: goals.proteinG },
+    { key: 'carbs', label: 'Carbs', eaten: totals.carbG, goal: goals.carbG },
+    { key: 'fat', label: 'Fat', eaten: totals.fatG, goal: goals.fatG },
+  ] as const;
 
   return (
     <Screen>
@@ -42,31 +46,33 @@ export default function Today() {
             {date}
           </Text>
         </View>
-        <View accessibilityLabel={`${DAY.streak} day streak`} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingHorizontal: spacing.md, borderRadius: 18, backgroundColor: colors.raised, borderWidth: 1, borderColor: colors.line }}>
-          <Icon name="flame" size={16} color={colors.warn} />
-          <Text variant="label">{DAY.streak} days</Text>
+        <View accessibilityLabel={`${streak} day streak`} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingHorizontal: spacing.md, borderRadius: 18, backgroundColor: colors.raised, borderWidth: 1, borderColor: colors.line }}>
+          <Icon name="flame" size={16} color={streak ? colors.warn : colors.muted} />
+          <Text variant="label">
+            {streak} {streak === 1 ? 'day' : 'days'}
+          </Text>
         </View>
       </View>
 
       <Card padding={18} style={{ flexDirection: 'row', alignItems: 'center', gap: 18 }}>
-        <Ring value={DAY.eaten / DAY.goal} label={`${DAY.eaten} of ${DAY.goal} calories eaten`}>
-          <Text variant="number">{DAY.eaten.toLocaleString('en-ZA')}</Text>
+        <Ring value={totals.calories / goals.calories} label={`${fmt(totals.calories)} of ${fmt(goals.calories)} calories eaten`}>
+          <Text variant="number">{fmt(totals.calories)}</Text>
           <Text variant="caption" tone="muted">
-            of {DAY.goal.toLocaleString('en-ZA')} kcal
+            of {fmt(goals.calories)} kcal
           </Text>
         </Ring>
         <View style={{ flex: 1, gap: spacing.md }}>
-          {DAY.macros.map((m) => (
+          {macros.map((m) => (
             <View key={m.key} style={{ gap: 5 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text variant="caption" tone={m.key}>
                   {m.label}
                 </Text>
                 <Text variant="caption">
-                  {m.eaten} / {m.goal} g
+                  {fmt(m.eaten)} / {m.goal} g
                 </Text>
               </View>
-              <ProgressBar value={m.eaten / m.goal} color={colors[m.key]} label={`${m.label} ${m.eaten} of ${m.goal} grams`} />
+              <ProgressBar value={m.goal ? m.eaten / m.goal : 0} color={colors[m.key]} label={`${m.label} ${fmt(m.eaten)} of ${m.goal} grams`} />
             </View>
           ))}
         </View>
@@ -74,54 +80,117 @@ export default function Today() {
 
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4 }}>
         <Text variant="h3">Meals</Text>
-        <Text variant="label" tone="accent">
-          {left.toLocaleString('en-ZA')} kcal left
+        <Text variant="label" tone={left < 0 ? 'bad' : 'accent'}>
+          {left < 0 ? `${fmt(-left)} kcal over` : `${fmt(left)} kcal left`}
         </Text>
       </View>
 
       <View style={{ gap: spacing.sm }}>
-        {DAY.meals.map((meal) => (
-          <View key={meal.name} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, height: 62, paddingHorizontal: spacing.lg, borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line }}>
-            <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: tint[meal.tint] + '22', alignItems: 'center', justifyContent: 'center' }}>
-              <Icon name={meal.icon} size={20} color={tint[meal.tint]} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text variant="bodyStrong">{meal.name}</Text>
-              <Text variant="caption" tone="muted">
-                {meal.meal}
+        {day && day.entries.length === 0 ? (
+          <Card style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+            <Pango pose="think" size={72} />
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text variant="bodyStrong">Nothing logged yet today</Text>
+              <Text variant="small" tone="muted">
+                Scan your plate with the button below, or add a meal yourself.
               </Text>
             </View>
-            <Text variant="bodyStrong">{meal.kcal}</Text>
-          </View>
-        ))}
+          </Card>
+        ) : (
+          day?.entries.map((e) => <EntryRow key={e.id} entry={e} />)
+        )}
         <Pressable
           accessibilityRole="button"
-          onPress={() => router.push('/lab')}
-          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, height: 54, borderRadius: radius.lg, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.lineStrong }}
+          onPress={() => router.push('/add')}
+          style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, height: 54, borderRadius: radius.lg, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.lineStrong, opacity: pressed ? 0.7 : 1 })}
         >
           <Icon name="plus" size={18} color={colors.muted} />
           <Text variant="bodyStrong" tone="muted">
-            Add dinner
+            Add {nextMeal}
           </Text>
         </Pressable>
       </View>
 
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, height: 62, paddingHorizontal: spacing.lg, borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line }}>
-        <Icon name="drop" size={22} color={colors.water} />
-        <Text variant="bodyStrong">Water</Text>
-        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', gap: 4 }} accessibilityLabel={`${DAY.water.glasses} of ${DAY.water.goal} glasses`}>
-          {Array.from({ length: DAY.water.goal }, (_, i) => (
-            <View key={i} style={{ width: 12, height: 22, borderRadius: 6, backgroundColor: i < DAY.water.glasses ? colors.water : colors.track }} />
-          ))}
-        </View>
-        <Text variant="label" tone="muted">
-          {DAY.water.litres} / {DAY.water.goalLitres} L
+      <WaterCard date={today} />
+      <SyncLine />
+    </Screen>
+  );
+}
+
+function EntryRow({ entry }: { entry: DiaryEntry }) {
+  const { colors } = useTheme();
+  const tint = colors[MEAL_TINT[entry.mealType]];
+  const scanned = entry.source === 'scan';
+  const detail = `${mealLabel(entry.mealType)}, ${time(entry.loggedAt)}${scanned ? ', scanned' : ''}`;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${entry.name}, ${entry.calories} calories, ${detail}`}
+      accessibilityHint="Opens it to change or delete"
+      onPress={() => router.push({ pathname: '/add', params: { id: entry.id } })}
+      style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 62, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, opacity: pressed ? 0.85 : 1 })}
+    >
+      <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: tint + '22', alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name={scanned ? 'scan' : MEAL_ICON[entry.mealType]} size={20} color={tint} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text variant="bodyStrong" numberOfLines={1}>
+          {entry.name}
+        </Text>
+        <Text variant="caption" tone="muted">
+          {detail}
         </Text>
       </View>
+      <Text variant="bodyStrong">{fmt(entry.calories)}</Text>
+    </Pressable>
+  );
+}
 
-      <Text variant="caption" tone="muted" align="center">
-        Sample day. Your own meals show here once sync is in.
-      </Text>
-    </Screen>
+function WaterCard({ date }: { date: string }) {
+  const { colors } = useTheme();
+  const { repo } = useData();
+  const ml = useWater(date) ?? 0;
+  const [{ waterGoalMl, glassMl }] = useSettings();
+  const glasses = Math.min(12, Math.max(1, Math.round(waterGoalMl / glassMl)));
+  const filled = Math.min(glasses, Math.floor(ml / glassMl));
+  const litres = (n: number) => (n / 1000).toLocaleString('en-ZA', { maximumFractionDigits: 2 });
+  const add = () => {
+    Haptics.selectionAsync().catch(() => {});
+    repo.addWater(glassMl).catch((e) => console.warn(e));
+  };
+  const remove = () => {
+    Haptics.selectionAsync().catch(() => {});
+    repo.removeLastWater(date).catch((e) => console.warn(e));
+  };
+  return (
+    <Card style={{ gap: spacing.md }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+        <Icon name="drop" size={22} color={colors.water} />
+        <Text variant="bodyStrong" style={{ flex: 1 }}>
+          Water
+        </Text>
+        <Text variant="label" tone="muted">
+          {litres(ml)} / {litres(waterGoalMl)} L
+        </Text>
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+        <View accessible accessibilityLabel={`${filled} of ${glasses} glasses`} style={{ flex: 1, flexDirection: 'row', gap: 4 }}>
+          {Array.from({ length: glasses }, (_, i) => (
+            <View key={i} style={{ flex: 1, height: 22, borderRadius: 6, backgroundColor: i < filled ? colors.water : colors.track }} />
+          ))}
+        </View>
+        <IconButton icon="minus" label="Take back a glass" onPress={remove} />
+        <IconButton icon="plus" label={`Add a glass, ${glassMl} millilitres`} tone="accent" onPress={add} />
+      </View>
+    </Card>
+  );
+}
+
+function SyncLine() {
+  const line = describeSync(useSyncStatus());
+  return (
+    <Text variant="caption" tone={line.tone} align="center">
+      {line.text}
+    </Text>
   );
 }

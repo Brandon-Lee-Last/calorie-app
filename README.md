@@ -5,10 +5,11 @@ a photo of food, **entirely on the phone**. The model is `assets/nutrition_v1.tf
 [local-calorie-ai-model](https://github.com/Brandon-Lee-Last/local-calorie-ai-model); see
 `assets/MODEL_CARD.md` for what it takes, what it returns and how accurate it is.
 
-> **Status: app foundations in place (navigation, design system, Pango the mascot) on top of the v1 model build.**
-> Today shows sample numbers until the data layer lands. The code type-checks, the tests pass and the JavaScript
-> bundles, but the native build and the model running on a device are still to be tried. See "What is and is
-> not verified".
+> **Status: foundations (navigation, design system, Pango the mascot) and the data layer are in, on top of the v1
+> model build.** Today shows your own meals and water, saved on the phone and backed up to the backend when it can
+> reach it. The code type-checks, the tests pass (including against the real backend running locally) and the
+> JavaScript bundles, but the native build, the model and the database running on a device are still to be tried.
+> See "What is and is not verified".
 
 ## Run it on your phone
 
@@ -51,6 +52,29 @@ For editing the JavaScript with instant reload, build a development client once,
 - Day to day: `npm install`, `npx expo start --dev-client`, then open the installed **Calorie App** (not
   Expo Go) on the phone, on the same Wi-Fi as the PC.
 
+## Connecting to the backend
+
+The app works without a server: everything is saved on the phone first, and Today and Me say "Offline" until the
+backend answers. On the first backup the app makes an anonymous account for the phone (signing in with Google or
+email comes later).
+
+Where the app looks for the backend ([calorie-api](https://github.com/Brandon-Lee-Last/calorie-api)):
+- Set `EXPO_PUBLIC_API_URL`. The easy way on Windows is a file named `.env.local` in this folder (git ignores it):
+  ```
+  EXPO_PUBLIC_API_URL=http://192.168.1.20:8787
+  ```
+  Expo reads it when Metro starts or a build is made, so restart `npx expo start` after changing it.
+- Without it, the Android emulator uses `http://10.0.2.2:8787` (your PC as the emulator sees it).
+
+**Backend on your PC (`wrangler dev`) with a real phone on the same Wi-Fi:**
+1. In `calorie-api`: `npx wrangler dev --local --port 8787 --ip 0.0.0.0` (`0.0.0.0` lets the phone reach it;
+   Windows may ask to allow it through the firewall: allow it on private networks).
+2. Find the PC's Wi-Fi address (`ipconfig`, "IPv4 Address") and put it in `.env.local` as above.
+3. Use a **development build** (Option 2). Android only allows plain `http://` in debug builds; a release APK
+   (Option 1) needs an `https://` backend, such as your deployed Cloudflare Worker. For an EAS build, set
+   `EXPO_PUBLIC_API_URL` for the profile in `eas.json` (`"env": {...}`) or in the EAS project's environment variables.
+4. **Me > Account and backup** shows the server address in use and the backup state; "Back up now" retries.
+
 ## First thing to do in the app
 
 The app opens on **Today**. To check the model, tap the round **scan** button in the middle of the tab bar (or
@@ -74,18 +98,27 @@ The app opens on **Today**. To check the model, tap the round **scan** button in
 
 Verified (on a Linux dev box, no phone):
 - `npm run typecheck`: the code type-checks against the installed libraries' real types.
-- `npm test`: 54 tests, including that the JavaScript PNG decoder returns exactly the same pixels as
+- `npm test`: 108 tests, including that the JavaScript PNG decoder returns exactly the same pixels as
   Python/PIL for the golden photo (checked by hash), the output order and units, tensor checks and
-  display rounding; and for Pango, that every pose and outfit draws every visible part exactly once and renders.
+  display rounding; for Pango, that every pose and outfit draws every visible part exactly once and renders;
+  and for the data layer, the real SQL schema (on sql.js) with sync against a fake server: two phones editing the
+  same entry, edits made mid-sync, rejected changes, paging, the server asking for a full resync, offline backoff,
+  token refresh, moving data to a new account, and Today and Add food driven like a user would.
+- `npm run test:backend`: the data layer against the real backend (`wrangler dev`): back up from one phone,
+  restore, edit and delete on a second, and read the profile.
 - A web build (`npx expo export --platform web`) was screenshotted: Today, Me and Pango studio match the design
-  canvas in dark and light, Pango's animations run, and they stop when the system asks for reduced motion.
+  canvas in dark and light, Pango's animations run, and they stop when the system asks for reduced motion. The
+  data screens were walked through in it (add water, a form error, add and edit a meal, Me), offline, as browsers
+  cannot reach the backend (it allows no web origins).
 - `npm run bundle-check`: Metro bundles the JavaScript to Hermes with the model and golden assets.
 - `npx expo prebuild --platform android`: the plugins apply (GPU library entry, camera and photo
-  permissions, microphone permission removed, New Architecture and Hermes on).
+  permissions, microphone permission removed, New Architecture and Hermes on, the session kept out of Android's
+  backups) and SQLite, Secure Store and Crypto are linked.
 - The `.tflite` itself matches the PyTorch model to under 0.001 kcal/g on 260 real photos (ML repo).
 
 **Not verified**: the Android native build, the model running on a device (CPU or GPU), the camera and
-gallery flow, and whether the app's resizing matches training closely enough. Specific risks:
+gallery flow, whether the app's resizing matches training closely enough, and SQLite, Secure Store and backup
+over Wi-Fi on a real phone. Specific risks:
 - **Resizing.** Training squashed photos with PIL bilinear resizing; the phone resizes with its own
   library (the 256 px self-test measures this).
 - **Photo orientation.** Whether camera photos arrive upright (EXIF rotation) was not checked.
@@ -99,8 +132,12 @@ gallery flow, and whether the app's resizing matches training closely enough. Sp
 
 ## App structure
 
-- `app/`: screens, by route (Expo Router). `(tabs)/` holds Today, Train, Progress and Me; `studio` and `lab` are
-  pushed screens.
+- `app/`: screens, by route (Expo Router). `(tabs)/` holds Today, Train, Progress and Me; `add` (add or edit a
+  meal), `studio` and `lab` are pushed screens.
+- `src/data/`: what the screens read and write (`repo.ts`), the sync engine (`sync.ts`), the provider and hooks
+  (`DataProvider.tsx`, `hooks.ts`). `src/db/`: the phone's SQLite and its migrations. `src/auth/`: the session.
+  `src/api/`: the typed backend client; `schema.d.ts` is generated from `api/openapi.json` by `npm run api:types`.
+- `src/config.ts`: the backend address and app version.
 - `src/theme/`: design tokens from the design canvas (colours for dark and light, spacing, radii, type), the theme
   provider and fonts (Plus Jakarta Sans, SIL Open Font License).
 - `src/ui/`: shared pieces (Text, Button, Card, Chip, Segmented, ProgressBar, Ring, Icon, IconButton, Screen,
@@ -119,6 +156,17 @@ The art lives in one place: `design/pango/pango.svg`, copied from the design can
 into `src/pango/art.generated.ts`. Moving parts (tail, head, eyes, arms, scarf...) are drawn as separate stacked
 layers so native views can animate them, using the timings in `src/pango/motion.ts` (from
 `design/pango/pango.css`). **Me > Pango studio** shows every pose and outfit on the phone.
+
+## Your data
+
+Meals, water and weight are written to SQLite on the phone at once, together with a queue of changes for the
+server (`outbox`). The sync engine sends the queue to `/v1/sync/push`, then fetches other devices' changes from
+`/v1/sync/pull`: shortly after each change, when the app comes to the front, and every 5 minutes while it is open.
+If two phones change the same entry, the later edit wins. The session (access and refresh tokens) is kept in the
+phone's secure store.
+
+After the backend's API changes: start it, then `npm run api:types` refreshes `api/openapi.json` and the generated
+types; `npm run typecheck` shows what the change broke.
 
 ## How a photo becomes an estimate
 
