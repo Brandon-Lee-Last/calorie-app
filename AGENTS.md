@@ -11,6 +11,10 @@ using an API. The Expo docs site may be unreachable from sandboxed environments.
 - Checks to run before calling something done: `npm run typecheck`, `npm test`, `npm run bundle-check`,
   and `npx expo prebuild --platform android --no-install` when `app.json` or native deps change.
 - Native modules (react-native-fast-tflite) need a development build; Expo Go cannot run them.
+- `.github/workflows/android.yml` is the native build check: prebuild plus `./gradlew assembleRelease` (arm64 only)
+  on GitHub's runners, uploading the APK as the `calorie-app-apk` artifact. A sandbox without the Android SDK can
+  still verify a native change by pushing and reading that job's log. Edit the generated `gradle.properties` with
+  `sed` in place: the file has no trailing newline, so `>>` glues onto its last line.
 - Pin `react-dom` to the exact React version (`19.3.0`), or npm refuses to install web packages.
 - Jest uses `react-native-reanimated/jest/resolver` and the Reanimated and Worklets mocks (`jest.setup.js`);
   RNTL 14's `render`, `unmount` and `fireEvent` return promises, so await them. Only `__tests__/**/*.test.*` are
