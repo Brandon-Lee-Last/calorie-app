@@ -17,6 +17,8 @@ import { memoryDb } from './helpers/sqljsDb';
 
 const API_URL = process.env.API_URL;
 const ids = () => globalThis.crypto.randomUUID();
+// A deployed server is a round trip across the internet away, and the first call may wake it up.
+jest.setTimeout(30_000);
 
 const phone = async (store: SecretStore) =>
   openStack({ db: await memoryDb(), store, baseUrl: API_URL!, appVersion: '1.0.0', deviceLabel: 'integration test', ids, fetchImpl: nodeFetch });
