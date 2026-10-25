@@ -179,7 +179,7 @@ Verified (on a Linux dev box, no phone):
   backups, billing pinned to Google Play) and SQLite, Secure Store, Crypto, Camera and billing (expo-iap) are linked.
 - **The Android native build** (GitHub Actions, `.github/workflows/android.yml`): prebuild and
   `./gradlew assembleRelease` succeed with JDK 17, NDK 27.1 and SDK 37 (target 36), New Architecture and Hermes on.
-  The job then checks the APK: package `com.brandonleelast.calorieapp`, arm64 only, about 38 MB zipped; the JS bundle,
+  The job then checks the APK: package `io.lightarch.pango`, arm64 only, about 38 MB zipped; the JS bundle,
   the TFLite runtime (`libtensorflowlite_jni.so`, the GPU delegate and `libNitroTflite.so`) and the model, byte for
   byte, are inside; permissions are camera, internet, billing, vibrate, network state, biometrics (from Secure Store)
   and storage up to Android 12 (from the image picker); the microphone, phone-state and draw-over-apps permissions
@@ -293,8 +293,8 @@ food output the self-test also checks that the golden photo is accepted as food.
 
 ## Before releasing
 
-- Change the Android package id (`com.brandonleelast.calorieapp` in `app.json`); it is permanent once
-  published.
+- The Android package id is `io.lightarch.pango` (`app.json`). It is permanent once on Google Play, so settle it before
+  the first upload.
 - The launcher icon, adaptive icon and splash are Pango (`scripts/make-icons.py`, from the design canvas's Sizes board).
   The app is called "Pango" (`app.json` `name`): check the name is free to use in the Play Store and as a trademark.
 - Google Play also asks for a web page where people can request account deletion without the app (the in-app option is

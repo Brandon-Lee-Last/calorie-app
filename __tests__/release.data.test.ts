@@ -39,7 +39,7 @@ describe('server notices', () => {
   });
 
   it("sends people to the server's store link, or the app's Play Store page", () => {
-    expect(storeUrl(config())).toBe('https://play.google.com/store/apps/details?id=com.brandonleelast.calorieapp');
+    expect(storeUrl(config())).toBe('https://play.google.com/store/apps/details?id=io.lightarch.pango');
     expect(storeUrl(config({ urls: { store: 'https://example.org/app', privacy: null, terms: null, supportEmail: null } }))).toBe('https://example.org/app');
   });
 });

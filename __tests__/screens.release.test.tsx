@@ -94,7 +94,7 @@ describe('Today: notes from the server', () => {
     const view = await renderWith(<Today />, stack);
     expect(await view.findByText('A new version of Pango is out')).toBeTruthy();
     await fireEvent.press(view.getByRole('button', { name: 'Update' }));
-    expect(open).toHaveBeenCalledWith('https://play.google.com/store/apps/details?id=com.brandonleelast.calorieapp');
+    expect(open).toHaveBeenCalledWith('https://play.google.com/store/apps/details?id=io.lightarch.pango');
     await fireEvent.press(view.getByRole('button', { name: 'Not now' }));
     await waitFor(() => expect(view.queryByText('A new version of Pango is out')).toBeNull());
     expect(await stack.repo.getMeta(UPDATE_DISMISSED_KEY)).toBe('1.1.0');

@@ -15,7 +15,7 @@
         "backgroundColor": "#FF5D73"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.brandonleelast.calorieapp",
+      "package": "io.lightarch.pango",
       "blockedPermissions": [
         "android.permission.READ_PHONE_STATE",
         "android.permission.SYSTEM_ALERT_WINDOW"
@@ -73,7 +73,7 @@
         }
       ]
     ],
-    "scheme": "calorieapp",
+    "scheme": "pango",
     "backgroundColor": "#0B0E17",
     "extra": {
       "apiUrl": "https://pango-api-stage.lightarch.io"

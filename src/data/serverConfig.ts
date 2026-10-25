@@ -5,7 +5,7 @@ export type ServerConfig = components['schemas']['PublicConfig'];
 /** Meta key: the newest version whose "update available" note the person closed, so it stays closed until a newer one. */
 export const UPDATE_DISMISSED_KEY = 'update.dismissed';
 
-const PACKAGE = 'com.brandonleelast.calorieapp';
+const PACKAGE = 'io.lightarch.pango';
 /** Where to update: the server's store link, else the app's Play Store page. */
 export const storeUrl = (config: ServerConfig | undefined) => config?.urls.store ?? `https://play.google.com/store/apps/details?id=${PACKAGE}`;
 
