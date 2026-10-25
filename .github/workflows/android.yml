@@ -72,11 +72,19 @@ jobs:
         run: |
           apk=$(ls android/app/build/outputs/apk/release/*.apk)
           tools=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
-          "$tools/aapt2" dump badging "$apk" | grep -E "^(package|sdkVersion|targetSdkVersion|uses-permission|uses-native-library|native-code|application-label):" || true
+          badging=$("$tools/aapt2" dump badging "$apk")
+          echo "$badging" | grep -E "^(package|targetSdkVersion|uses-permission|native-code|application-label):"
+          if echo "$badging" | grep -qE "RECORD_AUDIO|READ_PHONE_STATE|SYSTEM_ALERT_WINDOW"; then echo "A blocked permission is back"; exit 1; fi
           "$tools/apksigner" verify --print-certs "$apk" | grep -E "certificate (DN|SHA-256)"
           unzip -l "$apk" > contents.txt
-          grep -iE "nutrition|tflite|tensorflow|index\.android\.bundle|libhermes|libreactnative" contents.txt || true
-          # The JavaScript bundle, the model and the TFLite runtime must all be inside.
+          grep -iE "tflite|tensorflow|index\.android\.bundle|libhermes|libreactnative" contents.txt
+          # The JavaScript bundle and the TFLite runtime must be inside.
           grep -q "assets/index.android.bundle" contents.txt
-          grep -qi "nutrition_v1" contents.txt
-          grep -qiE "lib/arm64-v8a/.*(tensorflow|tflite)" contents.txt
+          grep -qE "lib/arm64-v8a/libtensorflowlite_jni\.so" contents.txt
+          # So must the model. Release builds shorten resource paths (it lands as res/<x>.tflite), so match its checksum.
+          want=$(sha256sum assets/nutrition_v1.tflite | cut -d' ' -f1)
+          found=no
+          for f in $(grep -oE "res/[^ ]+\.tflite" contents.txt); do
+            if [ "$(unzip -p "$apk" "$f" | sha256sum | cut -d' ' -f1)" = "$want" ]; then echo "Model: $f"; found=yes; fi
+          done
+          [ "$found" = yes ]

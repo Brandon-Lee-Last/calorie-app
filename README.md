@@ -8,9 +8,9 @@ a photo of food, **entirely on the phone**. The model is `assets/nutrition_v1.tf
 > **Status: every screen in the design is in: onboarding, the camera and scan result, barcodes, the diary, "What
 > fits?", Progress with the weekly recap, Train with workout logging, Pango's wardrobe and Plus (Google Play
 > subscriptions), on top of the data layer and the v1 model.** Everything is saved on the phone and backed up when the
-> backend can be reached. The code type-checks, the tests pass (including against the real backend running locally)
-> and the JavaScript bundles, but the camera, the model and purchases have not run on a device yet. See "What is and
-> is not verified".
+> backend can be reached. The code type-checks, the tests pass (including against the real backend running locally),
+> and GitHub builds an installable APK on every push (see "Run it on your phone"), but the app has not been opened on a
+> phone yet, so the camera, the model and purchases are untested on a device. See "What is and is not verified".
 
 ## Run it on your phone
 
@@ -159,16 +159,23 @@ Verified (on a Linux dev box, no phone):
 - `npx expo prebuild --platform android`: the plugins apply (GPU library entry, camera and photo
   permissions, microphone permission removed, New Architecture and Hermes on, the session kept out of Android's
   backups, billing pinned to Google Play) and SQLite, Secure Store, Crypto, Camera and billing (expo-iap) are linked.
+- **The Android native build** (GitHub Actions, `.github/workflows/android.yml`): prebuild and
+  `./gradlew assembleRelease` succeed with JDK 17, NDK 27.1 and SDK 37 (target 36), New Architecture and Hermes on.
+  The job then checks the APK: package `com.brandonleelast.calorieapp`, arm64 only, about 38 MB zipped; the JS bundle,
+  the TFLite runtime (`libtensorflowlite_jni.so`, the GPU delegate and `libNitroTflite.so`) and the model, byte for
+  byte, are inside; permissions are camera, internet, billing, vibrate, network state, biometrics (from Secure Store)
+  and storage up to Android 12 (from the image picker); the microphone, phone-state and draw-over-apps permissions
+  are blocked.
 - The `.tflite` itself matches the PyTorch model to under 0.001 kcal/g on 260 real photos (ML repo).
 
-**Not verified**: the Android native build, the model running on a device (CPU or GPU), the in-app camera,
+**Not verified**: the app running on a phone: the model running on a device (CPU or GPU), the in-app camera,
 barcode reading, the gallery flow, scan photos kept for the diary's thumbnails, whether the app's resizing matches
 training closely enough, and SQLite, Secure Store and backup over Wi-Fi on a real phone. Specific risks:
 - **Resizing.** Training squashed photos with PIL bilinear resizing; the phone resizes with its own
   library (the 256 px self-test measures this).
 - **Photo orientation.** Whether camera photos arrive upright (EXIF rotation) was not checked.
 - **GPU delegate** support for this model on your phone.
-- **First native build** with the New Architecture and the Nitro modules library.
+- **First launch** with the New Architecture and the Nitro modules library: it builds, but has not been opened.
 - **Model loading in a standalone APK.** The app copies the bundled model out of the APK into the cache
   with `expo-asset` and gives the TFLite library a `file://` URL, because that library cannot read a bare
   Android resource name. This is reasoned from both libraries' source code and works in the bundle and
@@ -269,8 +276,6 @@ food output the self-test also checks that the golden photo is accepted as food.
 - Say plainly in the store listing that results are rough estimates, not medical or dietary advice.
 - The privacy policy must cover the scan records (numbers per scan, linked to the account) and the profile facts
   (year of birth, height, weight, sex if given). Consider a setting to turn scan records off.
-- `android.permission.SYSTEM_ALERT_WINDOW` comes from Expo's template; block it for release builds
-  (`android.blockedPermissions` in `app.json`) unless something needs it.
 - Create the subscriptions in Play Console with the ids the backend expects (`pro_monthly`, `pro_yearly`), each with
   a base plan (and the trial as an offer if you want one), and add licence testers to try buying without being
   charged. Purchases only work in a build installed from Google Play (an internal testing track is enough).

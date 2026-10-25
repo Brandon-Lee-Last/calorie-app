@@ -17,7 +17,11 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.brandonleelast.calorieapp"
+      "package": "com.brandonleelast.calorieapp",
+      "blockedPermissions": [
+        "android.permission.READ_PHONE_STATE",
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
