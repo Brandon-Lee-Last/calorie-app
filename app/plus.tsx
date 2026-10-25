@@ -5,7 +5,7 @@ import { Alert, Linking, Pressable, View } from 'react-native';
 import { unwrap } from '../src/api/client';
 import { useData } from '../src/data/DataProvider';
 import { isPlus, refreshEntitlement } from '../src/data/entitlement';
-import { useCachedApi, useEntitlement } from '../src/data/hooks';
+import { useCachedApi, useEntitlement, useServerConfig } from '../src/data/hooks';
 import { MyPango } from '../src/pango/MyPango';
 import { acknowledge, buy, cancelled, loadStorePlans, ownedSubscriptions, purchaseToken, storeAvailable, type StorePlan } from '../src/plus/billing';
 import { useTheme } from '../src/theme/theme';
@@ -27,6 +27,8 @@ export default function Plus() {
   const [choice, setChoice] = useState<string>('pro_yearly');
   const [busy, setBusy] = useState<'buy' | 'restore' | 'test' | null>(null);
   const [welcome, setWelcome] = useState(false);
+  // Stage and development servers grant test Plus (and say so in /v1/config); production never does.
+  const testServer = useServerConfig()?.testPurchases === true;
 
   const ids = products.map((p) => p.id).join(',');
   useEffect(() => {
@@ -92,13 +94,13 @@ export default function Plus() {
     }
   };
 
-  // Development builds only: the server grants test Plus when it runs with mock billing, never in production.
-  const test = async () => {
+  // Test Plus, on a server that allows it (a development build, or a test server): starts or ends a simulated subscription.
+  const test = async (scenario: 'subscribe' | 'expire' = 'subscribe') => {
     setBusy('test');
     try {
-      await unwrap(api.POST('/v1/subscription/simulate', { body: { scenario: 'subscribe', productId: chosen?.id === 'pro_monthly' ? 'pro_monthly' : 'pro_yearly' } }));
+      await unwrap(api.POST('/v1/subscription/simulate', { body: { scenario, productId: chosen?.id === 'pro_monthly' ? 'pro_monthly' : 'pro_yearly' } }));
       await refreshEntitlement(repo, api);
-      setWelcome(true);
+      setWelcome(scenario === 'subscribe');
     } catch (e) {
       Alert.alert('This server does not allow test purchases', message(e));
     } finally {
@@ -157,6 +159,7 @@ export default function Plus() {
             {entitlement?.inGrace ? ' Google Play could not take the last payment and is trying again.' : ''}
           </Text>
           <Button title="Manage in Google Play" variant="secondary" onPress={() => Linking.openURL('https://play.google.com/store/account/subscriptions')} />
+          {testServer ? <Button title="End test Plus" variant="ghost" onPress={() => test('expire')} loading={busy === 'test'} /> : null}
         </View>
       ) : (
         <>
@@ -204,7 +207,11 @@ export default function Plus() {
               Buying works in the app installed from Google Play.
             </Text>
           ) : null}
-          {__DEV__ ? <Button title="Test Plus on a development server" variant="ghost" onPress={test} loading={busy === 'test'} /> : null}
+          {testServer ? (
+            <Button title="Try Plus free (test server)" variant="ghost" onPress={() => test()} loading={busy === 'test'} />
+          ) : __DEV__ ? (
+            <Button title="Test Plus on a development server" variant="ghost" onPress={() => test()} loading={busy === 'test'} />
+          ) : null}
           <Text variant="caption" tone="muted" align="center">
             Billed by Google Play in your currency. Cancel any time in your Play subscriptions.
           </Text>

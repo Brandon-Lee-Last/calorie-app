@@ -182,6 +182,21 @@ describe('Plus', () => {
     await settle(stack);
     await view.unmount();
   });
+
+  it('offers to try Plus, and to end it, on a test server', async () => {
+    const server = new FakeServer();
+    server.testPurchases = true;
+    const stack = await testStack(server);
+    const view = await renderWith(<Plus />, stack);
+    await fireEvent.press(await view.findByRole('button', { name: 'Try Plus free (test server)' }));
+    expect(await view.findByText('Plus is active.')).toBeTruthy();
+    expect(server.plan).toBe('pro');
+    await fireEvent.press(view.getByRole('button', { name: 'End test Plus' }));
+    await waitFor(() => expect(server.plan).toBe('free'));
+    expect(await view.findByRole('button', { name: 'Try Plus free (test server)' })).toBeTruthy();
+    await settle(stack);
+    await view.unmount();
+  });
 });
 
 describe('Goals', () => {

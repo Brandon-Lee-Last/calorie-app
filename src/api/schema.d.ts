@@ -8942,6 +8942,8 @@ export interface components {
             integrity: {
                 required: boolean;
             };
+            /** @description A test server: `POST /subscription/simulate` works, so the app may offer to try Plus. Never true in production */
+            testPurchases: boolean;
             urls: {
                 store: string | null;
                 privacy: string | null;

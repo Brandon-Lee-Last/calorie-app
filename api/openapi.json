@@ -148,6 +148,10 @@
                             "required"
                         ]
                     },
+                    "testPurchases": {
+                        "type": "boolean",
+                        "description": "A test server: `POST /subscription/simulate` works, so the app may offer to try Plus. Never true in production"
+                    },
                     "urls": {
                         "type": "object",
                         "properties": {
@@ -244,6 +248,7 @@
                     "features",
                     "signIn",
                     "integrity",
+                    "testPurchases",
                     "urls",
                     "plans"
                 ]

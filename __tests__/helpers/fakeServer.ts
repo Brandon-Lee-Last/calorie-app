@@ -43,6 +43,8 @@ export class FakeServer {
   maintenance = { enabled: false, message: '' };
   update: 'unknown' | 'none' | 'available' | 'required' = 'none';
   latestAppVersion = '1.0.0';
+  /** What GET /v1/config says about simulated purchases. */
+  testPurchases = false;
   /** What GET /v1/meal-plans answers, for the current plan (null: 404, as before the server had meal plans). */
   mealPlans: ((plan: 'free' | 'pro') => unknown) | null = null;
   /** Accounts deleted through DELETE /v1/account. */
@@ -110,7 +112,7 @@ export class FakeServer {
       return json(200, this.profile);
     }
     if (url.pathname === '/v1/subscription/simulate') {
-      this.plan = 'pro';
+      this.plan = ((await req.json()) as { scenario?: string }).scenario === 'expire' ? 'free' : 'pro';
       return json(200, {});
     }
     if (url.pathname === '/v1/subscription') {
@@ -122,7 +124,7 @@ export class FakeServer {
     if (url.pathname === '/v1/config') {
       return json(200, {
         apiVersion: 'v1', serverTime: Date.now(), maintenance: this.maintenance, update: this.update, minAppVersion: '1.0.0', latestAppVersion: this.latestAppVersion,
-        features: {}, signIn: { google: false, email: false }, integrity: { required: false }, urls: { store: null, privacy: null, terms: null, supportEmail: null }, plans: {},
+        features: {}, signIn: { google: false, email: false }, integrity: { required: false }, testPurchases: this.testPurchases, urls: { store: null, privacy: null, terms: null, supportEmail: null }, plans: {},
       });
     }
     if (url.pathname === '/v1/account' && req.method === 'DELETE') {

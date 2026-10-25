@@ -273,8 +273,9 @@ phone's secure store.
   kept photos.
 - **Plus**: Google Play sells the subscription; the app sends the purchase token to the server, which checks it with
   Google before granting anything, and only then acknowledges the purchase. The phone keeps the server's last answer
-  for offline use. Development builds show a "Test Plus" button that only works against a development server running
-  mock billing; production refuses it.
+  for offline use. On a test server (stage says so with `testPurchases` in `/v1/config`) the Plus screen shows **Try
+  Plus free (test server)** and, once on, **End test Plus**, so the paid parts can be tried without Google Play.
+  Development builds show a "Test Plus" button for a local server. Production never allows either.
 
 After the backend's API changes: start it, then `npm run api:types` refreshes `api/openapi.json` and the generated
 types; `npm run typecheck` shows what the change broke.
