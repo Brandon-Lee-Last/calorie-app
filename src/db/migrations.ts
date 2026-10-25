@@ -80,6 +80,16 @@ const STEPS: string[] = [
 
   CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
   `,
+  // v2: what the model said for each photo and what was saved, queued for the server's accuracy tracking.
+  `
+  CREATE TABLE scans (
+    id TEXT PRIMARY KEY,
+    created_at INTEGER NOT NULL,
+    body TEXT NOT NULL,
+    sent INTEGER NOT NULL DEFAULT 0
+  );
+  CREATE INDEX scans_unsent ON scans (sent, created_at);
+  `,
 ];
 
 export const SCHEMA_VERSION = STEPS.length;

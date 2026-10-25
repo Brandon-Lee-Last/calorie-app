@@ -60,7 +60,7 @@ export function TabBar({ state, navigateToTab, insets }: BottomTabBarProps) {
         accessibilityLabel="Scan a meal"
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-          router.push('/lab');
+          router.push('/lens');
         }}
         style={({ pressed }) => ({
           width: 64,

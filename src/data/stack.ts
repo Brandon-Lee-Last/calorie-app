@@ -5,7 +5,9 @@ import type { SecretStore } from '../auth/secretStore';
 import { SessionManager } from '../auth/session';
 import { migrate } from '../db/migrations';
 import type { Db } from '../db/types';
+import { profileTask } from './profile';
 import { Repo } from './repo';
+import { scanTask } from './scanTask';
 import { SyncEngine } from './sync';
 
 /** Everything behind the screens: the phone's database, the account and the sync engine. */
@@ -33,9 +35,15 @@ export async function openStack({ db, store, baseUrl, appVersion, deviceLabel, i
     baseUrl,
     appVersion,
     fetchImpl,
-    tokens: { accessToken: () => session.accessToken(), refreshAfterUnauthorized: () => session.refresh() },
+    tokens: {
+      // A call made before the first sync (say, a barcode lookup straight after install) makes the account first.
+      accessToken: async () => (await session.accessToken()) ?? (await session.ensure(deviceLabel)).accessToken,
+      refreshAfterUnauthorized: () => session.refresh(),
+    },
   });
   const sync = new SyncEngine(repo, api, async () => (await session.ensure(deviceLabel)).userId, now);
+  sync.addTask(profileTask(repo, api, now));
+  sync.addTask(scanTask(repo, api));
   return { db, repo, session, api, sync };
 }
 

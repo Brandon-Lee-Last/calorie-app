@@ -16,6 +16,21 @@ export class FakeServer {
   integrityRequired = false;
   /** The account every new session belongs to. */
   userId = 'user-1';
+  profile: Record<string, unknown> = {
+    timezone: 'UTC', locale: 'en-ZA', units: 'metric', sex: null, birthYear: null, heightCm: null, weightKg: null,
+    activityLevel: null, goal: 'maintain', goalRateKgPerWeek: 0, targetWeightKg: null, onboardedAt: null,
+    goals: { calories: 2000, proteinG: 125, carbG: 225, fatG: 67, custom: false },
+  };
+  /** Profile PATCH bodies received, in order. */
+  profilePatches: Record<string, unknown>[] = [];
+  /** Answer profile PATCHes with 400, as for a value the server rejects. */
+  rejectProfile = false;
+  /** Scan records received by id (PUT /v1/scans/{id}). */
+  scans = new Map<string, Record<string, unknown>>();
+  /** Answer scan PUTs with this status instead of storing them. */
+  scanStatus: number | null = null;
+  /** Products by barcode for GET /v1/foods/barcode/{code}; anything else is 404. */
+  foods = new Map<string, Record<string, unknown>>();
   private n = 0;
 
   private session() {
@@ -66,6 +81,28 @@ export class FakeServer {
         return { type: op.type, id: op.id, status: 'applied', record: strip(next) };
       });
       return json(200, { results });
+    }
+    const barcode = url.pathname.match(/^\/v1\/foods\/barcode\/([^/]+)$/);
+    if (barcode) {
+      const food = this.foods.get(barcode[1]);
+      return food ? json(200, food) : json(404, { error: { code: 'not_found', message: 'No product found' } });
+    }
+    const scan = url.pathname.match(/^\/v1\/scans\/([^/]+)$/);
+    if (scan && req.method === 'PUT') {
+      if (this.scanStatus) return json(this.scanStatus, { error: { code: 'nope', message: 'scan refused' } });
+      const body = (await req.json()) as Record<string, unknown>;
+      this.scans.set(scan[1], body);
+      return json(200, { id: scan[1], ...body });
+    }
+    if (url.pathname === '/v1/me/profile') {
+      if (req.method === 'PATCH') {
+        const body = (await req.json()) as Record<string, unknown>;
+        this.profilePatches.push(body);
+        if (this.rejectProfile) return json(400, { error: { code: 'validation_failed', message: 'bad profile' } });
+        const { onboarded, ...fields } = body;
+        this.profile = { ...this.profile, ...fields, onboardedAt: onboarded ? (this.profile.onboardedAt ?? Date.now()) : this.profile.onboardedAt };
+      }
+      return json(200, this.profile);
     }
     if (url.pathname === '/v1/sync/pull') {
       const since = Number(url.searchParams.get('since') ?? 0);

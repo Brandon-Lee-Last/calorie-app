@@ -5,11 +5,12 @@ a photo of food, **entirely on the phone**. The model is `assets/nutrition_v1.tf
 [local-calorie-ai-model](https://github.com/Brandon-Lee-Last/local-calorie-ai-model); see
 `assets/MODEL_CARD.md` for what it takes, what it returns and how accurate it is.
 
-> **Status: foundations (navigation, design system, Pango the mascot) and the data layer are in, on top of the v1
-> model build.** Today shows your own meals and water, saved on the phone and backed up to the backend when it can
-> reach it. The code type-checks, the tests pass (including against the real backend running locally) and the
-> JavaScript bundles, but the native build, the model and the database running on a device are still to be tried.
-> See "What is and is not verified".
+> **Status: the core screens are in: onboarding with a calorie plan, the camera (plate photos counted by the
+> on-phone model, barcodes looked up online), the scan result, the diary and "What fits?", on top of the data layer
+> and the v1 model.** Everything is saved on the phone and backed up when the backend can be reached. The code
+> type-checks, the tests pass (including against the real backend running locally) and the JavaScript bundles, but
+> the native build, the camera and the model running on a device are still to be tried. See "What is and is not
+> verified".
 
 ## Run it on your phone
 
@@ -77,8 +78,19 @@ Where the app looks for the backend ([calorie-api](https://github.com/Brandon-Le
 
 ## First thing to do in the app
 
-The app opens on **Today**. To check the model, tap the round **scan** button in the middle of the tab bar (or
-**Me > Model lab**), then:
+The first time, Pango asks what you are working towards, a few facts (year of birth, height, weight, activity) and
+shows a daily plan worked out with the same formula as the backend (Mifflin-St Jeor, with a safety floor). You can
+skip it and keep the defaults. Then:
+
+- **Scan a meal**: the round button in the middle of the tab bar opens the camera. *Plate* takes a photo for the
+  model; *Barcode* reads a pack's barcode and looks it up (needs a connection). The photo button picks one from the
+  gallery instead. On the result, change the portion, name it if you like, pick the meal and save.
+- **Diary**: the calendar button on Today. Pick any day of the week, copy a meal from the last time you had it,
+  or add one of your usuals (meals you have logged at least twice) in one tap.
+- **What fits?**: on Today and in the diary. Ideas from your own meals and common South African dishes, shrunk to a
+  smaller portion when the whole plate would not fit what is left today.
+
+To check the model itself, open **Me > Model lab**, then:
 
 1. **Model** card should say `Ready · CPU · loaded in N ms`. If it shows a contract problem or an error,
    copy the text and send it over.
@@ -98,27 +110,32 @@ The app opens on **Today**. To check the model, tap the round **scan** button in
 
 Verified (on a Linux dev box, no phone):
 - `npm run typecheck`: the code type-checks against the installed libraries' real types.
-- `npm test`: 108 tests, including that the JavaScript PNG decoder returns exactly the same pixels as
+- `npm test`: 155 tests, including that the JavaScript PNG decoder returns exactly the same pixels as
   Python/PIL for the golden photo (checked by hash), the output order and units, tensor checks and
   display rounding; for Pango, that every pose and outfit draws every visible part exactly once and renders;
-  and for the data layer, the real SQL schema (on sql.js) with sync against a fake server: two phones editing the
+  for the data layer, the real SQL schema (on sql.js) with sync against a fake server: two phones editing the
   same entry, edits made mid-sync, rejected changes, paging, the server asking for a full resync, offline backoff,
-  token refresh, moving data to a new account, and Today and Add food driven like a user would.
+  token refresh, moving data to a new account; the goal formula pinned to the backend's own test numbers; and the
+  screens driven like a user would: onboarding, Today, Add food, the camera (with a stand-in camera), the scan
+  result (with the model's answer stubbed, as the model needs the phone), the barcode food screen, the diary and
+  What fits.
 - `npm run test:backend`: the data layer against the real backend (`wrangler dev`): back up from one phone,
-  restore, edit and delete on a second, and read the profile.
+  restore, edit and delete on a second; onboarding answers stored with exactly the goals the phone worked out;
+  scan records accepted; the profile read back.
 - A web build (`npx expo export --platform web`) was screenshotted: Today, Me and Pango studio match the design
   canvas in dark and light, Pango's animations run, and they stop when the system asks for reduced motion. The
-  data screens were walked through in it (add water, a form error, add and edit a meal, Me), offline, as browsers
-  cannot reach the backend (it allows no web origins).
+  data screens were walked through in it (add water, a form error, add and edit a meal, Me), and so were
+  onboarding, the diary and What fits, offline, as browsers cannot reach the backend (it allows no web origins).
+  The camera and the model do not run in a browser.
 - `npm run bundle-check`: Metro bundles the JavaScript to Hermes with the model and golden assets.
 - `npx expo prebuild --platform android`: the plugins apply (GPU library entry, camera and photo
   permissions, microphone permission removed, New Architecture and Hermes on, the session kept out of Android's
-  backups) and SQLite, Secure Store and Crypto are linked.
+  backups) and SQLite, Secure Store, Crypto and Camera are linked.
 - The `.tflite` itself matches the PyTorch model to under 0.001 kcal/g on 260 real photos (ML repo).
 
-**Not verified**: the Android native build, the model running on a device (CPU or GPU), the camera and
-gallery flow, whether the app's resizing matches training closely enough, and SQLite, Secure Store and backup
-over Wi-Fi on a real phone. Specific risks:
+**Not verified**: the Android native build, the model running on a device (CPU or GPU), the in-app camera,
+barcode reading, the gallery flow, scan photos kept for the diary's thumbnails, whether the app's resizing matches
+training closely enough, and SQLite, Secure Store and backup over Wi-Fi on a real phone. Specific risks:
 - **Resizing.** Training squashed photos with PIL bilinear resizing; the phone resizes with its own
   library (the 256 px self-test measures this).
 - **Photo orientation.** Whether camera photos arrive upright (EXIF rotation) was not checked.
@@ -132,8 +149,11 @@ over Wi-Fi on a real phone. Specific risks:
 
 ## App structure
 
-- `app/`: screens, by route (Expo Router). `(tabs)/` holds Today, Train, Progress and Me; `add` (add or edit a
-  meal), `studio` and `lab` are pushed screens.
+- `app/`: screens, by route (Expo Router). `(tabs)/` holds Today, Train, Progress and Me (shown only once
+  onboarding is done). Pushed screens: `onboarding`, `lens` (camera), `scan` (scan result), `food` (barcode result),
+  `add` (add or edit a meal), `diary`, `fits` (What fits?), `studio` and `lab`.
+- `src/scan/`: loading the model once, photo to estimate (`model.ts`), portions and what is saved and recorded
+  (`scanMath.ts`), scan photos kept on the phone (`photos.ts`).
 - `src/data/`: what the screens read and write (`repo.ts`), the sync engine (`sync.ts`), the provider and hooks
   (`DataProvider.tsx`, `hooks.ts`). `src/db/`: the phone's SQLite and its migrations. `src/auth/`: the session.
   `src/api/`: the typed backend client; `schema.d.ts` is generated from `api/openapi.json` by `npm run api:types`.
@@ -143,7 +163,7 @@ over Wi-Fi on a real phone. Specific risks:
 - `src/ui/`: shared pieces (Text, Button, Card, Chip, Segmented, ProgressBar, Ring, Icon, IconButton, Screen,
   TabBar, EmptyState). Touch targets are at least 44 points.
 - `src/pango/`: the mascot (below).
-- `src/lab/`: the original v1 screen's pieces, used by the Model lab until the real scan flow replaces it.
+- `src/lab/`: the original v1 screen's pieces, used by the Model lab (self-test and raw estimates).
 - `src/model/`, `src/imaging/`: the on-device model and photo preparation.
 
 ## Pango (the mascot)
@@ -164,6 +184,14 @@ server (`outbox`). The sync engine sends the queue to `/v1/sync/push`, then fetc
 `/v1/sync/pull`: shortly after each change, when the app comes to the front, and every 5 minutes while it is open.
 If two phones change the same entry, the later edit wins. The session (access and refresh tokens) is kept in the
 phone's secure store.
+
+- **Profile and goals** change on the phone at once (`src/data/profile.ts`) and are sent with the next sync.
+- **Scan photos stay on the phone.** A downsized copy is kept in the app's own storage for the diary's thumbnails
+  and deleted with the entry. What goes to the server for each scan is numbers only: what the model said, the food
+  probability, the portion and what was saved (or that it was discarded), so the model's accuracy on real phone
+  photos can be measured (`/v1/scans`).
+- **Barcodes** are looked up by the backend: your own foods, then the shared catalogue, then Open Food Facts (its
+  data is credited on the screen, as its licence requires).
 
 After the backend's API changes: start it, then `npm run api:types` refreshes `api/openapi.json` and the generated
 types; `npm run typecheck` shows what the change broke.
@@ -199,3 +227,9 @@ food output the self-test also checks that the golden photo is accepted as food.
 - Choose a licence for this repo (none is set).
 - Credit Nutrition5k in the app (shown on the main screen) and re-check the licence terms.
 - Say plainly in the store listing that results are rough estimates, not medical or dietary advice.
+- The privacy policy must cover the scan records (numbers per scan, linked to the account) and the profile facts
+  (year of birth, height, weight, sex if given). Consider a setting to turn scan records off.
+- `android.permission.SYSTEM_ALERT_WINDOW` comes from Expo's template; block it for release builds
+  (`android.blockedPermissions` in `app.json`) unless something needs it.
+- The local ideas in What fits use typical values for common dishes; have someone check them, or replace them with
+  catalogue foods.

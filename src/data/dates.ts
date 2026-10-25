@@ -36,3 +36,19 @@ export function streak(loggedDates: Iterable<string>, today: string = localDate(
   }
   return n;
 }
+
+/** The Monday on or before `date`. */
+export function weekStart(date: string): string {
+  const [y, m, d] = date.split('-').map(Number);
+  const day = new Date(y, m - 1, d).getDay(); // 0 = Sunday
+  return shiftDate(date, -((day + 6) % 7));
+}
+
+/** Monday to Sunday of the week holding `date`. */
+export const weekOf = (date: string): string[] => Array.from({ length: 7 }, (_, i) => shiftDate(weekStart(date), i));
+
+/** A Date at noon on `date`, for formatting (noon dodges daylight-saving edges). */
+export function dateAt(date: string): Date {
+  const [y, m, d] = date.split('-').map(Number);
+  return new Date(y, m - 1, d, 12);
+}

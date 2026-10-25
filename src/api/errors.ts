@@ -15,6 +15,11 @@ export class ApiError extends Error {
   get retryable(): boolean {
     return this.status === 0 || this.status === 429 || this.status >= 500;
   }
+
+  /** The server will refuse this exact request every time (invalid, conflicting or too large), so drop it. */
+  get permanent(): boolean {
+    return this.status === 400 || this.status === 409 || this.status === 413 || this.status === 422;
+  }
 }
 
 type ErrorBody = { error?: { code?: string; message?: string; details?: unknown; requestId?: string } };

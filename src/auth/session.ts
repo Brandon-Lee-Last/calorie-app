@@ -35,6 +35,7 @@ export class SessionManager {
   private session: Session | null = null;
   private loaded = false;
   private refreshing: Promise<boolean> | null = null;
+  private ensuring: Promise<Session> | null = null;
   private listeners = new Set<(s: Session | null) => void>();
 
   constructor(
@@ -66,8 +67,17 @@ export class SessionManager {
     return this.session;
   }
 
-  /** The saved session, or a new anonymous account. Needs the network only the first time. */
-  async ensure(deviceLabel?: string): Promise<Session> {
+  /** The saved session, or a new anonymous account. Needs the network only the first time. One account at a time. */
+  ensure(deviceLabel?: string): Promise<Session> {
+    if (!this.ensuring) {
+      this.ensuring = this.doEnsure(deviceLabel).finally(() => {
+        this.ensuring = null;
+      });
+    }
+    return this.ensuring;
+  }
+
+  private async doEnsure(deviceLabel?: string): Promise<Session> {
     const existing = await this.load();
     if (existing) return existing;
     const challenge = await unwrap(this.plain.GET('/v1/auth/challenge'));

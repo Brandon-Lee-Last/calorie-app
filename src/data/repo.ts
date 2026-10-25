@@ -1,9 +1,11 @@
+import type { components } from '../api/schema';
 import type { Db, Statements } from '../db/types';
 import { localDate, mealForTime, type MealType } from './dates';
 import { DIARY, WATER, WEIGHT, fromRow, pushData, readRecord, writeRecord, type DiaryRecord, type SyncType, type TableSpec, type WaterRecord, type WeightRecord } from './tables';
 
 /** 'outbox' means a local change was queued for the server. */
 export type Area = 'diary' | 'water' | 'weight' | 'meta' | 'outbox';
+export type ScanRecord = components['schemas']['ScanInput'];
 export type DiaryEntry = DiaryRecord;
 export type DayTotals = { entries: number; calories: number; proteinG: number; carbG: number; fatG: number };
 
@@ -41,6 +43,11 @@ export class Repo {
     private ids: () => string,
     private now: () => number = Date.now,
   ) {}
+
+  /** A new record id (UUID on the phone). */
+  newId(): string {
+    return this.ids();
+  }
 
   onChange(fn: (areas: Set<Area>) => void): () => void {
     this.listeners.add(fn);
@@ -124,6 +131,29 @@ export class Repo {
     return { entries: row?.n ?? 0, calories: Math.round(row?.kcal ?? 0), proteinG: round1(row?.p ?? 0), carbG: round1(row?.c ?? 0), fatG: round1(row?.f ?? 0) };
   }
 
+  /** Calories per day from `from` to `to` (inclusive); days with nothing logged are left out. */
+  async caloriesByDay(from: string, to: string): Promise<Map<string, number>> {
+    const rows = await this.db.all<{ d: string; kcal: number }>(
+      'SELECT local_date AS d, SUM(calories) AS kcal FROM diary_entries WHERE local_date BETWEEN ? AND ? GROUP BY local_date',
+      [from, to],
+    );
+    return new Map(rows.map((r) => [r.d, Math.round(r.kcal)]));
+  }
+
+  /** Every entry from `since` onwards, oldest first. */
+  async entriesSince(since: string): Promise<DiaryEntry[]> {
+    const rows = await this.db.all<Record<string, unknown>>('SELECT * FROM diary_entries WHERE local_date >= ? ORDER BY logged_at', [since]);
+    return rows.map((r) => fromRow<DiaryEntry>(DIARY, r));
+  }
+
+  /** The entries of the latest earlier day that had this meal, or null. */
+  async lastMeal(before: string, mealType: MealType): Promise<{ date: string; entries: DiaryEntry[] } | null> {
+    const row = await this.db.get<{ d: string }>('SELECT local_date AS d FROM diary_entries WHERE meal_type = ? AND local_date < ? ORDER BY local_date DESC LIMIT 1', [mealType, before]);
+    if (!row) return null;
+    const entries = (await this.entriesFor(row.d)).filter((e) => e.mealType === mealType);
+    return { date: row.d, entries };
+  }
+
   /** Dates with at least one entry, from `since` onwards. */
   async loggedDates(since: string): Promise<string[]> {
     const rows = await this.db.all<{ d: string }>('SELECT DISTINCT local_date AS d FROM diary_entries WHERE local_date >= ? ORDER BY d', [since]);
@@ -167,6 +197,23 @@ export class Repo {
     return rows.map((r) => fromRow<WeightRecord>(WEIGHT, r));
   }
 
+  // ---- scan records (numbers only; photos never leave the phone)
+
+  /** Records (or replaces) a scan for the server, as sent to PUT /v1/scans/{id}. */
+  async recordScan(id: string, body: ScanRecord): Promise<void> {
+    await this.db.run('INSERT OR REPLACE INTO scans (id, created_at, body, sent) VALUES (?, ?, ?, 0)', [id, body.clientCreatedAt, JSON.stringify(body)]);
+    this.emit('outbox');
+  }
+
+  async unsentScans(limit = 20): Promise<{ id: string; body: string }[]> {
+    return this.db.all('SELECT id, body FROM scans WHERE sent = 0 ORDER BY created_at LIMIT ?', [limit]);
+  }
+
+  /** Marks a scan sent, unless it was replaced after `body` was read. */
+  async markScanSent(id: string, body: string): Promise<void> {
+    await this.db.run('UPDATE scans SET sent = 1 WHERE id = ? AND body = ?', [id, body]);
+  }
+
   // ---- meta (small app state: sync cursor, cached profile, settings)
 
   async getMeta<T>(key: string): Promise<T | null> {
@@ -181,6 +228,11 @@ export class Repo {
 
   async setMeta(key: string, value: unknown): Promise<void> {
     await this.db.run('INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)', [key, JSON.stringify(value)]);
+    this.emit('meta');
+  }
+
+  async deleteMeta(key: string): Promise<void> {
+    await this.db.run('DELETE FROM meta WHERE key = ?', [key]);
     this.emit('meta');
   }
 

@@ -9,6 +9,9 @@
  *         food output, whose last value is the probability (0-1) that the photo shows food.
  */
 
+/** The bundled model (assets/nutrition_v1.tflite). Sent with scan records so accuracy is tracked per model. */
+export const MODEL_VERSION = 'nutrition_v1';
+
 export const INPUT_SIZE = 224;
 export const INPUT_BYTES = INPUT_SIZE * INPUT_SIZE * 3;
 

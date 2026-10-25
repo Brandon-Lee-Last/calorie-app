@@ -15,6 +15,12 @@ using an API. The Expo docs site may be unreachable from sandboxed environments.
 - Jest uses `react-native-reanimated/jest/resolver` and the Reanimated and Worklets mocks (`jest.setup.js`);
   RNTL 14's `render`, `unmount` and `fireEvent` return promises, so await them. Only `__tests__/**/*.test.*` are
   tests; `__tests__/helpers/` holds shared helpers.
+- Pure code must not import `src/model/nutritionModel.ts` (it loads the native TFLite library, which Jest cannot);
+  model facts such as `MODEL_VERSION` live in `src/model/contract.ts`. Screen tests stub `src/scan/model` and
+  `src/scan/photos`; `__tests__/helpers/screen.tsx` mounts a screen on the real data stack and a fake server.
+- `npm run test:backend` uses one anonymous account per run: the backend allows 10 new ones an hour per address.
+  To reset that on your own local database: `npx wrangler d1 execute calorie-local --local --command "DELETE FROM
+  rate_limits WHERE key LIKE 'auth-anon%'"` (in calorie-api).
 - Under jest-expo the global `fetch` is Expo's native fetch, stubbed out. Tests use `__tests__/helpers/fakeServer.ts`,
   or `helpers/nodeFetch.ts` with `@jest-environment node` to reach a real server (`npm run test:backend`).
 
@@ -37,6 +43,15 @@ Routes in `app/` (Expo Router; tabs use `expo-router/js-tabs` with the custom `s
 - If the account changes, the sync engine uploads the phone's data to the new one. A deliberate sign-out must
   therefore clear the database first.
 - After backend API changes, `npm run api:types` (backend running) regenerates `src/api/schema.d.ts`; never edit it.
+- `src/data/goals.ts` is a copy of the backend's `src/lib/nutrition.ts` (so the onboarding plan works offline and
+  matches what the server stores). Change both together; `data.profile.test.ts` pins the backend's test numbers and
+  `npm run test:backend` checks the server agrees.
+- Work that runs with each sync round (profile changes, scan records) is a task: `sync.addTask(...)` in
+  `src/data/stack.ts`. Requests the server refuses outright (`ApiError.permanent`) are dropped, not retried.
+- New ids come from `repo.newId()` (expo-crypto on the phone; it returns undefined under Jest, so never call
+  `newId` from `src/data/ids.ts` in screens).
+- The API client makes the anonymous account on the first call that needs one, so screens can call the API before
+  the first sync. `SessionManager.ensure` is single-flight; keep it that way (two calls would make two accounts).
 - Form limits in `src/data/entryForm.ts` mirror the backend's validation, so saved entries are never rejected on sync.
 - The web preview needs cross-origin isolation headers (COOP `same-origin`, COEP `require-corp`) for expo-sqlite's
   WebAssembly build, and runs offline: the backend allows no browser origins.

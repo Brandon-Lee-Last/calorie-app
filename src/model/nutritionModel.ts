@@ -5,6 +5,7 @@ import { INPUT_BYTES, type ModelOutput, checkTensors, exactBuffer, parseOutput }
 
 // The model is a bundled asset; metro.config.js registers the .tflite extension.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
+// Change MODEL_VERSION in contract.ts with it.
 const MODEL_ASSET: number = require('../../assets/nutrition_v1.tflite');
 
 /** 'cpu' is the default and the safe choice; the GPU delegate is worth measuring, not assuming. */

@@ -19,9 +19,15 @@ function Navigator() {
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
         <Stack.Screen name="studio" options={{ presentation: 'modal' }} />
         <Stack.Screen name="lab" options={{ presentation: 'modal' }} />
         <Stack.Screen name="add" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="lens" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
+        <Stack.Screen name="scan" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
+        <Stack.Screen name="food" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="diary" />
+        <Stack.Screen name="fits" />
       </Stack>
     </>
   );

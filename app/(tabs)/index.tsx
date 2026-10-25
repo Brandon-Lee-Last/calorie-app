@@ -3,18 +3,17 @@ import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
 import { useData } from '../../src/data/DataProvider';
-import { mealForTime, type MealType } from '../../src/data/dates';
+import { mealForTime } from '../../src/data/dates';
 import { mealLabel } from '../../src/data/entryForm';
 import { useDay, useGoals, useSettings, useStreak, useSyncStatus, useToday, useWater } from '../../src/data/hooks';
 import type { DiaryEntry } from '../../src/data/repo';
+import { EntryThumb, MEAL_TINT } from '../../src/ui/EntryThumb';
 import { describeSync } from '../../src/data/syncText';
 import { Pango } from '../../src/pango/Pango';
 import { useTheme } from '../../src/theme/theme';
 import { radius, spacing } from '../../src/theme/tokens';
-import { Card, Icon, IconButton, ProgressBar, Ring, Screen, Text, type IconName } from '../../src/ui';
+import { Card, Icon, IconButton, ProgressBar, Ring, Screen, Text } from '../../src/ui';
 
-const MEAL_ICON: Record<MealType, IconName> = { breakfast: 'sun', lunch: 'flame', dinner: 'flame', snack: 'sparkle' };
-const MEAL_TINT = { breakfast: 'carbs', lunch: 'good', dinner: 'protein', snack: 'fat' } as const;
 const fmt = (n: number) => Math.round(n).toLocaleString('en-ZA');
 const time = (at: number) => new Date(at).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' });
 
@@ -52,6 +51,7 @@ export default function Today() {
             {streak} {streak === 1 ? 'day' : 'days'}
           </Text>
         </View>
+        <IconButton icon="calendar" label="Open the diary" onPress={() => router.push('/diary')} />
       </View>
 
       <Card padding={18} style={{ flexDirection: 'row', alignItems: 'center', gap: 18 }}>
@@ -99,16 +99,29 @@ export default function Today() {
         ) : (
           day?.entries.map((e) => <EntryRow key={e.id} entry={e} />)
         )}
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => router.push('/add')}
-          style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, height: 54, borderRadius: radius.lg, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.lineStrong, opacity: pressed ? 0.7 : 1 })}
-        >
-          <Icon name="plus" size={18} color={colors.muted} />
-          <Text variant="bodyStrong" tone="muted">
-            Add {nextMeal}
-          </Text>
-        </Pressable>
+        <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push('/add')}
+            style={({ pressed }) => ({ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, height: 54, borderRadius: radius.lg, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.lineStrong, opacity: pressed ? 0.7 : 1 })}
+          >
+            <Icon name="plus" size={18} color={colors.muted} />
+            <Text variant="bodyStrong" tone="muted">
+              Add {nextMeal}
+            </Text>
+          </Pressable>
+          {left > 0 ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`What fits in ${fmt(left)} calories?`}
+              onPress={() => router.push('/fits')}
+              style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, height: 54, paddingHorizontal: spacing.lg, borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, opacity: pressed ? 0.8 : 1 })}
+            >
+              <Icon name="sparkle" size={18} color={colors.accentText} />
+              <Text variant="bodyStrong">What fits?</Text>
+            </Pressable>
+          ) : null}
+        </View>
       </View>
 
       <WaterCard date={today} />
@@ -119,7 +132,6 @@ export default function Today() {
 
 function EntryRow({ entry }: { entry: DiaryEntry }) {
   const { colors } = useTheme();
-  const tint = colors[MEAL_TINT[entry.mealType]];
   const scanned = entry.source === 'scan';
   const detail = `${mealLabel(entry.mealType)}, ${time(entry.loggedAt)}${scanned ? ', scanned' : ''}`;
   return (
@@ -130,9 +142,7 @@ function EntryRow({ entry }: { entry: DiaryEntry }) {
       onPress={() => router.push({ pathname: '/add', params: { id: entry.id } })}
       style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 62, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, opacity: pressed ? 0.85 : 1 })}
     >
-      <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: tint + '22', alignItems: 'center', justifyContent: 'center' }}>
-        <Icon name={scanned ? 'scan' : MEAL_ICON[entry.mealType]} size={20} color={tint} />
-      </View>
+      <EntryThumb entry={entry} />
       <View style={{ flex: 1 }}>
         <Text variant="bodyStrong" numberOfLines={1}>
           {entry.name}

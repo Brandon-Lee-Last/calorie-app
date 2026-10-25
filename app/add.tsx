@@ -7,6 +7,7 @@ import { mealForTime } from '../src/data/dates';
 import { MEALS, emptyForm, formFromEntry, parseEntryForm, type EntryForm, type EntryFormErrors } from '../src/data/entryForm';
 import { spacing } from '../src/theme/tokens';
 import { Button, IconButton, Screen, Segmented, Text } from '../src/ui';
+import { deletePhoto } from '../src/scan/photos';
 import { Field } from '../src/ui/Field';
 
 /** Add a meal by hand, or change or delete one (opened with `?id=`). */
@@ -18,12 +19,15 @@ export default function AddEntry() {
   const [loaded, setLoaded] = useState(!id);
   const [missing, setMissing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [scanId, setScanId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
     repo.entry(id).then((e) => {
-      if (e) setForm(formFromEntry(e));
-      else setMissing(true);
+      if (e) {
+        setForm(formFromEntry(e));
+        setScanId(e.scanId);
+      } else setMissing(true);
       setLoaded(true);
     });
   }, [id, repo]);
@@ -55,7 +59,13 @@ export default function AddEntry() {
         text: 'Delete',
         style: 'destructive',
         onPress: () => {
-          repo.deleteEntry(id).then(() => router.back(), (e) => Alert.alert('Could not delete', String(e)));
+          repo.deleteEntry(id).then(
+            () => {
+              deletePhoto(scanId);
+              router.back();
+            },
+            (e) => Alert.alert('Could not delete', String(e)),
+          );
         },
       },
     ]);

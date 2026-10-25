@@ -16,6 +16,14 @@ function setup(server = new FakeServer(), clock = { t: 1_000_000 }) {
 }
 
 describe('SessionManager', () => {
+  it('makes one account when several callers need one at once', async () => {
+    const { server, session } = setup();
+    const [a, b, c] = await Promise.all([session.ensure('x'), session.ensure('x'), session.ensure('x')]);
+    expect(a).toBe(b);
+    expect(b).toBe(c);
+    expect(server.calls.filter((call) => call.endsWith('/auth/anonymous'))).toHaveLength(1);
+  });
+
   it('creates an anonymous account once and remembers it', async () => {
     const { server, store, session } = setup();
     const s = await session.ensure('Pixel');

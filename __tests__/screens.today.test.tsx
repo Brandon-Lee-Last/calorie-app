@@ -1,42 +1,13 @@
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { fireEvent, waitFor } from '@testing-library/react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import type { ReactNode } from 'react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import AddEntry from '../app/add';
 import Today from '../app/(tabs)/index';
-import { memorySecretStore } from '../src/auth/secretStore';
-import { DataProvider } from '../src/data/DataProvider';
 import { localDate } from '../src/data/dates';
-import { openStack, type DataStack } from '../src/data/stack';
-import { ThemeProvider } from '../src/theme/theme';
-import { FakeServer } from './helpers/fakeServer';
-import { memoryDb } from './helpers/sqljsDb';
+import { mount, renderWith, settle } from './helpers/screen';
 
 jest.mock('expo-router', () => ({ router: { push: jest.fn(), back: jest.fn() }, useLocalSearchParams: jest.fn(() => ({})) }));
 jest.mock('expo-haptics', () => ({ selectionAsync: jest.fn(async () => {}), impactAsync: jest.fn(async () => {}), ImpactFeedbackStyle: { Light: 'light' } }));
-
-let n = 0;
-const ids = () => `00000000-0000-4000-8000-${String(++n).padStart(12, '0')}`;
-const metrics = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } };
-
-/** The real stack (SQL schema, repo, session, sync) on sql.js and the fake server, under the real providers. */
-async function mount(ui: ReactNode, server = new FakeServer()) {
-  const stack = await openStack({ db: await memoryDb(), store: memorySecretStore(), baseUrl: 'http://api.test', ids, deviceLabel: 'test', fetchImpl: (r) => server.fetch(r) });
-  const open = () => Promise.resolve(stack);
-  const view = await render(
-    <SafeAreaProvider initialMetrics={metrics}>
-      <ThemeProvider scheme="dark">
-        <DataProvider open={open}>{ui}</DataProvider>
-      </ThemeProvider>
-    </SafeAreaProvider>,
-  );
-  return { view, stack, server };
-}
-
-async function settle(stack: DataStack) {
-  await waitFor(() => expect(stack.sync.current.state).toBe('idle'));
-}
 
 afterEach(() => jest.clearAllMocks());
 
@@ -113,15 +84,7 @@ describe('Add food', () => {
     await view.unmount();
     const e = await stack.repo.addEntry({ name: 'Pap', calories: 300 });
     jest.mocked(useLocalSearchParams).mockReturnValue({ id: e.id });
-    const edit = await render(
-      <SafeAreaProvider initialMetrics={metrics}>
-        <ThemeProvider scheme="dark">
-          <DataProvider open={() => Promise.resolve(stack)}>
-            <AddEntry />
-          </DataProvider>
-        </ThemeProvider>
-      </SafeAreaProvider>,
-    );
+    const edit = await renderWith(<AddEntry />, stack);
     const calories = await edit.findByDisplayValue('300');
     await fireEvent.changeText(calories, '350');
     await fireEvent.press(edit.getByRole('button', { name: 'Save changes' }));

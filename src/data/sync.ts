@@ -35,6 +35,7 @@ export class SyncEngine {
   private failures = 0;
   private status: SyncStatus = { state: 'idle', pending: 0, lastSyncedAt: null, lastError: null };
   private listeners = new Set<(s: SyncStatus) => void>();
+  private tasks: (() => Promise<void>)[] = [];
 
   constructor(
     private repo: Repo,
@@ -70,6 +71,11 @@ export class SyncEngine {
       this.timer = null;
       this.syncNow().catch(() => {});
     }, delayMs);
+  }
+
+  /** Adds work to every round, after the diary is in step (profile changes, scan records). Errors fail the round. */
+  addTask(task: () => Promise<void>): void {
+    this.tasks.push(task);
   }
 
   /** Syncs a moment after each local change. Returns a function that stops listening. */
@@ -114,6 +120,7 @@ export class SyncEngine {
       const pushedBefore = await this.push();
       await this.pull();
       if (pushedBefore) await this.push();
+      for (const task of this.tasks) await task();
       const lastSyncedAt = this.now();
       await this.repo.setMeta(LAST_KEY, lastSyncedAt);
       this.failures = 0;
