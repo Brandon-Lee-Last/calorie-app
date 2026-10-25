@@ -138,8 +138,11 @@ const phone = async (store: SecretStore) =>
   it('downloads the data, then deletes the account and empties the phone', async () => {
     const a = await phone(account);
     stacks.push(a);
-    const exported = (await exportData(a)) as Record<string, unknown>;
-    expect(JSON.stringify(exported)).toContain('Integration bobotie');
+    // The first test deletes its meal again, so look for what the run keeps: the workout and the profile.
+    const exported = (await exportData(a)) as { format: number; profile: { onboardedAt: number | null }; workoutSessions: { title: string }[] };
+    expect(exported.format).toBe(1);
+    expect(exported.profile.onboardedAt).not.toBeNull();
+    expect(exported.workoutSessions.map((w) => w.title)).toContain('Bodyweight full body');
     const config = (await a.api.GET('/v1/config')).data;
     expect(config?.update).toBeDefined();
     await deleteAccount(a);
