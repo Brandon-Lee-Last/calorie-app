@@ -54,7 +54,9 @@ jobs:
       - name: Generate the Android project
         run: npx expo prebuild --platform android --no-install
       - name: Give Gradle enough memory
-        run: echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g" >> android/gradle.properties
+        # Replace the template's line in place: the generated file does not end with a newline, so appending would
+        # glue this onto its last setting.
+        run: sed -i 's/^org\.gradle\.jvmargs=.*/org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g/' android/gradle.properties
       - uses: gradle/actions/setup-gradle@v4
       - name: Build the release APK
         working-directory: android
