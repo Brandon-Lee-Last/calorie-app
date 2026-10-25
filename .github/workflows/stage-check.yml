@@ -48,9 +48,19 @@ jobs:
               const r = await (await fetch(base + '/v1/foods/search?limit=5&q=' + encodeURIComponent(q), { headers: auth })).json();
               lines.push('| ' + q + ' | ' + r.items.length + ' | ' + r.items.slice(0, 3).map((f) => f.name + ' (' + f.source + ')').join('; ') + ' |');
             }
+            // A product in the food list (no Open Food Facts call), then one the server must fetch from Open Food Facts.
+            const listed = (await (await fetch(base + '/v1/foods/search?limit=1&q=rusks', { headers: auth })).json()).items.find((f) => f.barcode);
+            if (listed) {
+              const l = await fetch(base + '/v1/foods/barcode/' + listed.barcode, { headers: auth });
+              lines.push('', 'Barcode ' + listed.barcode + ' (in the food list): HTTP ' + l.status + ', ' + ((await l.json()).name ?? '?'));
+            }
+            let t = Date.now();
+            const direct = await fetch('https://world.openfoodfacts.org/api/v2/product/5449000000996.json?fields=product_name', { headers: { 'user-agent': 'CalorieApp/1.0 (stage check)' } }).catch((e) => ({ status: 'error ' + e.message }));
+            lines.push('Open Food Facts asked from GitHub: HTTP ' + direct.status + ' in ' + (Date.now() - t) + ' ms');
+            t = Date.now();
             const b = await fetch(base + '/v1/foods/barcode/5449000000996', { headers: auth });
             const food = await b.json();
-            lines.push('', 'Barcode 5449000000996: HTTP ' + b.status + ', ' + (food.name ?? JSON.stringify(food).slice(0, 120)));
+            lines.push('Barcode 5449000000996 through stage: HTTP ' + b.status + ' in ' + (Date.now() - t) + ' ms, ' + (food.name ?? JSON.stringify(food).slice(0, 300)));
             const text = lines.join('\n');
             console.log(text);
             (await import('node:fs')).appendFileSync(process.env.GITHUB_STEP_SUMMARY, text + '\n');
