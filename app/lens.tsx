@@ -1,7 +1,7 @@
 import { CameraView, useCameraPermissions, type BarcodeScanningResult, type BarcodeType } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Linking, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -31,7 +31,8 @@ export default function Lens() {
   const [permission, requestPermission] = useCameraPermissions();
   const camera = useRef<CameraView>(null);
   const handled = useRef(false);
-  const [mode, setMode] = useState<Mode>('plate');
+  const { mode: startMode } = useLocalSearchParams<{ mode?: string }>();
+  const [mode, setMode] = useState<Mode>(startMode === 'barcode' ? 'barcode' : 'plate');
   const [torch, setTorch] = useState(false);
   const [busy, setBusy] = useState(false);
   const hint = HINTS[mode];

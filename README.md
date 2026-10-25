@@ -97,6 +97,12 @@ The first time, Pango asks what you are working towards, a few facts (year of bi
 shows a daily plan worked out with the same formula as the backend (Mifflin-St Jeor, with a safety floor). You can
 skip it and keep the defaults. Then:
 
+- **Search for a food**: "Add breakfast/lunch/…" on Today opens search, like Samsung Health's. Before you type it
+  lists your recent meals (one tap to log again, offline too). As you type it shows your own meals that match, then
+  the shared food list: generic foods from USDA and packaged South African products from Open Food Facts, which the
+  backend's **Food catalogue** workflow loads (see calorie-api's `docs/operations.md`). Not there? **Search Open Food
+  Facts** asks their whole database (millions of products) from the phone. Pick a food, choose servings or grams and
+  the meal, save. **Barcode**, **Photo** and **Type it in** are on the same screen. Search needs the backend.
 - **Scan a meal**: the round button in the middle of the tab bar opens the camera. *Plate* takes a photo for the
   model; *Barcode* reads a pack's barcode and looks it up (needs a connection). The photo button picks one from the
   gallery instead. On the result, change the portion, name it if you like, pick the meal and save.
@@ -134,7 +140,7 @@ To check the model itself, open **Me > Model lab**, then:
 
 Verified (on a Linux dev box, no phone):
 - `npm run typecheck`: the code type-checks against the installed libraries' real types.
-- `npm test`: 183 tests, including that the JavaScript PNG decoder returns exactly the same pixels as
+- `npm test`: 196 tests, including that the JavaScript PNG decoder returns exactly the same pixels as
   Python/PIL for the golden photo (checked by hash), the output order and units, tensor checks and
   display rounding; for Pango, that every pose and outfit draws every visible part exactly once and renders;
   for the data layer, the real SQL schema (on sql.js) with sync against a fake server: two phones editing the
@@ -143,7 +149,8 @@ Verified (on a Linux dev box, no phone):
   screens driven like a user would: onboarding, Today, Add food, the camera (with a stand-in camera), the scan
   result (with the model's answer stubbed, as the model needs the phone), the barcode food screen, the diary,
   What fits, Progress, logging weight, the wardrobe's unlocks, Train, a workout from first set to saved session, the
-  recap with sharing, Plus (without Google Play, as on the web) and editing goals; plus the unlock rules, weight
+  recap with sharing, Plus (without Google Play, as on the web), editing goals, and food search (recent meals, your
+  own meals offline, the food list as you type, Open Food Facts on a tap, a food opened by id and again offline); plus the unlock rules, weight
   trends, recap maths, and workouts and goals syncing.
 - `npm run test:backend`: the data layer against the real backend (`wrangler dev`): back up from one phone,
   restore, edit and delete on a second; onboarding answers stored with exactly the goals the phone worked out;
@@ -230,7 +237,11 @@ phone's secure store.
   probability, the portion and what was saved (or that it was discarded), so the model's accuracy on real phone
   photos can be measured (`/v1/scans`).
 - **Barcodes** are looked up by the backend: your own foods, then the shared catalogue, then Open Food Facts (its
-  data is credited on the screen, as its licence requires).
+  data is credited on the screen, as its licence requires). A product found this way joins the shared catalogue.
+- **Food search** sends what you type to the backend (`/v1/foods/search`). Your own meals are matched on the phone.
+  "Search Open Food Facts" sends the words straight from the phone to Open Food Facts (it is their search, with
+  their limit of 10 a minute per person, so it never runs while you type). Foods you open are kept on the phone so a
+  recent one opens offline.
 - **Workouts** are saved on the phone and synced like meals (`workout_session`). Energy burned is a rough estimate
   from standard MET values and your weight.
 - **Wardrobe unlocks** are worked out from synced data (diary, water, workouts), so they follow you to a new phone.
@@ -275,7 +286,10 @@ food output the self-test also checks that the golden photo is accepted as food.
 - Credit Nutrition5k in the app (shown on the main screen) and re-check the licence terms.
 - Say plainly in the store listing that results are rough estimates, not medical or dietary advice.
 - The privacy policy must cover the scan records (numbers per scan, linked to the account) and the profile facts
-  (year of birth, height, weight, sex if given). Consider a setting to turn scan records off.
+  (year of birth, height, weight, sex if given). Consider a setting to turn scan records off. It should also say that
+  "Search Open Food Facts" sends the search words (and so the phone's internet address) to Open Food Facts.
+- Open Food Facts asks apps to name a contact in their User-Agent: set `expo.extra.offUserAgent` in `app.json`, for
+  example `"CalorieApp/1.0 (support@yourdomain)"`.
 - Create the subscriptions in Play Console with the ids the backend expects (`pro_monthly`, `pro_yearly`), each with
   a base plan (and the trial as an offer if you want one), and add licence testers to try buying without being
   charged. Purchases only work in a build installed from Google Play (an internal testing track is enough).

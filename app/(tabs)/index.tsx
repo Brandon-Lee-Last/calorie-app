@@ -110,7 +110,7 @@ export default function Today() {
         <View style={{ flexDirection: 'row', gap: spacing.sm }}>
           <Pressable
             accessibilityRole="button"
-            onPress={() => router.push('/add')}
+            onPress={() => router.push({ pathname: '/search', params: { meal: mealForTime() } })}
             style={({ pressed }) => ({ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, height: 54, borderRadius: radius.lg, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.lineStrong, opacity: pressed ? 0.7 : 1 })}
           >
             <Icon name="plus" size={18} color={colors.muted} />

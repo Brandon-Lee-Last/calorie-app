@@ -8,6 +8,7 @@ import { useData } from '../src/data/DataProvider';
 import { mealForTime, type MealType } from '../src/data/dates';
 import { MEALS, mealLabel, parseNumber } from '../src/data/entryForm';
 import { amountLabel, defaultAmount, entryFromFood, gramsFor, nutritionFor, type Amount, type Food } from '../src/data/foodMath';
+import { SOURCE_LABEL } from '../src/data/foodSearch';
 import { Pango } from '../src/pango/Pango';
 import type { Pose } from '../src/pango/types';
 import { useTheme } from '../src/theme/theme';
@@ -17,43 +18,56 @@ import { Field } from '../src/ui/Field';
 
 type State = { kind: 'loading' } | { kind: 'found'; food: Food } | { kind: 'problem'; pose: Pose; title: string; body: string; retry?: boolean };
 const fmt = (n: number) => Math.round(n).toLocaleString('en-ZA');
+/** Foods opened before, kept on the phone so a recent food opens offline too. */
+const FOOD_CACHE = 'food:';
+const isMeal = (m: unknown): m is MealType => MEALS.some((x) => x.value === m);
 
-function problemFor(e: unknown): State {
+function problemFor(e: unknown, byId: boolean): State {
   if (e instanceof ApiError) {
-    if (e.status === 0) return { kind: 'problem', pose: 'sleep', title: 'No connection', body: 'Looking up a barcode needs the internet. Try again when you are online, or add the food by hand.', retry: true };
+    if (e.status === 0) return { kind: 'problem', pose: 'sleep', title: 'No connection', body: `${byId ? 'Opening a food from the list' : 'Looking up a barcode'} needs the internet. Try again when you are online, or add the food by hand.`, retry: true };
+    if (e.status === 404 && byId) return { kind: 'problem', pose: 'think', title: 'This food is not there any more', body: 'It may have been taken off the food list. Search again, or add it by hand.' };
     if (e.status === 404) return { kind: 'problem', pose: 'think', title: 'Pango does not know this one yet', body: 'No product with nutrition facts was found for this barcode. Add it by hand from the pack.' };
     if (e.status === 422) return { kind: 'problem', pose: 'oops', title: 'That barcode did not read properly', body: 'Hold the phone steady with the whole barcode in view, then scan it again.' };
   }
   return { kind: 'problem', pose: 'oops', title: 'The food list is not answering', body: 'Try again in a moment.', retry: true };
 }
 
-/** A packaged food found by its barcode: choose how much, pick the meal, save. */
+/** A food found by its barcode or picked from search: choose how much, pick the meal, save. */
 export default function FoodScreen() {
-  const { barcode } = useLocalSearchParams<{ barcode: string }>();
+  const { barcode, id, meal: mealParam } = useLocalSearchParams<{ barcode?: string; id?: string; meal?: string }>();
   const { api, repo } = useData();
   const { colors } = useTheme();
   const [state, setState] = useState<State>({ kind: 'loading' });
   const [amount, setAmount] = useState<Amount>({ unit: 'g', grams: 100 });
   const [gramsText, setGramsText] = useState('100');
-  const [meal, setMeal] = useState<MealType>(() => mealForTime());
+  const [meal, setMeal] = useState<MealType>(() => (isMeal(mealParam) ? mealParam : mealForTime()));
   const [saving, setSaving] = useState(false);
 
   const look = useCallback(() => {
+    const show = (food: Food) => {
+      const start = defaultAmount(food);
+      setAmount(start);
+      setGramsText(String(Math.round(gramsFor(food, start))));
+      setState({ kind: 'found', food });
+    };
     setState({ kind: 'loading' });
-    unwrap(api.GET('/v1/foods/barcode/{code}', { params: { path: { code: barcode } } })).then(
+    const request = id ? api.GET('/v1/foods/{id}', { params: { path: { id } } }) : api.GET('/v1/foods/barcode/{code}', { params: { path: { code: barcode ?? '' } } });
+    unwrap(request).then(
       (food) => {
-        const start = defaultAmount(food);
-        setAmount(start);
-        setGramsText(String(Math.round(gramsFor(food, start))));
-        setState({ kind: 'found', food });
+        show(food);
+        repo.setMeta(FOOD_CACHE + food.id, food).catch(() => {});
       },
-      (e) => setState(problemFor(e)),
+      async (e) => {
+        const kept = id && e instanceof ApiError && e.status === 0 ? await repo.getMeta<Food>(FOOD_CACHE + id).catch(() => null) : null;
+        if (kept) show(kept);
+        else setState(problemFor(e, !!id));
+      },
     );
-  }, [api, barcode]);
+  }, [api, repo, barcode, id]);
 
   useEffect(() => {
-    if (barcode) look();
-  }, [barcode, look]);
+    if (barcode || id) look();
+  }, [barcode, id, look]);
 
   const food = state.kind === 'found' ? state.food : null;
   const grams = food ? gramsFor(food, amount) : 0;
@@ -74,7 +88,7 @@ export default function FoodScreen() {
     if (!food || gramsError || saving) return;
     setSaving(true);
     try {
-      await repo.addEntry(entryFromFood(food, amount, meal));
+      await repo.addEntry(entryFromFood(food, amount, meal, barcode ? 'barcode' : 'food'));
       router.back();
     } catch (e) {
       setSaving(false);
@@ -86,7 +100,7 @@ export default function FoodScreen() {
     <Screen keyboardShouldPersistTaps="handled">
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <Text variant="label" tone="muted">
-          Barcode {barcode}
+          {barcode ? `Barcode ${barcode}` : food ? SOURCE_LABEL[food.source] : 'Food'}
         </Text>
         <IconButton icon="close" label="Close" onPress={() => router.back()} />
       </View>
@@ -106,7 +120,11 @@ export default function FoodScreen() {
             {state.body}
           </Text>
           {state.retry ? <Button title="Try again" onPress={look} style={{ alignSelf: 'stretch' }} /> : null}
-          <Button title="Scan again" variant={state.retry ? 'secondary' : 'primary'} onPress={() => router.replace('/lens')} style={{ alignSelf: 'stretch' }} />
+          {barcode ? (
+            <Button title="Scan again" variant={state.retry ? 'secondary' : 'primary'} onPress={() => router.replace({ pathname: '/lens', params: { mode: 'barcode' } })} style={{ alignSelf: 'stretch' }} />
+          ) : (
+            <Button title="Back to search" variant={state.retry ? 'secondary' : 'primary'} onPress={() => router.back()} style={{ alignSelf: 'stretch' }} />
+          )}
           <Button title="Add it by hand" variant="ghost" onPress={() => router.replace('/add')} />
         </View>
       ) : food && n ? (
@@ -178,6 +196,10 @@ export default function FoodScreen() {
           {food.source === 'openfoodfacts' ? (
             <Text variant="caption" tone="muted" align="center">
               Product data from Open Food Facts, available under the Open Database Licence (ODbL).
+            </Text>
+          ) : food.source === 'usda' ? (
+            <Text variant="caption" tone="muted" align="center">
+              Nutrition from USDA FoodData Central.
             </Text>
           ) : null}
         </>

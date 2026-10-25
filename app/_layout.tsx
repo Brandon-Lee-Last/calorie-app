@@ -26,6 +26,7 @@ function Navigator() {
         <Stack.Screen name="lens" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
         <Stack.Screen name="scan" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
         <Stack.Screen name="food" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="search" options={{ presentation: 'modal' }} />
         <Stack.Screen name="diary" />
         <Stack.Screen name="fits" />
         <Stack.Screen name="wardrobe" />

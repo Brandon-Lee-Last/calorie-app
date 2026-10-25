@@ -28,6 +28,12 @@ using an API. The Expo docs site may be unreachable from sandboxed environments.
 - Under jest-expo the global `fetch` is Expo's native fetch, stubbed out. Tests use `__tests__/helpers/fakeServer.ts`,
   or `helpers/nodeFetch.ts` with `@jest-environment node` to reach a real server (`npm run test:backend`).
 
+- Food search (`app/search.tsx`): own meals are matched on the phone (`src/data/foodSearch.ts`), the shared catalogue
+  through `/v1/foods/search` after a 300 ms pause in typing, and Open Food Facts only on a tap
+  (`src/data/offSearch.ts`, straight from the phone: their search allows 10 a minute per user and bans addresses that
+  go over). Never wire Open Food Facts search to typing, and never route it through the backend (every user would
+  share the Worker's limit). An Open Food Facts pick opens `/food?barcode=`, so the backend caches it for everyone.
+
 ## Layout
 
 Routes in `app/` (Expo Router; tabs use `expo-router/js-tabs` with the custom `src/ui/TabBar`). Tokens in

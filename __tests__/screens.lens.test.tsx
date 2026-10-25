@@ -8,7 +8,7 @@ import { ThemeProvider } from '../src/theme/theme';
 
 const mockCamera = { takePictureAsync: jest.fn(async () => ({ uri: 'file:///shot.jpg', width: 1, height: 1 })), onBarcodeScanned: undefined as undefined | ((r: { data: string; type: string }) => void) };
 
-jest.mock('expo-router', () => ({ router: { push: jest.fn(), back: jest.fn(), replace: jest.fn() } }));
+jest.mock('expo-router', () => ({ router: { push: jest.fn(), back: jest.fn(), replace: jest.fn() }, useLocalSearchParams: () => ({}) }));
 jest.mock('expo-haptics', () => ({ selectionAsync: jest.fn(async () => {}), impactAsync: jest.fn(async () => {}), ImpactFeedbackStyle: { Medium: 'medium' } }));
 jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn(async () => ({ canceled: false, assets: [{ uri: 'file:///picked.jpg' }] })) }));
 jest.mock('../src/scan/model', () => ({ getModel: jest.fn(async () => ({})) }));

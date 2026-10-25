@@ -11,6 +11,8 @@ export type Usual = {
   carbG: number;
   fatG: number;
   quantityG: number | null;
+  /** The catalogue food it came from, when it was picked from search or a barcode. */
+  foodId: string | null;
   mealType: MealType;
   times: number;
   lastDate: string;
@@ -39,6 +41,7 @@ export function mealsFrom(entries: DiaryEntry[]): Usual[] {
       carbG: latest.carbG,
       fatG: latest.fatG,
       quantityG: latest.quantityG,
+      foodId: latest.foodId ?? null,
       mealType,
       times: list.length,
       lastDate: latest.localDate,

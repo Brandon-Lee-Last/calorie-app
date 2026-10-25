@@ -5,16 +5,27 @@ import { Alert, KeyboardAvoidingView, Platform, View } from 'react-native';
 import { useData } from '../src/data/DataProvider';
 import { mealForTime } from '../src/data/dates';
 import { MEALS, emptyForm, formFromEntry, parseEntryForm, type EntryForm, type EntryFormErrors } from '../src/data/entryForm';
+import type { MealType } from '../src/data/dates';
 import { spacing } from '../src/theme/tokens';
 import { Button, IconButton, Screen, Segmented, Text } from '../src/ui';
 import { deletePhoto } from '../src/scan/photos';
 import { Field } from '../src/ui/Field';
 
-/** Add a meal by hand, or change or delete one (opened with `?id=`). */
+type Prefill = { name?: string; calories?: string; proteinG?: string; carbG?: string; fatG?: string; meal?: string };
+
+/** A new entry's form, filled from search: the words typed, or a meal logged before. */
+function startForm(p: Prefill): EntryForm {
+  const meal = MEALS.some((m) => m.value === p.meal) ? (p.meal as MealType) : mealForTime();
+  const form = emptyForm(meal);
+  for (const key of ['name', 'calories', 'proteinG', 'carbG', 'fatG'] as const) if (p[key]) form[key] = p[key];
+  return form;
+}
+
+/** Add a meal by hand, or change or delete one (opened with `?id=`). Search can fill a new one in. */
 export default function AddEntry() {
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id, ...prefill } = useLocalSearchParams<Prefill & { id?: string }>();
   const { repo } = useData();
-  const [form, setForm] = useState<EntryForm>(() => emptyForm(mealForTime()));
+  const [form, setForm] = useState<EntryForm>(() => startForm(prefill));
   const [errors, setErrors] = useState<EntryFormErrors>({});
   const [loaded, setLoaded] = useState(!id);
   const [missing, setMissing] = useState(false);
@@ -86,7 +97,7 @@ export default function AddEntry() {
           </Text>
         ) : loaded ? (
           <>
-            <Field label="What did you eat?" value={form.name} onChangeText={set('name')} placeholder={`Leave empty for "Quick add"`} maxLength={200} autoFocus={!id} autoCapitalize="sentences" error={errors.name} />
+            <Field label="What did you eat?" value={form.name} onChangeText={set('name')} placeholder={`Leave empty for "Quick add"`} maxLength={200} autoFocus={!id && !prefill.name} autoCapitalize="sentences" error={errors.name} />
             <Field label="Calories" value={form.calories} onChangeText={set('calories')} keyboardType="decimal-pad" suffix="kcal" error={errors.calories} />
             <View style={{ flexDirection: 'row', gap: spacing.sm }}>
               <Field label="Protein" value={form.proteinG} onChangeText={set('proteinG')} keyboardType="decimal-pad" suffix="g" error={errors.proteinG} style={{ flex: 1 }} />

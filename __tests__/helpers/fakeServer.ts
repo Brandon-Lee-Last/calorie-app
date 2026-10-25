@@ -35,8 +35,10 @@ export class FakeServer {
   goalChanges: unknown[] = [];
   /** Programs for GET /v1/programs. */
   programs: Record<string, unknown>[] = [];
-  /** Products by barcode for GET /v1/foods/barcode/{code}; anything else is 404. */
+  /** Foods by barcode for GET /v1/foods/barcode/{code}; also what search and GET /v1/foods/{id} find. */
   foods = new Map<string, Record<string, unknown>>();
+  /** Queries sent to GET /v1/foods/search, in order. */
+  searches: string[] = [];
   private n = 0;
 
   private session() {
@@ -114,6 +116,18 @@ export class FakeServer {
         limits: { scansPerDay: 3, aiTextPerDay: 5, mealPhotos: 30, recipes: 10, progressPhotos: 12 },
         features: { workouts: this.plan === 'pro' ? 'all' : 'free', insights: this.plan === 'pro' ? 'full' : 'basic', export: true },
       });
+    }
+    if (url.pathname === '/v1/foods/search') {
+      // Every word in the name or brand, like the backend.
+      const words = (url.searchParams.get('q') ?? '').toLowerCase().split(/\s+/).filter(Boolean);
+      const items = [...this.foods.values()].filter((f) => words.every((w) => `${f.name} ${f.brand ?? ''}`.toLowerCase().includes(w)));
+      this.searches.push(url.searchParams.get('q') ?? '');
+      return json(200, { items: items.slice(0, Number(url.searchParams.get('limit') ?? 25)) });
+    }
+    const foodId = url.pathname.match(/^\/v1\/foods\/([^/]+)$/);
+    if (foodId && req.method === 'GET' && foodId[1] !== 'barcode') {
+      const food = [...this.foods.values()].find((f) => f.id === foodId[1]);
+      return food ? json(200, food) : json(404, { error: { code: 'not_found', message: 'Food not found' } });
     }
     const barcode = url.pathname.match(/^\/v1\/foods\/barcode\/([^/]+)$/);
     if (barcode) {
