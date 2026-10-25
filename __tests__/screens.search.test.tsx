@@ -52,17 +52,31 @@ describe('Search', () => {
     await stack.repo.addEntry({ name: 'Rusks and coffee', calories: 180, mealType: 'breakfast' });
     const view = await renderWith(<Search />, stack);
 
-    await fireEvent.changeText(await view.findByLabelText('Search foods'), 'rusk');
-    expect(await view.findByText('Your meals')).toBeTruthy();
+    // Your own meals drop down from the first letter, before the server is asked.
+    await fireEvent.changeText(await view.findByLabelText('Search foods'), 'r');
     expect(view.getByRole('button', { name: /^Rusks and coffee, 180 calories/ })).toBeTruthy();
+    expect(server.searches).toEqual([]);
+
+    await fireEvent.changeText(view.getByLabelText('Search foods'), 'rusk');
     await fireEvent.press(await view.findByRole('button', { name: 'Buttermilk rusks, Ouma, 138 calories per 1 rusk (32 g)' }));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/food', params: { id: 'f-rusk', meal: 'snack' } });
     expect(server.searches).toEqual(['rusk']); // one request after the typing pauses
 
+    // The list stays while the next answer loads, and going back to an earlier search needs no request.
+    await fireEvent.changeText(view.getByLabelText('Search foods'), 'rusks');
+    expect(view.getByRole('button', { name: /^Buttermilk rusks, Ouma/ })).toBeTruthy();
+    await waitFor(() => expect(server.searches).toEqual(['rusk', 'rusks']));
+    await fireEvent.changeText(view.getByLabelText('Search foods'), 'rusk');
+    expect(view.getByRole('button', { name: /^Buttermilk rusks, Ouma/ })).toBeTruthy();
+    expect(server.searches).toEqual(['rusk', 'rusks']);
+
     await fireEvent.changeText(view.getByLabelText('Search foods'), 'pineapple');
     expect(await view.findByText('Nothing called "pineapple" in the food list yet.')).toBeTruthy();
-    await fireEvent.press(view.getByRole('button', { name: 'Type it in yourself' }));
+    await fireEvent.press(view.getByRole('button', { name: 'Type in "pineapple" yourself' }));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/add', params: { name: 'pineapple', meal: 'snack' } });
+
+    await fireEvent.press(view.getByRole('button', { name: 'Clear the search' }));
+    expect(await view.findByText('Recent')).toBeTruthy();
     await settle(stack);
     await view.unmount();
   });
@@ -90,7 +104,7 @@ describe('Search', () => {
     expect(await view.findByText('Nothing called "chakalaka" in the food list yet.')).toBeTruthy();
     expect(global.fetch).not.toHaveBeenCalled(); // never while typing
 
-    await fireEvent.press(view.getByRole('button', { name: 'Search Open Food Facts' }));
+    await fireEvent.press(view.getByRole('button', { name: 'Search Open Food Facts for "chakalaka"' }));
     await fireEvent.press(await view.findByRole('button', { name: 'Chakalaka, Koo, 61 calories per 100 g' }));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/food', params: { barcode: '6009188002213', meal: 'dinner' } });
     expect(view.getByText(/Product data from Open Food Facts/)).toBeTruthy();

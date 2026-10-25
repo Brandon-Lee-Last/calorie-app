@@ -8,7 +8,7 @@ export const MIN_QUERY = 2;
 export function words(text: string): string[] {
   return text
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .split(/[^a-z0-9]+/)
     .filter(Boolean);
@@ -46,4 +46,44 @@ export const SOURCE_LABEL: Record<Food['source'], string> = {
 export function withoutShown(items: Food[], shown: Usual[]): Food[] {
   const ids = new Set(shown.map((m) => m.foodId).filter(Boolean));
   return items.filter((f) => !ids.has(f.id));
+}
+
+/** Does every word of the query appear in the text (accents and case ignored), as the backend's search requires? */
+export function matchesQuery(text: string, query: string): boolean {
+  const have = words(text).join(' ');
+  return words(query).every((w) => have.includes(w));
+}
+
+/** One row per product: the food list can hold the same thing twice ("Weet-Bix" and "Weet bix" from one brand). */
+export function dedupeFoods(items: Food[]): Food[] {
+  const seen = new Set<string>();
+  return items.filter((f) => {
+    const key = `${words(f.name).join(' ')}|${words(f.brand ?? '').join(' ')}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+const fold = (c: string) => c.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+/** The text cut into pieces, with the first place each query word appears marked, to show it in bold. */
+export function highlightParts(text: string, query: string): { text: string; hit: boolean }[] {
+  const chars = [...text];
+  const folded = chars.map(fold);
+  // Only when every character folds to one, so positions line up with the original text.
+  if (folded.some((c) => c.length !== 1)) return [{ text, hit: false }];
+  const flat = folded.join('');
+  const marked = new Array<boolean>(chars.length).fill(false);
+  for (const w of words(query)) {
+    const at = flat.indexOf(w);
+    if (at >= 0) for (let i = at; i < at + w.length; i++) marked[i] = true;
+  }
+  const parts: { text: string; hit: boolean }[] = [];
+  chars.forEach((c, i) => {
+    const last = parts[parts.length - 1];
+    if (last && last.hit === marked[i]) last.text += c;
+    else parts.push({ text: c, hit: marked[i] });
+  });
+  return parts.length ? parts : [{ text, hit: false }];
 }

@@ -1,5 +1,5 @@
 import type { Food } from '../src/data/foodMath';
-import { describeFood, matchMeals, withoutShown, words } from '../src/data/foodSearch';
+import { dedupeFoods, describeFood, highlightParts, matchMeals, matchesQuery, withoutShown, words } from '../src/data/foodSearch';
 import type { Usual } from '../src/data/history';
 import { OffSearch, OffSearchError, mapOffHits, offSearchUrl } from '../src/data/offSearch';
 
@@ -18,6 +18,33 @@ describe('matching your own meals', () => {
 
   it('does not show a food twice when it is one of your meals too', () => {
     expect(withoutShown([food('a'), food('b')], [usual('A', 'a'), usual('Typed')]).map((f) => f.id)).toEqual(['b']);
+  });
+});
+
+describe('as you type', () => {
+  it('bolds what was typed, ignoring case and accents', () => {
+    expect(highlightParts('Buttermilk Rusks', 'rus')).toEqual([
+      { text: 'Buttermilk ', hit: false },
+      { text: 'Rus', hit: true },
+      { text: 'ks', hit: false },
+    ]);
+    expect(highlightParts('Droëwors', 'droe')).toEqual([
+      { text: 'Droë', hit: true },
+      { text: 'wors', hit: false },
+    ]);
+    expect(highlightParts('Weet-Bix', 'bix weet')).toEqual([
+      { text: 'Weet', hit: true },
+      { text: '-', hit: false },
+      { text: 'Bix', hit: true },
+    ]);
+    expect(highlightParts('Apple', 'pear')).toEqual([{ text: 'Apple', hit: false }]);
+  });
+
+  it('keeps an older answer only where it still matches, and shows each product once', () => {
+    expect(matchesQuery('Buttermilk rusks Ouma', 'rusks ou')).toBe(true);
+    expect(matchesQuery('Granola rusk', 'rusks')).toBe(false);
+    const items = [food('a', { name: 'Weet-Bix', brand: 'Bokomo' }), food('b', { name: 'Weet bix', brand: 'Bokomo' }), food('c', { name: 'Weet-Bix' })];
+    expect(dedupeFoods(items).map((f) => f.id)).toEqual(['a', 'c']);
   });
 });
 

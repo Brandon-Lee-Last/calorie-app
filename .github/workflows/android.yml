@@ -76,6 +76,8 @@ jobs:
           echo "$badging" | grep -E "^(package|targetSdkVersion|uses-permission|native-code|application-label):"
           if echo "$badging" | grep -qE "RECORD_AUDIO|READ_PHONE_STATE|SYSTEM_ALERT_WINDOW"; then echo "A blocked permission is back"; exit 1; fi
           "$tools/apksigner" verify --print-certs "$apk" | grep -E "certificate (DN|SHA-256)"
+          # The backend the app will talk to: app.json's expo.extra.apiUrl, embedded by expo-constants.
+          unzip -p "$apk" assets/app.config | grep -o '"apiUrl":"[^"]*"'
           unzip -l "$apk" > contents.txt
           grep -iE "tflite|tensorflow|index\.android\.bundle|libhermes|libreactnative" contents.txt
           # The JavaScript bundle and the TFLite runtime must be inside.

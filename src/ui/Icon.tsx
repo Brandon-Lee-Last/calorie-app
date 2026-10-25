@@ -30,6 +30,7 @@ const PATHS = {
   trash: 'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13',
   sparkle: 'M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z',
   barcode: 'M4 6v12M7 6v12M10.5 6v12M13 6v12M16.5 6v12M20 6v12',
+  clock: 'M21 12a9 9 0 1 1-18 0a9 9 0 1 1 18 0M12 7v5l3 2',
 } as const;
 
 const FILLED = new Set<IconName>(['drop', 'play']);
