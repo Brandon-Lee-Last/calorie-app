@@ -55,7 +55,7 @@ jobs:
               lines.push('', 'Barcode ' + listed.barcode + ' (in the food list): HTTP ' + l.status + ', ' + ((await l.json()).name ?? '?'));
             }
             let t = Date.now();
-            const direct = await fetch('https://world.openfoodfacts.org/api/v2/product/5449000000996.json?fields=product_name', { headers: { 'user-agent': 'CalorieApp/1.0 (stage check)' } }).catch((e) => ({ status: 'error ' + e.message }));
+            const direct = await fetch('https://world.openfoodfacts.org/api/v2/product/5449000000996.json?fields=product_name', { headers: { 'user-agent': 'Pango/1.0 (stage check)' } }).catch((e) => ({ status: 'error ' + e.message }));
             lines.push('Open Food Facts asked from GitHub: HTTP ' + direct.status + ' in ' + (Date.now() - t) + ' ms');
             t = Date.now();
             const b = await fetch(base + '/v1/foods/barcode/5449000000996', { headers: auth });

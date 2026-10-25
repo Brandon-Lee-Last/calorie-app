@@ -86,7 +86,7 @@ describe('Open Food Facts search', () => {
     expect(url).toBe(offSearchUrl('rusks'));
     expect(url).toContain('search_terms=rusks');
     expect(url).toContain('fields=code%2Cproduct_name');
-    expect((init.headers as Record<string, string>)['User-Agent']).toMatch(/^CalorieApp\//);
+    expect((init.headers as Record<string, string>)['User-Agent']).toMatch(/^Pango\//);
     for (let i = 0; i < 9; i++) await off.search('x');
     await expect(off.search('x')).rejects.toEqual(new OffSearchError('busy'));
     expect(fetcher).toHaveBeenCalledTimes(10);

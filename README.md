@@ -1,4 +1,4 @@
-# Calorie App
+# Pango
 
 Android app (React Native + Expo) that estimates calories, weight and macros (fat, carbs, protein) from
 a photo of food, **entirely on the phone**. The model is `assets/nutrition_v1.tflite` from
@@ -65,7 +65,7 @@ long Windows paths often break React Native native builds. The first build takes
 For editing the JavaScript with instant reload, build a development client once, then reuse it:
 - On your PC: `npx expo run:android` (debug variant), or in the cloud:
   `npx eas-cli build --platform android --profile development` and install the `.apk` it links to.
-- Day to day: `npm install`, `npx expo start --dev-client`, then open the installed **Calorie App** (not
+- Day to day: `npm install`, `npx expo start --dev-client`, then open the installed **Pango** app (not
   Expo Go) on the phone, on the same Wi-Fi as the PC.
 
 ## Connecting to the backend
@@ -75,8 +75,8 @@ backend answers. On the first backup the app makes an anonymous account for the 
 email comes later).
 
 Where the app looks for the backend ([calorie-api](https://github.com/Brandon-Lee-Last/calorie-api)):
-- **Built in: the stage backend**, `https://calorie-api-stage.lucyourique.workers.dev` (`expo.extra.apiUrl` in
-  `app.json`), so the APK from GitHub Actions backs up, searches foods and looks up barcodes with nothing to set.
+- **Built in: the stage backend**, `https://pango-api-stage.lightarch.io` (`expo.extra.apiUrl` in `app.json`;
+  production will be `https://pango-api.lightarch.io`), so the APK from GitHub Actions backs up, searches foods and looks up barcodes with nothing to set.
   `.github/workflows/stage-check.yml` runs the data layer against it on every push that touches the data code.
 - Set `EXPO_PUBLIC_API_URL`. The easy way on Windows is a file named `.env.local` in this folder (git ignores it):
   ```
@@ -296,7 +296,7 @@ food output the self-test also checks that the golden photo is accepted as food.
 - Change the Android package id (`com.brandonleelast.calorieapp` in `app.json`); it is permanent once
   published.
 - The launcher icon, adaptive icon and splash are Pango (`scripts/make-icons.py`, from the design canvas's Sizes board).
-  The app's name is still "Calorie App" (`app.json` `name`); change it once the name is settled.
+  The app is called "Pango" (`app.json` `name`): check the name is free to use in the Play Store and as a trademark.
 - Google Play also asks for a web page where people can request account deletion without the app (the in-app option is
   in Me > Your data). A page on the privacy policy's site that says "email us, or use Me > Your data" is enough.
 - Choose a licence for this repo (none is set).
@@ -306,7 +306,7 @@ food output the self-test also checks that the golden photo is accepted as food.
   (year of birth, height, weight, sex if given). Consider a setting to turn scan records off. It should also say that
   "Search Open Food Facts" sends the search words (and so the phone's internet address) to Open Food Facts.
 - Open Food Facts asks apps to name a contact in their User-Agent: set `expo.extra.offUserAgent` in `app.json`, for
-  example `"CalorieApp/1.0 (support@yourdomain)"`.
+  example `"Pango/1.0 (support@lightarch.io)"`.
 - Create the subscriptions in Play Console with the ids the backend expects (`pro_monthly`, `pro_yearly`), each with
   a base plan (and the trial as an offer if you want one), and add licence testers to try buying without being
   charged. Purchases only work in a build installed from Google Play (an internal testing track is enough).

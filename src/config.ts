@@ -17,6 +17,6 @@ export const DEVICE_LABEL = (Constants.deviceName || (Platform.OS === 'android' 
 
 /**
  * Open Food Facts asks every app to name itself (and a way to reach its maker) in the User-Agent. Put a contact in
- * `expo.extra.offUserAgent` before release, for example "CalorieApp/1.0 (you@example.com)".
+ * `expo.extra.offUserAgent` before release, for example "Pango/1.0 (you@example.com)".
  */
-export const OFF_USER_AGENT = extra.offUserAgent || `CalorieApp/${APP_VERSION} (Android)`;
+export const OFF_USER_AGENT = extra.offUserAgent || `Pango/${APP_VERSION} (Android)`;

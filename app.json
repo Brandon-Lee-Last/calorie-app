@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Calorie App",
+    "name": "Pango",
     "slug": "calorie-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -30,7 +30,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow Calorie App to use the camera to photograph your food and scan barcodes.",
+          "cameraPermission": "Allow Pango to use the camera to photograph your food and scan barcodes.",
           "recordAudioAndroid": false
         }
       ],
@@ -59,8 +59,8 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "Allow Calorie App to use the camera to photograph your food.",
-          "photosPermission": "Allow Calorie App to read a food photo you choose.",
+          "cameraPermission": "Allow Pango to use the camera to photograph your food.",
+          "photosPermission": "Allow Pango to read a food photo you choose.",
           "microphonePermission": false
         }
       ],
@@ -76,7 +76,7 @@
     "scheme": "calorieapp",
     "backgroundColor": "#0B0E17",
     "extra": {
-      "apiUrl": "https://calorie-api-stage.lucyourique.workers.dev"
+      "apiUrl": "https://pango-api-stage.lightarch.io"
     }
   }
 }
