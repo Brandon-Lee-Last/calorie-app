@@ -1,0 +1,67 @@
+# Builds an installable Android APK on GitHub's machines, so no Android SDK is needed on your PC.
+# Download it from the run's page under "Artifacts". It is signed with the template's debug key,
+# which is fine for testing on your own phone but not for Google Play.
+#
+# Set the repository variable EXPO_PUBLIC_API_URL (Settings > Secrets and variables > Actions >
+# Variables) to your deployed https backend. Release builds refuse plain http, so without it the
+# app works offline only.
+name: Android build
+
+on:
+  push:
+    branches: [main, 'claude/**']
+  workflow_dispatch:
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test -- --ci
+
+  apk:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      EXPO_PUBLIC_API_URL: ${{ vars.EXPO_PUBLIC_API_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: npm ci
+      - name: Generate the Android project
+        run: npx expo prebuild --platform android --no-install
+      - name: Give Gradle enough memory
+        run: echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g" >> android/gradle.properties
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build the release APK
+        working-directory: android
+        # Phones from the last several years are all arm64; one architecture keeps the build quick and the APK small.
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a
+      - uses: actions/upload-artifact@v4
+        with:
+          name: calorie-app-apk
+          path: android/app/build/outputs/apk/release/*.apk
+          retention-days: 30
+          if-no-files-found: error
