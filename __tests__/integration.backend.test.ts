@@ -6,6 +6,7 @@
  *   API_URL=http://127.0.0.1:8787 npx jest __tests__/integration.backend.test.ts
  */
 import { memorySecretStore, type SecretStore } from '../src/auth/secretStore';
+import { deleteAccount, exportData } from '../src/data/account';
 import { localDate } from '../src/data/dates';
 import { saveGoals, saveProfile } from '../src/data/profile';
 import { PROFILE_KEY, type CachedProfile } from '../src/data/settings';
@@ -131,5 +132,18 @@ const phone = async (store: SecretStore) =>
     const { data, error } = await a.api.GET('/v1/me/profile');
     expect(error).toBeUndefined();
     expect(data?.goals.calories).toBeGreaterThanOrEqual(800);
+  });
+
+  // Last, because it ends the run's account.
+  it('downloads the data, then deletes the account and empties the phone', async () => {
+    const a = await phone(account);
+    stacks.push(a);
+    const exported = (await exportData(a)) as Record<string, unknown>;
+    expect(JSON.stringify(exported)).toContain('Integration bobotie');
+    const config = (await a.api.GET('/v1/config')).data;
+    expect(config?.update).toBeDefined();
+    await deleteAccount(a);
+    expect(await a.repo.entriesFor(localDate())).toEqual([]);
+    expect(await a.session.accessToken()).toBeNull();
   });
 });
