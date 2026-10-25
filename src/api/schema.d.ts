@@ -7012,6 +7012,320 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/meal-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Diet styles and the meals plans are made from
+         * @description Everything in one answer (it is small), so the phone can plan any day offline. Pro styles are `locked` on a free account, and so are meals found only in Pro styles: those come without ingredients or steps.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Diets and meals */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MealPlans"];
+                    };
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Missing, invalid or expired access token */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Validation failed */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Rate limited or quota reached */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Unexpected server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/meal-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The slugs of every diet and meal */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Slugs */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminMealPlanSlugs"];
+                    };
+                };
+                /** @description Bad request */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/diets/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Create or update a diet style */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AdminDietInput"];
+                };
+            };
+            responses: {
+                /** @description Saved */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            slug: string;
+                        };
+                    };
+                };
+                /** @description Bad request */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Delete a diet style no meal uses */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad request */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Bad request */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/meals/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Create or update a meal
+         * @description Every diet it names must exist. Calories must roughly match 4 kcal/g protein and carbs and 9 kcal/g fat.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AdminMealInput"];
+                };
+            };
+            responses: {
+                /** @description Saved */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            slug: string;
+                        };
+                    };
+                };
+                /** @description Bad request */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Validation failed */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Delete a meal */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad request */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/training/sessions": {
         parameters: {
             query?: never;
@@ -9798,6 +10112,134 @@ export interface components {
                 restS: number | null;
                 notes: string | null;
             }[];
+        };
+        MealPlans: {
+            /** @description In display order */
+            diets: components["schemas"]["Diet"][];
+            /** @description A to Z */
+            meals: components["schemas"]["Meal"][];
+            /** @description When the newest diet or meal was saved: keep the copy on the phone until it changes */
+            updatedAt: number | null;
+        };
+        Diet: {
+            slug: string;
+            title: string;
+            summary: string;
+            description: string;
+            /** @enum {string} */
+            tier: "free" | "pro";
+            /** @description True for a Pro style on a free account */
+            locked: boolean;
+            goals: ("lose" | "maintain" | "gain")[];
+            highlights: string[];
+            split: {
+                breakfast: number;
+                lunch: number;
+                dinner: number;
+                snack: number;
+            };
+            macros: {
+                proteinPct: number;
+                carbPct: number;
+                fatPct: number;
+            };
+            caution: string | null;
+            mealCount: number;
+        };
+        Meal: {
+            slug: string;
+            title: string;
+            summary: string;
+            slots: ("breakfast" | "lunch" | "dinner" | "snack")[];
+            diets: string[];
+            minutes: number;
+            tags: string[];
+            nutrition: components["schemas"]["MealNutrition"];
+            /** @description True when every diet it is in is Pro and the account is free: no ingredients or steps then */
+            locked: boolean;
+            ingredients: components["schemas"]["MealIngredient"][];
+            steps: string[];
+            source: string | null;
+        };
+        /** @description One portion */
+        MealNutrition: {
+            calories: number;
+            proteinG: number;
+            carbG: number;
+            fatG: number;
+            /** @default null */
+            fibreG: number | null;
+        };
+        MealIngredient: {
+            name: string;
+            /** @description Grams in one portion, as eaten (cooked where it says so) */
+            grams: number;
+            /**
+             * @description A kitchen measure for one portion, e.g. "½ cup"
+             * @default null
+             */
+            measure: string | null;
+            /**
+             * @default null
+             * @enum {string|null}
+             */
+            aisle: "produce" | "meat-fish" | "dairy-eggs" | "bakery-grains" | "pantry" | "frozen" | null;
+        };
+        AdminMealPlanSlugs: {
+            diets: string[];
+            meals: string[];
+        };
+        AdminDietInput: {
+            title: string;
+            summary: string;
+            /** @default  */
+            description: string;
+            /** @enum {string} */
+            tier: "free" | "pro";
+            /** @default 0 */
+            position: number;
+            /** @description Goals this style suits */
+            goals: ("lose" | "maintain" | "gain")[];
+            /** @default [] */
+            highlights: string[];
+            /** @description Share of the day's calories for each meal (a second snack, when there is one, halves the snack share) */
+            split: {
+                breakfast: number;
+                lunch: number;
+                dinner: number;
+                snack: number;
+            };
+            /** @description The rough energy split the meals aim for, shown as guidance */
+            macros: {
+                proteinPct: number;
+                carbPct: number;
+                fatPct: number;
+            };
+            /**
+             * @description Who should check with a health professional first
+             * @default null
+             */
+            caution: string | null;
+        };
+        AdminMealInput: {
+            title: string;
+            /** @default  */
+            summary: string;
+            /** @description Which meals of the day it can be */
+            slots: ("breakfast" | "lunch" | "dinner" | "snack")[];
+            diets: string[];
+            minutes: number;
+            /** @default [] */
+            tags: string[];
+            ingredients: components["schemas"]["MealIngredient"][];
+            /** @default [] */
+            steps: string[];
+            nutrition: components["schemas"]["MealNutrition"];
+            /**
+             * @description Where the nutrition numbers come from
+             * @default null
+             */
+            source: string | null;
         };
         WorkoutSessionList: {
             items: components["schemas"]["WorkoutSession"][];

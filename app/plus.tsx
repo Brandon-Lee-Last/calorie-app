@@ -12,7 +12,7 @@ import { useTheme } from '../src/theme/theme';
 import { brand, radius, spacing } from '../src/theme/tokens';
 import { Button, Icon, IconButton, Screen, Text } from '../src/ui';
 
-const BENEFITS = ['Every training program and workout, not only the free ones', 'A year of weight trends on Progress', 'Supports Pango, so the free app stays free'];
+const BENEFITS = ['Every meal plan style, the week ahead and a shopping list', 'Every training program and workout, not only the free ones', 'A year of weight trends on Progress', 'Supports Pango, so the free app stays free'];
 const message = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 /** Plus: what it adds, the plans with Google Play's prices, buying, restoring. */

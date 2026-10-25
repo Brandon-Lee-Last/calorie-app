@@ -36,7 +36,7 @@ jobs:
         run: echo "API_URL=$(node -p "require('./app.json').expo.extra.apiUrl")" >> "$GITHUB_ENV"
       - name: The app's data layer against stage
         run: npm run test:backend -- "$API_URL"
-      - name: Food search and a barcode on stage
+      - name: Food search, a barcode and meal plans on stage
         run: |
           node --input-type=module -e "
             const base = process.env.API_URL;
@@ -61,6 +61,9 @@ jobs:
             const b = await fetch(base + '/v1/foods/barcode/5449000000996', { headers: auth });
             const food = await b.json();
             lines.push('Barcode 5449000000996 through stage: HTTP ' + b.status + ' in ' + (Date.now() - t) + ' ms, ' + (food.name ?? JSON.stringify(food).slice(0, 300)));
+            const mp = await (await fetch(base + '/v1/meal-plans', { headers: auth })).json();
+            lines.push('', '### Meal plans', '', mp.diets.map((d) => d.title + (d.locked ? ' (Plus)' : '') + ': ' + d.mealCount + ' meals').join(', '));
+            lines.push('Meals: ' + mp.meals.length + ', of which ' + mp.meals.filter((m) => m.locked).length + ' are only in Plus styles');
             const text = lines.join('\n');
             console.log(text);
             (await import('node:fs')).appendFileSync(process.env.GITHUB_STEP_SUMMARY, text + '\n');

@@ -8,7 +8,9 @@
 import { memorySecretStore, type SecretStore } from '../src/auth/secretStore';
 import { deleteAccount, exportData } from '../src/data/account';
 import { localDate } from '../src/data/dates';
+import { entryFor, planDay } from '../src/data/mealPlan';
 import { saveGoals, saveProfile } from '../src/data/profile';
+import { unwrap } from '../src/api/client';
 import { PROFILE_KEY, type CachedProfile } from '../src/data/settings';
 import { scanRecord, shownFor } from '../src/scan/scanMath';
 import { fromServer } from '../src/train/library';
@@ -135,6 +137,26 @@ const phone = async (store: SecretStore) =>
   });
 
   // Last, because it ends the run's account.
+  it("plans a day in each free style from the server's meals, and a planned meal syncs", async () => {
+    const a = await phone(account);
+    stacks.push(a);
+    const plans = await unwrap(a.api.GET('/v1/meal-plans'));
+    if (plans.diets.length === 0) return; // a server with no content loaded (scripts/import-content.mjs in calorie-api)
+    const free = plans.diets.filter((d) => !d.locked);
+    expect(free.map((d) => d.slug)).toEqual(expect.arrayContaining(['balanced', 'budget']));
+    expect(plans.diets.some((d) => d.locked)).toBe(true);
+    for (const diet of free) {
+      const day = planDay(plans, diet, localDate(), 2000);
+      expect(day.items.map((i) => i.slot)).toEqual(['breakfast', 'lunch', 'dinner', 'snack']);
+      expect(Math.abs(day.calories - 2000)).toBeLessThan(300);
+      for (const i of day.items) expect(i.meal.ingredients.length).toBeGreaterThan(0);
+    }
+    const lunch = planDay(plans, free[0], localDate(), 2000).items[1];
+    await a.repo.addEntry(entryFor(lunch));
+    await a.sync.syncNow();
+    expect(a.sync.current).toMatchObject({ state: 'idle', pending: 0 });
+  });
+
   it('downloads the data, then deletes the account and empties the phone', async () => {
     const a = await phone(account);
     stacks.push(a);

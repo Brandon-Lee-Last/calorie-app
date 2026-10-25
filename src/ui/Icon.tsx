@@ -30,6 +30,9 @@ const PATHS = {
   trash: 'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13',
   sparkle: 'M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z',
   barcode: 'M4 6v12M7 6v12M10.5 6v12M13 6v12M16.5 6v12M20 6v12',
+  swap: 'M4 8h13l-3-3M20 16H7l3 3',
+  list: 'M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01',
+  meal: 'M7 3v7a2 2 0 0 0 4 0V3M9 12v9M17 21V3c-2 1-3 4-3 7 0 2 1 3 3 3',
   clock: 'M21 12a9 9 0 1 1-18 0a9 9 0 1 1 18 0M12 7v5l3 2',
 } as const;
 

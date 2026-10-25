@@ -4506,6 +4506,544 @@
                     "exercises"
                 ]
             },
+            "MealPlans": {
+                "type": "object",
+                "properties": {
+                    "diets": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Diet"
+                        },
+                        "description": "In display order"
+                    },
+                    "meals": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Meal"
+                        },
+                        "description": "A to Z"
+                    },
+                    "updatedAt": {
+                        "type": "integer",
+                        "nullable": true,
+                        "description": "When the newest diet or meal was saved: keep the copy on the phone until it changes"
+                    }
+                },
+                "required": [
+                    "diets",
+                    "meals",
+                    "updatedAt"
+                ]
+            },
+            "Diet": {
+                "type": "object",
+                "properties": {
+                    "slug": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "summary": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "tier": {
+                        "type": "string",
+                        "enum": [
+                            "free",
+                            "pro"
+                        ]
+                    },
+                    "locked": {
+                        "type": "boolean",
+                        "description": "True for a Pro style on a free account"
+                    },
+                    "goals": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "lose",
+                                "maintain",
+                                "gain"
+                            ]
+                        }
+                    },
+                    "highlights": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "split": {
+                        "type": "object",
+                        "properties": {
+                            "breakfast": {
+                                "type": "number"
+                            },
+                            "lunch": {
+                                "type": "number"
+                            },
+                            "dinner": {
+                                "type": "number"
+                            },
+                            "snack": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "breakfast",
+                            "lunch",
+                            "dinner",
+                            "snack"
+                        ]
+                    },
+                    "macros": {
+                        "type": "object",
+                        "properties": {
+                            "proteinPct": {
+                                "type": "number"
+                            },
+                            "carbPct": {
+                                "type": "number"
+                            },
+                            "fatPct": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "proteinPct",
+                            "carbPct",
+                            "fatPct"
+                        ]
+                    },
+                    "caution": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "mealCount": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "slug",
+                    "title",
+                    "summary",
+                    "description",
+                    "tier",
+                    "locked",
+                    "goals",
+                    "highlights",
+                    "split",
+                    "macros",
+                    "caution",
+                    "mealCount"
+                ]
+            },
+            "Meal": {
+                "type": "object",
+                "properties": {
+                    "slug": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "summary": {
+                        "type": "string"
+                    },
+                    "slots": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "breakfast",
+                                "lunch",
+                                "dinner",
+                                "snack"
+                            ]
+                        }
+                    },
+                    "diets": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "minutes": {
+                        "type": "integer"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "nutrition": {
+                        "$ref": "#/components/schemas/MealNutrition"
+                    },
+                    "locked": {
+                        "type": "boolean",
+                        "description": "True when every diet it is in is Pro and the account is free: no ingredients or steps then"
+                    },
+                    "ingredients": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MealIngredient"
+                        }
+                    },
+                    "steps": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "source": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "slug",
+                    "title",
+                    "summary",
+                    "slots",
+                    "diets",
+                    "minutes",
+                    "tags",
+                    "nutrition",
+                    "locked",
+                    "ingredients",
+                    "steps",
+                    "source"
+                ]
+            },
+            "MealNutrition": {
+                "type": "object",
+                "properties": {
+                    "calories": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 2500
+                    },
+                    "proteinG": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 400
+                    },
+                    "carbG": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 400
+                    },
+                    "fatG": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 400
+                    },
+                    "fibreG": {
+                        "type": "number",
+                        "nullable": true,
+                        "minimum": 0,
+                        "maximum": 400,
+                        "default": null
+                    }
+                },
+                "required": [
+                    "calories",
+                    "proteinG",
+                    "carbG",
+                    "fatG"
+                ],
+                "description": "One portion"
+            },
+            "MealIngredient": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                    },
+                    "grams": {
+                        "type": "number",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 2000,
+                        "description": "Grams in one portion, as eaten (cooked where it says so)"
+                    },
+                    "measure": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 40,
+                        "default": null,
+                        "description": "A kitchen measure for one portion, e.g. \"½ cup\""
+                    },
+                    "aisle": {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                            "produce",
+                            "meat-fish",
+                            "dairy-eggs",
+                            "bakery-grains",
+                            "pantry",
+                            "frozen",
+                            null
+                        ],
+                        "default": null
+                    }
+                },
+                "required": [
+                    "name",
+                    "grams"
+                ]
+            },
+            "AdminMealPlanSlugs": {
+                "type": "object",
+                "properties": {
+                    "diets": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "meals": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": [
+                    "diets",
+                    "meals"
+                ]
+            },
+            "AdminDietInput": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 60
+                    },
+                    "summary": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                    },
+                    "description": {
+                        "type": "string",
+                        "maxLength": 2000,
+                        "default": ""
+                    },
+                    "tier": {
+                        "type": "string",
+                        "enum": [
+                            "free",
+                            "pro"
+                        ]
+                    },
+                    "position": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000,
+                        "default": 0
+                    },
+                    "goals": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "lose",
+                                "maintain",
+                                "gain"
+                            ]
+                        },
+                        "minItems": 1,
+                        "maxItems": 3,
+                        "description": "Goals this style suits"
+                    },
+                    "highlights": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                        },
+                        "maxItems": 6,
+                        "default": []
+                    },
+                    "split": {
+                        "type": "object",
+                        "properties": {
+                            "breakfast": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "lunch": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "dinner": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "snack": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                            }
+                        },
+                        "required": [
+                            "breakfast",
+                            "lunch",
+                            "dinner",
+                            "snack"
+                        ],
+                        "description": "Share of the day's calories for each meal (a second snack, when there is one, halves the snack share)"
+                    },
+                    "macros": {
+                        "type": "object",
+                        "properties": {
+                            "proteinPct": {
+                                "type": "integer",
+                                "minimum": 5,
+                                "maximum": 60
+                            },
+                            "carbPct": {
+                                "type": "integer",
+                                "minimum": 5,
+                                "maximum": 75
+                            },
+                            "fatPct": {
+                                "type": "integer",
+                                "minimum": 10,
+                                "maximum": 75
+                            }
+                        },
+                        "required": [
+                            "proteinPct",
+                            "carbPct",
+                            "fatPct"
+                        ],
+                        "description": "The rough energy split the meals aim for, shown as guidance"
+                    },
+                    "caution": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 400,
+                        "default": null,
+                        "description": "Who should check with a health professional first"
+                    }
+                },
+                "required": [
+                    "title",
+                    "summary",
+                    "tier",
+                    "goals",
+                    "split",
+                    "macros"
+                ]
+            },
+            "AdminMealInput": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                    },
+                    "summary": {
+                        "type": "string",
+                        "maxLength": 160,
+                        "default": ""
+                    },
+                    "slots": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "breakfast",
+                                "lunch",
+                                "dinner",
+                                "snack"
+                            ]
+                        },
+                        "minItems": 1,
+                        "maxItems": 4,
+                        "description": "Which meals of the day it can be"
+                    },
+                    "diets": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "maxLength": 80,
+                            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                        },
+                        "minItems": 1,
+                        "maxItems": 10
+                    },
+                    "minutes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 600
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "maxLength": 80,
+                            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                        },
+                        "maxItems": 8,
+                        "default": []
+                    },
+                    "ingredients": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MealIngredient"
+                        },
+                        "minItems": 1,
+                        "maxItems": 25
+                    },
+                    "steps": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 400
+                        },
+                        "maxItems": 12,
+                        "default": []
+                    },
+                    "nutrition": {
+                        "$ref": "#/components/schemas/MealNutrition"
+                    },
+                    "source": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 200,
+                        "default": null,
+                        "description": "Where the nutrition numbers come from"
+                    }
+                },
+                "required": [
+                    "title",
+                    "slots",
+                    "diets",
+                    "minutes",
+                    "ingredients",
+                    "nutrition"
+                ]
+            },
             "WorkoutSessionList": {
                 "type": "object",
                 "properties": {
@@ -13314,6 +13852,344 @@
                     },
                     "500": {
                         "description": "Unexpected server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/meal-plans": {
+            "get": {
+                "tags": [
+                    "Meal plans"
+                ],
+                "summary": "Diet styles and the meals plans are made from",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "description": "Everything in one answer (it is small), so the phone can plan any day offline. Pro styles are `locked` on a free account, and so are meals found only in Pro styles: those come without ingredients or steps.",
+                "responses": {
+                    "200": {
+                        "description": "Diets and meals",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MealPlans"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing, invalid or expired access token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limited or quota reached",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/admin/meal-plans": {
+            "get": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "The slugs of every diet and meal",
+                "security": [
+                    {
+                        "adminKey": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Slugs",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdminMealPlanSlugs"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/admin/diets/{slug}": {
+            "put": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Create or update a diet style",
+                "security": [
+                    {
+                        "adminKey": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 80,
+                            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                        },
+                        "required": true,
+                        "name": "slug",
+                        "in": "path"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AdminDietInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Saved",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "slug": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "slug"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Delete a diet style no meal uses",
+                "security": [
+                    {
+                        "adminKey": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 80,
+                            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                        },
+                        "required": true,
+                        "name": "slug",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted"
+                    },
+                    "401": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/admin/meals/{slug}": {
+            "put": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Create or update a meal",
+                "security": [
+                    {
+                        "adminKey": []
+                    }
+                ],
+                "description": "Every diet it names must exist. Calories must roughly match 4 kcal/g protein and carbs and 9 kcal/g fat.",
+                "parameters": [
+                    {
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 80,
+                            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                        },
+                        "required": true,
+                        "name": "slug",
+                        "in": "path"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AdminMealInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Saved",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "slug": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "slug"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Delete a meal",
+                "security": [
+                    {
+                        "adminKey": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 80,
+                            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                        },
+                        "required": true,
+                        "name": "slug",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted"
+                    },
+                    "401": {
+                        "description": "Bad request",
                         "content": {
                             "application/json": {
                                 "schema": {

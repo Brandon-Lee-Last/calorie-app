@@ -113,6 +113,13 @@ skip it and keep the defaults. Then:
   or add one of your usuals (meals you have logged at least twice) in one tap.
 - **What fits?**: on Today and in the diary. Ideas from your own meals and common South African dishes, shrunk to a
   smaller portion when the whole plate would not fit what is left today.
+- **Meal plans**: "Want a meal plan?" on Today, or open the plan from there. Pick a style (Balanced and Budget are
+  free; High protein, Mediterranean, Low carb, Vegetarian and Plant-based come with Plus) and Pango plans breakfast,
+  lunch, dinner and a snack (two from 2,400 kcal) with portions sized to your calorie goal. Log a planned meal in one
+  tap, swap one you do not fancy, open its recipe (ingredients scaled to your portion). Free plans today and
+  tomorrow; Plus plans the week ahead and adds a shopping list by shop aisle, to tick off or send. The meals and their
+  numbers come from the backend (`/v1/meal-plans`, worked out from USDA figures; see calorie-api's
+  `docs/meal-plans.md`); the planning happens on the phone, so it works offline once loaded.
 - **Progress**: your weight trend (log a weigh-in or set a goal weight there), the weekly recap (three tap-through
   cards about last week, shareable) and a month calendar of days on target.
 - **Train**: quick workouts built into the app (bodyweight, dumbbells, core, cardio, mobility) that work offline,
@@ -128,7 +135,8 @@ skip it and keep the defaults. Then:
 - **Notes from the server** (`/v1/config`, checked when the app opens): a short-break note on Today during maintenance,
   an "update" note when a newer version is out (closable), and a full-screen "time to update" when the server no longer
   accepts this version.
-- **Pango Plus** (Me): every training program and a year of trends, bought through Google Play. Everything else is
+- **Pango Plus** (Me): every meal plan style with the week ahead and a shopping list, every training program and a
+  year of trends, bought through Google Play. Everything else is
   free.
 
 To check the model itself, open **Me > Model lab**, then:
@@ -166,7 +174,8 @@ Verified (on a Linux dev box, no phone):
 - `npm run test:backend`: the data layer against the real backend (`wrangler dev`): back up from one phone,
   restore, edit and delete on a second; onboarding answers stored with exactly the goals the phone worked out;
   scan records accepted; a workout session and goals set by hand stored (and the recommended goals restored); a
-  server program joined and its next workout read into the app's shape; Plus status read; the profile read back.
+  server program joined and its next workout read into the app's shape; Plus status read; the profile read back;
+  a day planned in each free meal plan style from the server's meals, and a planned meal synced.
 - A web build (`npx expo export --platform web`) was screenshotted: Today, Me and Pango studio match the design
   canvas in dark and light, Pango's animations run, and they stop when the system asks for reduced motion. The
   data screens were walked through in it (add water, a form error, add and edit a meal, Me), and so were
@@ -253,6 +262,8 @@ phone's secure store.
   "Search Open Food Facts" sends the words straight from the phone to Open Food Facts (it is their search, with
   their limit of 10 a minute per person, so it never runs while you type). Foods you open are kept on the phone so a
   recent one opens offline.
+- **Meal plans**: the style you pick, swaps and shopping ticks stay on the phone. A planned meal you log is an
+  ordinary diary entry.
 - **Workouts** are saved on the phone and synced like meals (`workout_session`). Energy burned is a rough estimate
   from standard MET values and your weight.
 - **Wardrobe unlocks** are worked out from synced data (diary, water, workouts), so they follow you to a new phone.

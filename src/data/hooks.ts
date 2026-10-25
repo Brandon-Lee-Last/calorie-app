@@ -7,7 +7,8 @@ import { useData } from './DataProvider';
 import { localDate, shiftDate, streak, weekOf, type MealType } from './dates';
 import { learnUsuals, mealsFrom, type Usual } from './history';
 import { computeStats, type Stats } from './achievements';
-import { ENTITLEMENT_KEY, type CachedEntitlement, type Entitlement } from './entitlement';
+import { ENTITLEMENT_KEY, isPlus, type CachedEntitlement, type Entitlement } from './entitlement';
+import { PLAN_DIET_KEY, PLAN_SWAPS_KEY, type Swaps } from './mealPlan';
 import { CLASSIC_LOOK, type WornLook } from '../pango/wardrobe';
 import { ONBOARDED_KEY } from './profile';
 import type { Area, DayTotals, DiaryEntry, Repo } from './repo';
@@ -152,6 +153,25 @@ export function useCachedApi<T>(key: string, load: (api: Api) => Promise<T>, dep
 /** What the server says about this app version, maintenance and links; the last answer is kept for offline starts. */
 export function useServerConfig() {
   return useCachedApi('config', (api) => unwrap(api.GET('/v1/config')), []).data;
+}
+
+/** Diet styles and meals for meal plans, kept on the phone; fetched again when the account goes Plus or back. */
+export function useMealPlans() {
+  const plus = isPlus(useEntitlement());
+  return useCachedApi('meal-plans', (api) => unwrap(api.GET('/v1/meal-plans')), [plus]);
+}
+
+/** The diet style picked for meal plans (a slug), null before one is picked, undefined while reading. */
+export function usePlanDiet(): [string | null | undefined, (slug: string | null) => Promise<void>] {
+  const { repo } = useData();
+  const slug = useRepoQuery(['meta'], (r) => r.getMeta<string>(PLAN_DIET_KEY), []);
+  const set = useCallback((next: string | null) => repo.setMeta(PLAN_DIET_KEY, next), [repo]);
+  return [slug, set];
+}
+
+/** How many times each planned meal was swapped, by day and slot. */
+export function usePlanSwaps(): Swaps {
+  return useRepoQuery(['meta'], (r) => r.getMeta<Swaps>(PLAN_SWAPS_KEY), []) ?? {};
 }
 
 /** Finished workouts from `since`. */

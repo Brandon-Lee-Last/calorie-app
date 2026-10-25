@@ -36,6 +36,12 @@ using an API. The Expo docs site may be unreachable from sandboxed environments.
   go over). Never wire Open Food Facts search to typing, and never route it through the backend (every user would
   share the Worker's limit). An Open Food Facts pick opens `/food?barcode=`, so the backend caches it for everyone.
 
+- Meal plans: the server only serves diets and meals (`/v1/meal-plans`, kept with `useMealPlans`); the planning is
+  pure code on the phone (`src/data/mealPlan.ts`), the same for a day on every phone (a seeded shuffle per week), so it
+  works offline. Never put nutrition numbers for plan meals in the app: they come from the backend's content, worked
+  out from USDA figures. A logged planned meal is a normal entry (`source: 'food'`, no `foodId`), matched to the plan
+  by name and meal. Free accounts plan two days; Plus plans seven and gets the shopping list.
+
 ## Layout
 
 Routes in `app/` (Expo Router; tabs use `expo-router/js-tabs` with the custom `src/ui/TabBar`). Tokens in

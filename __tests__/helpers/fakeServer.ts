@@ -43,6 +43,8 @@ export class FakeServer {
   maintenance = { enabled: false, message: '' };
   update: 'unknown' | 'none' | 'available' | 'required' = 'none';
   latestAppVersion = '1.0.0';
+  /** What GET /v1/meal-plans answers, for the current plan (null: 404, as before the server had meal plans). */
+  mealPlans: ((plan: 'free' | 'pro') => unknown) | null = null;
   /** Accounts deleted through DELETE /v1/account. */
   deletedAccounts: string[] = [];
   private n = 0;
@@ -114,6 +116,7 @@ export class FakeServer {
     if (url.pathname === '/v1/subscription') {
       return json(200, { subscription: null, entitlement: null, products: [{ id: 'pro_monthly', plan: 'pro', period: 'P1M', trialDays: 0 }, { id: 'pro_yearly', plan: 'pro', period: 'P1Y', trialDays: 7 }] });
     }
+    if (url.pathname === '/v1/meal-plans') return this.mealPlans ? json(200, this.mealPlans(this.plan)) : json(404, { error: { code: 'not_found', message: 'Not found' } });
     if (url.pathname === '/v1/programs') return json(200, { items: this.programs });
     if (url.pathname === '/v1/programs/current') return json(200, { enrollment: null });
     if (url.pathname === '/v1/config') {
