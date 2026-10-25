@@ -1,0 +1,58 @@
+# Runs the app's data layer against the deployed stage backend (the address in app.json, expo.extra.apiUrl), then tries
+# food search and a real barcode. It makes a couple of anonymous test accounts on stage each time.
+name: Stage check
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, 'claude/**']
+    paths:
+      - app.json
+      - 'src/api/**'
+      - 'src/auth/**'
+      - 'src/data/**'
+      - __tests__/integration.backend.test.ts
+      - .github/workflows/stage-check.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stage-check
+  cancel-in-progress: true
+
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Which server
+        run: echo "API_URL=$(node -p "require('./app.json').expo.extra.apiUrl")" >> "$GITHUB_ENV"
+      - name: The app's data layer against stage
+        run: npm run test:backend -- "$API_URL"
+      - name: Food search and a barcode on stage
+        run: |
+          node --input-type=module -e "
+            const base = process.env.API_URL;
+            const res = await fetch(base + '/v1/auth/anonymous', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ deviceLabel: 'stage check' }) });
+            if (!res.ok) throw new Error('sign-in: HTTP ' + res.status);
+            const auth = { authorization: 'Bearer ' + (await res.json()).accessToken };
+            const lines = ['### Food search on ' + base, '', '| Search | Found | First results |', '|---|---|---|'];
+            for (const q of ['apple', 'rice', 'rusk', 'weet bix', 'chakalaka', 'milk']) {
+              const r = await (await fetch(base + '/v1/foods/search?limit=5&q=' + encodeURIComponent(q), { headers: auth })).json();
+              lines.push('| ' + q + ' | ' + r.items.length + ' | ' + r.items.slice(0, 3).map((f) => f.name + ' (' + f.source + ')').join('; ') + ' |');
+            }
+            const b = await fetch(base + '/v1/foods/barcode/5449000000996', { headers: auth });
+            const food = await b.json();
+            lines.push('', 'Barcode 5449000000996: HTTP ' + b.status + ', ' + (food.name ?? JSON.stringify(food).slice(0, 120)));
+            const text = lines.join('\n');
+            console.log(text);
+            (await import('node:fs')).appendFileSync(process.env.GITHUB_STEP_SUMMARY, text + '\n');
+            if (b.status !== 200) process.exit(1);
+          "

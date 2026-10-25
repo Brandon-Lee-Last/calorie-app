@@ -76,6 +76,9 @@
       ]
     ],
     "scheme": "calorieapp",
-    "backgroundColor": "#0B0E17"
+    "backgroundColor": "#0B0E17",
+    "extra": {
+      "apiUrl": "https://calorie-api-stage.lucyourique.workers.dev"
+    }
   }
 }

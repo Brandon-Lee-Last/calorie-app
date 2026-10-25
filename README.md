@@ -75,6 +75,9 @@ backend answers. On the first backup the app makes an anonymous account for the 
 email comes later).
 
 Where the app looks for the backend ([calorie-api](https://github.com/Brandon-Lee-Last/calorie-api)):
+- **Built in: the stage backend**, `https://calorie-api-stage.lucyourique.workers.dev` (`expo.extra.apiUrl` in
+  `app.json`), so the APK from GitHub Actions backs up, searches foods and looks up barcodes with nothing to set.
+  `.github/workflows/stage-check.yml` runs the data layer against it on every push that touches the data code.
 - Set `EXPO_PUBLIC_API_URL`. The easy way on Windows is a file named `.env.local` in this folder (git ignores it):
   ```
   EXPO_PUBLIC_API_URL=http://192.168.1.20:8787
