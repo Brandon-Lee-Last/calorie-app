@@ -68,3 +68,15 @@ jobs:
           path: android/app/build/outputs/apk/release/*.apk
           retention-days: 30
           if-no-files-found: error
+      - name: Check what is inside the APK
+        run: |
+          apk=$(ls android/app/build/outputs/apk/release/*.apk)
+          tools=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$tools/aapt2" dump badging "$apk" | grep -E "^(package|sdkVersion|targetSdkVersion|uses-permission|uses-native-library|native-code|application-label):" || true
+          "$tools/apksigner" verify --print-certs "$apk" | grep -E "certificate (DN|SHA-256)"
+          unzip -l "$apk" > contents.txt
+          grep -iE "nutrition|tflite|tensorflow|index\.android\.bundle|libhermes|libreactnative" contents.txt || true
+          # The JavaScript bundle, the model and the TFLite runtime must all be inside.
+          grep -q "assets/index.android.bundle" contents.txt
+          grep -qi "nutrition_v1" contents.txt
+          grep -qiE "lib/arm64-v8a/.*(tensorflow|tflite)" contents.txt
