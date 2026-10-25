@@ -1,10 +1,10 @@
 import type { components } from '../api/schema';
 import type { Db, Statements } from '../db/types';
 import { localDate, mealForTime, type MealType } from './dates';
-import { DIARY, WATER, WEIGHT, fromRow, pushData, readRecord, writeRecord, type DiaryRecord, type SyncType, type TableSpec, type WaterRecord, type WeightRecord } from './tables';
+import { DIARY, WATER, WEIGHT, WORKOUT, fromRow, pushData, readRecord, writeRecord, type DiaryRecord, type SyncType, type TableSpec, type WaterRecord, type WeightRecord, type WorkoutRecord } from './tables';
 
 /** 'outbox' means a local change was queued for the server. */
-export type Area = 'diary' | 'water' | 'weight' | 'meta' | 'outbox';
+export type Area = 'diary' | 'water' | 'weight' | 'workout' | 'meta' | 'outbox';
 export type ScanRecord = components['schemas']['ScanInput'];
 export type DiaryEntry = DiaryRecord;
 export type DayTotals = { entries: number; calories: number; proteinG: number; carbG: number; fatG: number };
@@ -28,7 +28,7 @@ export type NewEntry = {
   note?: string | null;
 };
 
-const AREA_OF: Record<string, Area> = { diary_entry: 'diary', water: 'water', weight: 'weight' };
+const AREA_OF: Record<string, Area> = { diary_entry: 'diary', water: 'water', weight: 'weight', workout_session: 'workout' };
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
 /**
@@ -178,6 +178,12 @@ export class Repo {
     return true;
   }
 
+  /** Millilitres per day, every day with water logged. */
+  async waterByDay(): Promise<Map<string, number>> {
+    const rows = await this.db.all<{ d: string; ml: number }>('SELECT local_date AS d, SUM(ml) AS ml FROM water GROUP BY local_date');
+    return new Map(rows.map((r) => [r.d, r.ml]));
+  }
+
   async waterFor(date: string): Promise<number> {
     const row = await this.db.get<{ ml: number | null }>('SELECT SUM(ml) AS ml FROM water WHERE local_date = ?', [date]);
     return row?.ml ?? 0;
@@ -195,6 +201,26 @@ export class Repo {
   async weights(since: string): Promise<WeightRecord[]> {
     const rows = await this.db.all<Record<string, unknown>>('SELECT * FROM weights WHERE local_date >= ? ORDER BY logged_at', [since]);
     return rows.map((r) => fromRow<WeightRecord>(WEIGHT, r));
+  }
+
+  // ---- workouts
+
+  async addWorkout(input: Omit<WorkoutRecord, 'id' | 'localDate' | 'clientUpdatedAt' | 'updatedAt' | 'deletedAt' | 'rev'>): Promise<WorkoutRecord> {
+    const record: WorkoutRecord = { ...input, id: this.ids(), localDate: localDate(input.startedAt), clientUpdatedAt: this.now(), updatedAt: 0, deletedAt: null, rev: 0 };
+    await this.saveLocal(WORKOUT, record as unknown as Record<string, unknown>);
+    this.emit('workout', 'outbox');
+    return record;
+  }
+
+  async deleteWorkout(id: string): Promise<void> {
+    await this.deleteLocal(WORKOUT, id);
+    this.emit('workout', 'outbox');
+  }
+
+  /** Finished workouts from `since` onwards, oldest first. */
+  async workouts(since: string): Promise<WorkoutRecord[]> {
+    const rows = await this.db.all<Record<string, unknown>>('SELECT * FROM workout_sessions WHERE local_date >= ? AND finished_at IS NOT NULL ORDER BY started_at', [since]);
+    return rows.map((r) => fromRow<WorkoutRecord>(WORKOUT, r));
   }
 
   // ---- scan records (numbers only; photos never leave the phone)

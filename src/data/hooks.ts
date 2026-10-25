@@ -5,9 +5,13 @@ import type { Session } from '../auth/session';
 import { useData } from './DataProvider';
 import { localDate, shiftDate, streak, weekOf, type MealType } from './dates';
 import { learnUsuals, mealsFrom, type Usual } from './history';
+import { computeStats, type Stats } from './achievements';
+import { ENTITLEMENT_KEY, type CachedEntitlement, type Entitlement } from './entitlement';
+import { CLASSIC_LOOK, type WornLook } from '../pango/wardrobe';
 import { ONBOARDED_KEY } from './profile';
 import type { Area, DayTotals, DiaryEntry, Repo } from './repo';
-import { DEFAULT_GOALS, DEFAULT_SETTINGS, PROFILE_KEY, SETTINGS_KEY, type CachedProfile, type Goals, type Profile, type Settings } from './settings';
+import { DEFAULT_GOALS, DEFAULT_SETTINGS, EAT_BACK_FACTOR, PROFILE_KEY, SETTINGS_KEY, type CachedProfile, type Goals, type Profile, type Settings } from './settings';
+import type { Api } from '../api/client';
 import type { SyncStatus } from './sync';
 
 /**
@@ -99,6 +103,91 @@ export function useMealHistory(today: string): Usual[] | undefined {
 /** The latest earlier day's entries for a meal, to copy. Null when there is none. */
 export function useLastMeal(date: string, mealType: MealType) {
   return useRepoQuery(['diary'], (repo) => repo.lastMeal(date, mealType), [date, mealType]);
+}
+
+/** The last entitlement the server gave (free until it says otherwise). */
+export function useEntitlement(): Entitlement | null {
+  const cached = useRepoQuery(['meta'], (r) => r.getMeta<CachedEntitlement>(ENTITLEMENT_KEY), []);
+  return cached?.entitlement ?? null;
+}
+
+/** Weights from `since`, oldest first. */
+export function useWeights(since: string) {
+  return useRepoQuery(['weight'], (repo) => repo.weights(since), [since]);
+}
+
+/** Calories per day between two dates. */
+export function useCaloriesByDay(from: string, to: string) {
+  return useRepoQuery(['diary'], (repo) => repo.caloriesByDay(from, to), [from, to]);
+}
+
+/**
+ * A server answer kept on the phone: shows the last copy at once (offline too) and refreshes it in the background.
+ * `load` may only depend on `deps`.
+ */
+export function useCachedApi<T>(key: string, load: (api: Api) => Promise<T>, deps: readonly unknown[]) {
+  const { api, repo } = useData();
+  const cached = useRepoQuery(['meta'], (r) => r.getMeta<{ at: number; data: T }>(`cache:${key}`), [key]);
+  const [error, setError] = useState<unknown>(null);
+  const [loading, setLoading] = useState(true);
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    load(api)
+      .then((data) => repo.setMeta(`cache:${key}`, { at: Date.now(), data }))
+      .then(
+        () => alive && setError(null),
+        (e) => alive && setError(e),
+      )
+      .finally(() => alive && setLoading(false));
+    return () => {
+      alive = false;
+    };
+  }, [api, repo, key, attempt, ...deps]);
+  return { data: cached?.data, error, loading, reload: () => setAttempt((n) => n + 1) };
+}
+
+/** Finished workouts from `since`. */
+export function useWorkouts(since: string) {
+  return useRepoQuery(['workout'], (repo) => repo.workouts(since), [since]);
+}
+
+/** Energy burned training on `date`, and how much of it goes back into the day's food budget. */
+export function useBurned(date: string): { burned: number; added: number } {
+  const workouts = useWorkouts(date);
+  const [{ eatBack }] = useSettings();
+  const burned = Math.round((workouts ?? []).filter((w) => w.localDate === date).reduce((s, w) => s + (w.caloriesBurned ?? 0), 0));
+  return { burned, added: Math.round(burned * EAT_BACK_FACTOR[eatBack]) };
+}
+
+export const LOOK_KEY = 'pango.look';
+export const RECAP_SHARED_KEY = 'recap.shared';
+
+/** Everything the wardrobe's unlocks are based on. Undefined while reading. */
+export function useStats(today: string): Stats | undefined {
+  const goals = useGoals();
+  const [{ waterGoalMl }] = useSettings();
+  return useRepoQuery(
+    ['diary', 'water', 'workout', 'meta'],
+    async (repo) =>
+      computeStats({
+        entries: await repo.entriesSince('0000-01-01'),
+        waterByDay: await repo.waterByDay(),
+        workouts: (await repo.workouts('0000-01-01')).length,
+        goals,
+        waterGoalMl,
+        today,
+        sharedRecap: (await repo.getMeta<boolean>(RECAP_SHARED_KEY)) === true,
+      }),
+    [today, goals.calories, goals.proteinG, waterGoalMl],
+  );
+}
+
+/** The look Pango wears around the app (kept on this phone). */
+export function useWornLook(): WornLook {
+  const saved = useRepoQuery(['meta'], (r) => r.getMeta<WornLook>(LOOK_KEY), []);
+  return saved ?? CLASSIC_LOOK;
 }
 
 export function useSettings(): [Settings, (patch: Partial<Settings>) => Promise<void>] {

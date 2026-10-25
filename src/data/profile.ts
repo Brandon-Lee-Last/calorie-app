@@ -3,12 +3,14 @@ import type { components } from '../api/schema';
 import { ApiError } from '../api/errors';
 import { recommendGoals, type ActivityLevel, type GoalType, type Sex } from './goals';
 import type { Repo } from './repo';
-import { DEFAULT_GOALS, PROFILE_KEY, type CachedProfile, type Profile } from './settings';
+import { DEFAULT_GOALS, PROFILE_KEY, type CachedProfile, type Goals, type Profile } from './settings';
 
 export type ProfilePatch = components['schemas']['ProfilePatch'];
 
 /** Profile changes made on the phone and not yet accepted by the server, merged. */
 export const PENDING_PROFILE_KEY = 'profile.pending';
+/** Goals set by hand (or 'recommended' to go back to the worked-out ones), not yet sent. */
+export const PENDING_GOALS_KEY = 'goals.pending';
 /** Set when onboarding is finished or skipped on this phone. */
 export const ONBOARDED_KEY = 'onboarding.done';
 
@@ -86,12 +88,39 @@ export async function saveProfile(repo: Repo, changes: ProfilePatch, now: number
   return profile;
 }
 
+/** Sets the calorie and macro goals by hand, or goes back to the recommended ones. Saved at once, sent with the next sync. */
+export async function saveGoals(repo: Repo, goals: Goals | 'recommended', now: number = Date.now()): Promise<Profile> {
+  const cached = await repo.getMeta<CachedProfile>(PROFILE_KEY);
+  const base = cached?.profile ?? blankProfile();
+  const profile =
+    goals === 'recommended'
+      ? applyPatch({ ...base, goals: { ...base.goals, custom: false } }, {}, now)
+      : { ...base, goals: { ...goals, custom: true } };
+  await repo.setMeta(PENDING_GOALS_KEY, goals);
+  await repo.setMeta(PROFILE_KEY, { fetchedAt: cached?.fetchedAt ?? 0, profile } satisfies CachedProfile);
+  repo.emit('outbox');
+  return profile;
+}
+
 /**
- * Runs in each sync round: sends queued profile changes, or refreshes the copy on the phone when it is over 15 minutes
+ * Runs in each sync round: sends queued goal and profile changes, or refreshes the copy on the phone when it is over 15 minutes
  * old. A change the server rejects as invalid is dropped (it would be rejected forever).
  */
 export function profileTask(repo: Repo, api: Api, now: () => number = Date.now): () => Promise<void> {
   return async () => {
+    const goals = await repo.getMeta<Goals | 'recommended'>(PENDING_GOALS_KEY);
+    if (goals) {
+      try {
+        if (goals === 'recommended') await unwrap(api.POST('/v1/me/goals/apply-recommendation'));
+        else await unwrap(api.PUT('/v1/me/goals', { body: goals }));
+      } catch (e) {
+        if (!(e instanceof ApiError && e.permanent)) throw e;
+      }
+      if (JSON.stringify(await repo.getMeta(PENDING_GOALS_KEY)) === JSON.stringify(goals)) {
+        await repo.deleteMeta(PENDING_GOALS_KEY);
+        await repo.setMeta(PROFILE_KEY, { ...((await repo.getMeta<CachedProfile>(PROFILE_KEY)) ?? { profile: blankProfile() }), fetchedAt: 0 }); // fetch the server's copy next
+      }
+    }
     const pending = await repo.getMeta<ProfilePatch>(PENDING_PROFILE_KEY);
     if (pending) {
       let profile: Profile;

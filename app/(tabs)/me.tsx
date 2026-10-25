@@ -4,14 +4,17 @@ import { Pressable, View } from 'react-native';
 
 import { API_URL } from '../../src/config';
 import { useData } from '../../src/data/DataProvider';
-import { useSession, useSettings, useSyncStatus } from '../../src/data/hooks';
+import { isPlus } from '../../src/data/entitlement';
+import { useEntitlement, useProfile, useRepoQuery, useSession, useSettings, useStats, useSyncStatus, useToday } from '../../src/data/hooks';
+import { DEFAULT_GOALS } from '../../src/data/settings';
+import { MyPango } from '../../src/pango/MyPango';
+import { SEEN_KEY, earnedIds } from '../../src/pango/wardrobe';
 import { describeSync } from '../../src/data/syncText';
-import { Pango } from '../../src/pango/Pango';
 import { useTheme } from '../../src/theme/theme';
 import { radius, spacing } from '../../src/theme/tokens';
 import { Button, Card, Icon, Screen, Segmented, Text, type IconName } from '../../src/ui';
 
-function Row({ icon, title, body, onPress }: { icon: IconName; title: string; body: string; onPress: () => void }) {
+function Row({ icon, title, body, onPress, badge }: { icon: IconName; title: string; body: string; onPress: () => void; badge?: string }) {
   const { colors } = useTheme();
   return (
     <Pressable
@@ -26,8 +29,51 @@ function Row({ icon, title, body, onPress }: { icon: IconName; title: string; bo
           {body}
         </Text>
       </View>
+      {badge ? (
+        <View style={{ height: 24, paddingHorizontal: 10, borderRadius: 12, justifyContent: 'center', backgroundColor: colors.accent }}>
+          <Text variant="caption" tone="onAccent">
+            {badge}
+          </Text>
+        </View>
+      ) : null}
       <Icon name="chevron" size={20} color={colors.muted} />
     </Pressable>
+  );
+}
+
+function Plan() {
+  const { colors } = useTheme();
+  const goals = useProfile()?.goals;
+  const g = goals ?? { ...DEFAULT_GOALS, custom: false };
+  return (
+    <Card style={{ gap: spacing.md }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <View>
+          <Text variant="h3">Your daily plan</Text>
+          <Text variant="caption" tone="muted">
+            {g.custom ? 'Set by hand' : 'Worked out from your profile'}
+          </Text>
+        </View>
+        <Button title="Change" size="md" variant="secondary" onPress={() => router.push('/goals')} />
+      </View>
+      <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+        {[
+          { v: g.calories.toLocaleString('en-ZA'), l: 'kcal', c: colors.text },
+          { v: `${g.proteinG} g`, l: 'protein', c: colors.protein },
+          { v: `${g.carbG} g`, l: 'carbs', c: colors.carbs },
+          { v: `${g.fatG} g`, l: 'fat', c: colors.fat },
+        ].map((x) => (
+          <View key={x.l} style={{ flex: 1, alignItems: 'center', paddingVertical: spacing.sm, borderRadius: radius.md, backgroundColor: colors.raised }}>
+            <Text variant="bodyStrong" style={{ color: x.c }}>
+              {x.v}
+            </Text>
+            <Text variant="caption" tone="muted">
+              {x.l}
+            </Text>
+          </View>
+        ))}
+      </View>
+    </Card>
   );
 }
 
@@ -94,16 +140,24 @@ function WaterSettings() {
 }
 
 export default function Me() {
+  const today = useToday();
+  const stats = useStats(today);
+  const seen = useRepoQuery(['meta'], (r) => r.getMeta<string[]>(SEEN_KEY), []);
+  const fresh = stats && seen !== undefined ? earnedIds(stats).filter((id) => !(seen ?? []).includes(id)).length : 0;
+  const plus = isPlus(useEntitlement());
   return (
     <Screen>
       <Text variant="title">Me</Text>
       <Card raised style={{ alignItems: 'center', gap: spacing.sm }}>
-        <Pango pose="wave" size={150} />
-        <Text variant="h3">Pango says hi</Text>
+        <MyPango pose="wave" size={150} />
+        <Text variant="h3">{stats?.daysLogged ? `${stats.daysLogged} ${stats.daysLogged === 1 ? 'day' : 'days'} logged, best streak ${stats.bestStreak}` : 'Pango says hi'}</Text>
         <Text variant="small" tone="muted" align="center">
-          Your profile, goals and Pango's wardrobe come with the next screens.
+          Earn new looks for Pango by logging, scanning and training.
         </Text>
       </Card>
+      <Row icon="sparkle" title="Pango's wardrobe" body="Looks you have earned, and how to earn the rest" badge={fresh ? `${fresh} new` : undefined} onPress={() => router.push('/wardrobe')} />
+      <Plan />
+      <Row icon="bolt" title={plus ? 'Pango Plus is on' : 'Pango Plus'} body={plus ? 'Thank you. Manage your subscription' : 'Every training program and a year of trends'} onPress={() => router.push('/plus')} />
       <Backup />
       <WaterSettings />
       <Row icon="sparkle" title="Pango studio" body="Every pose and outfit, live" onPress={() => router.push('/studio')} />

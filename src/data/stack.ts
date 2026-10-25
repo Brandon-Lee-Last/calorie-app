@@ -5,6 +5,7 @@ import type { SecretStore } from '../auth/secretStore';
 import { SessionManager } from '../auth/session';
 import { migrate } from '../db/migrations';
 import type { Db } from '../db/types';
+import { entitlementTask } from './entitlement';
 import { profileTask } from './profile';
 import { Repo } from './repo';
 import { scanTask } from './scanTask';
@@ -44,6 +45,7 @@ export async function openStack({ db, store, baseUrl, appVersion, deviceLabel, i
   const sync = new SyncEngine(repo, api, async () => (await session.ensure(deviceLabel)).userId, now);
   sync.addTask(profileTask(repo, api, now));
   sync.addTask(scanTask(repo, api));
+  sync.addTask(entitlementTask(repo, api, now));
   return { db, repo, session, api, sync };
 }
 

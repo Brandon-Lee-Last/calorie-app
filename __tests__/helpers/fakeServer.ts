@@ -29,6 +29,12 @@ export class FakeServer {
   scans = new Map<string, Record<string, unknown>>();
   /** Answer scan PUTs with this status instead of storing them. */
   scanStatus: number | null = null;
+  /** What GET /v1/entitlements answers; POST /v1/subscription/simulate switches it to pro. */
+  plan: 'free' | 'pro' = 'free';
+  /** Goal changes received (PUT /v1/me/goals bodies, or 'recommended'). */
+  goalChanges: unknown[] = [];
+  /** Programs for GET /v1/programs. */
+  programs: Record<string, unknown>[] = [];
   /** Products by barcode for GET /v1/foods/barcode/{code}; anything else is 404. */
   foods = new Map<string, Record<string, unknown>>();
   private n = 0;
@@ -81,6 +87,33 @@ export class FakeServer {
         return { type: op.type, id: op.id, status: 'applied', record: strip(next) };
       });
       return json(200, { results });
+    }
+    if (url.pathname === '/v1/me/goals' && req.method === 'PUT') {
+      const goals = (await req.json()) as Record<string, unknown>;
+      this.goalChanges.push(goals);
+      this.profile = { ...this.profile, goals: { ...goals, custom: true } };
+      return json(200, this.profile);
+    }
+    if (url.pathname === '/v1/me/goals/apply-recommendation') {
+      this.goalChanges.push('recommended');
+      this.profile = { ...this.profile, goals: { ...(this.profile.goals as object), custom: false } };
+      return json(200, this.profile);
+    }
+    if (url.pathname === '/v1/subscription/simulate') {
+      this.plan = 'pro';
+      return json(200, {});
+    }
+    if (url.pathname === '/v1/subscription') {
+      return json(200, { subscription: null, entitlement: null, products: [{ id: 'pro_monthly', plan: 'pro', period: 'P1M', trialDays: 0 }, { id: 'pro_yearly', plan: 'pro', period: 'P1Y', trialDays: 7 }] });
+    }
+    if (url.pathname === '/v1/programs') return json(200, { items: this.programs });
+    if (url.pathname === '/v1/programs/current') return json(200, { enrollment: null });
+    if (url.pathname === '/v1/entitlements') {
+      return json(200, {
+        plan: this.plan, status: this.plan === 'pro' ? 'active' : 'none', expiresAt: null, willRenew: this.plan === 'pro', inGrace: false, isTrial: false,
+        limits: { scansPerDay: 3, aiTextPerDay: 5, mealPhotos: 30, recipes: 10, progressPhotos: 12 },
+        features: { workouts: this.plan === 'pro' ? 'all' : 'free', insights: this.plan === 'pro' ? 'full' : 'basic', export: true },
+      });
     }
     const barcode = url.pathname.match(/^\/v1\/foods\/barcode\/([^/]+)$/);
     if (barcode) {

@@ -248,7 +248,7 @@ export class SyncEngine {
       await tx.run('DELETE FROM remote_records');
       await tx.run('INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)', [REV_KEY, '0']);
     });
-    this.repo.emit('diary', 'water', 'weight');
+    this.repo.emit('diary', 'water', 'weight', 'workout');
   }
 }
 

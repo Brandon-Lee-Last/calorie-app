@@ -5,12 +5,12 @@ a photo of food, **entirely on the phone**. The model is `assets/nutrition_v1.tf
 [local-calorie-ai-model](https://github.com/Brandon-Lee-Last/local-calorie-ai-model); see
 `assets/MODEL_CARD.md` for what it takes, what it returns and how accurate it is.
 
-> **Status: the core screens are in: onboarding with a calorie plan, the camera (plate photos counted by the
-> on-phone model, barcodes looked up online), the scan result, the diary and "What fits?", on top of the data layer
-> and the v1 model.** Everything is saved on the phone and backed up when the backend can be reached. The code
-> type-checks, the tests pass (including against the real backend running locally) and the JavaScript bundles, but
-> the native build, the camera and the model running on a device are still to be tried. See "What is and is not
-> verified".
+> **Status: every screen in the design is in: onboarding, the camera and scan result, barcodes, the diary, "What
+> fits?", Progress with the weekly recap, Train with workout logging, Pango's wardrobe and Plus (Google Play
+> subscriptions), on top of the data layer and the v1 model.** Everything is saved on the phone and backed up when the
+> backend can be reached. The code type-checks, the tests pass (including against the real backend running locally)
+> and the JavaScript bundles, but the camera, the model and purchases have not run on a device yet. See "What is and
+> is not verified".
 
 ## Run it on your phone
 
@@ -89,6 +89,15 @@ skip it and keep the defaults. Then:
   or add one of your usuals (meals you have logged at least twice) in one tap.
 - **What fits?**: on Today and in the diary. Ideas from your own meals and common South African dishes, shrunk to a
   smaller portion when the whole plate would not fit what is left today.
+- **Progress**: your weight trend (log a weigh-in or set a goal weight there), the weekly recap (three tap-through
+  cards about last week, shareable) and a month calendar of days on target.
+- **Train**: quick workouts built into the app (bodyweight, dumbbells, core, cardio, mobility) that work offline,
+  plus any programs on the server. A workout shows each exercise with how to do it and what you did last time; log
+  each set, rest between them, finish to save it. Choose how much of the energy burned goes back into the day's food.
+- **Me > Pango's wardrobe**: looks for Pango earned by logging, streaks, scans, water and workouts. Whatever Pango
+  wears shows up around the app. **Me > Your daily plan** changes the calorie and macro goals by hand.
+- **Pango Plus** (Me): every training program and a year of trends, bought through Google Play. Everything else is
+  free.
 
 To check the model itself, open **Me > Model lab**, then:
 
@@ -110,27 +119,31 @@ To check the model itself, open **Me > Model lab**, then:
 
 Verified (on a Linux dev box, no phone):
 - `npm run typecheck`: the code type-checks against the installed libraries' real types.
-- `npm test`: 155 tests, including that the JavaScript PNG decoder returns exactly the same pixels as
+- `npm test`: 183 tests, including that the JavaScript PNG decoder returns exactly the same pixels as
   Python/PIL for the golden photo (checked by hash), the output order and units, tensor checks and
   display rounding; for Pango, that every pose and outfit draws every visible part exactly once and renders;
   for the data layer, the real SQL schema (on sql.js) with sync against a fake server: two phones editing the
   same entry, edits made mid-sync, rejected changes, paging, the server asking for a full resync, offline backoff,
   token refresh, moving data to a new account; the goal formula pinned to the backend's own test numbers; and the
   screens driven like a user would: onboarding, Today, Add food, the camera (with a stand-in camera), the scan
-  result (with the model's answer stubbed, as the model needs the phone), the barcode food screen, the diary and
-  What fits.
+  result (with the model's answer stubbed, as the model needs the phone), the barcode food screen, the diary,
+  What fits, Progress, logging weight, the wardrobe's unlocks, Train, a workout from first set to saved session, the
+  recap with sharing, Plus (without Google Play, as on the web) and editing goals; plus the unlock rules, weight
+  trends, recap maths, and workouts and goals syncing.
 - `npm run test:backend`: the data layer against the real backend (`wrangler dev`): back up from one phone,
   restore, edit and delete on a second; onboarding answers stored with exactly the goals the phone worked out;
-  scan records accepted; the profile read back.
+  scan records accepted; a workout session and goals set by hand stored (and the recommended goals restored); a
+  server program joined and its next workout read into the app's shape; Plus status read; the profile read back.
 - A web build (`npx expo export --platform web`) was screenshotted: Today, Me and Pango studio match the design
   canvas in dark and light, Pango's animations run, and they stop when the system asks for reduced motion. The
   data screens were walked through in it (add water, a form error, add and edit a meal, Me), and so were
-  onboarding, the diary and What fits, offline, as browsers cannot reach the backend (it allows no web origins).
-  The camera and the model do not run in a browser.
+  onboarding, the diary, What fits, Progress, Train, a workout (sets, rest, exercise done), Me, the wardrobe, Plus
+  and the recap, offline, as browsers cannot reach the backend (it allows no web origins). The camera, the model and
+  Google Play do not run in a browser.
 - `npm run bundle-check`: Metro bundles the JavaScript to Hermes with the model and golden assets.
 - `npx expo prebuild --platform android`: the plugins apply (GPU library entry, camera and photo
   permissions, microphone permission removed, New Architecture and Hermes on, the session kept out of Android's
-  backups) and SQLite, Secure Store, Crypto and Camera are linked.
+  backups, billing pinned to Google Play) and SQLite, Secure Store, Crypto, Camera and billing (expo-iap) are linked.
 - The `.tflite` itself matches the PyTorch model to under 0.001 kcal/g on 260 real photos (ML repo).
 
 **Not verified**: the Android native build, the model running on a device (CPU or GPU), the in-app camera,
@@ -151,7 +164,11 @@ training closely enough, and SQLite, Secure Store and backup over Wi-Fi on a rea
 
 - `app/`: screens, by route (Expo Router). `(tabs)/` holds Today, Train, Progress and Me (shown only once
   onboarding is done). Pushed screens: `onboarding`, `lens` (camera), `scan` (scan result), `food` (barcode result),
-  `add` (add or edit a meal), `diary`, `fits` (What fits?), `studio` and `lab`.
+  `add` (add or edit a meal), `diary`, `fits` (What fits?), `weigh` (weight or goal weight), `recap`, `program`,
+  `workout`, `wardrobe`, `plus`, `goals`, `studio` and `lab`.
+- `src/train/`: the built-in workouts (`library.ts`, written for this app) and the set logging helpers (`session.ts`).
+- `src/plus/billing.ts`: Google Play Billing through expo-iap: prices, buying, acknowledging, restoring.
+- `src/pango/wardrobe.ts` and `src/data/achievements.ts`: what can be worn, and the stats that unlock it.
 - `src/scan/`: loading the model once, photo to estimate (`model.ts`), portions and what is saved and recorded
   (`scanMath.ts`), scan photos kept on the phone (`photos.ts`).
 - `src/data/`: what the screens read and write (`repo.ts`), the sync engine (`sync.ts`), the provider and hooks
@@ -192,6 +209,14 @@ phone's secure store.
   photos can be measured (`/v1/scans`).
 - **Barcodes** are looked up by the backend: your own foods, then the shared catalogue, then Open Food Facts (its
   data is credited on the screen, as its licence requires).
+- **Workouts** are saved on the phone and synced like meals (`workout_session`). Energy burned is a rough estimate
+  from standard MET values and your weight.
+- **Wardrobe unlocks** are worked out from synced data (diary, water, workouts), so they follow you to a new phone.
+  The look Pango wears is kept on the phone.
+- **Plus**: Google Play sells the subscription; the app sends the purchase token to the server, which checks it with
+  Google before granting anything, and only then acknowledges the purchase. The phone keeps the server's last answer
+  for offline use. Development builds show a "Test Plus" button that only works against a development server running
+  mock billing; production refuses it.
 
 After the backend's API changes: start it, then `npm run api:types` refreshes `api/openapi.json` and the generated
 types; `npm run typecheck` shows what the change broke.
@@ -231,5 +256,11 @@ food output the self-test also checks that the golden photo is accepted as food.
   (year of birth, height, weight, sex if given). Consider a setting to turn scan records off.
 - `android.permission.SYSTEM_ALERT_WINDOW` comes from Expo's template; block it for release builds
   (`android.blockedPermissions` in `app.json`) unless something needs it.
+- Create the subscriptions in Play Console with the ids the backend expects (`pro_monthly`, `pro_yearly`), each with
+  a base plan (and the trial as an offer if you want one), and add licence testers to try buying without being
+  charged. Purchases only work in a build installed from Google Play (an internal testing track is enough).
+- Product decision: the backend's placeholder free plan says 3 scans a day, but the design says scanning is always
+  free, so the app does not limit scans. Change one or the other.
+- Have someone check the built-in workouts' instructions before release.
 - The local ideas in What fits use typical values for common dishes; have someone check them, or replace them with
   catalogue foods.

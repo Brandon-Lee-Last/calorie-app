@@ -90,6 +90,28 @@ const STEPS: string[] = [
   );
   CREATE INDEX scans_unsent ON scans (sent, created_at);
   `,
+  // v3: workout sessions get their own table (they were kept as JSON in remote_records before).
+  `
+  CREATE TABLE workout_sessions (
+    id TEXT PRIMARY KEY,
+    workout_id TEXT,
+    program_id TEXT,
+    title TEXT NOT NULL,
+    started_at INTEGER NOT NULL,
+    finished_at INTEGER,
+    local_date TEXT NOT NULL,
+    sets TEXT,
+    notes TEXT,
+    rating INTEGER,
+    calories_burned REAL,
+    client_updated_at INTEGER NOT NULL,
+    updated_at INTEGER,
+    rev INTEGER NOT NULL DEFAULT 0
+  );
+  CREATE INDEX workout_sessions_date ON workout_sessions (local_date);
+  DELETE FROM remote_records WHERE type = 'workout_session';
+  UPDATE meta SET value = '0' WHERE key = 'sync.rev';
+  `,
 ];
 
 export const SCHEMA_VERSION = STEPS.length;

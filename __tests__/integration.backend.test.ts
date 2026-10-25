@@ -7,9 +7,10 @@
  */
 import { memorySecretStore, type SecretStore } from '../src/auth/secretStore';
 import { localDate } from '../src/data/dates';
-import { saveProfile } from '../src/data/profile';
+import { saveGoals, saveProfile } from '../src/data/profile';
 import { PROFILE_KEY, type CachedProfile } from '../src/data/settings';
 import { scanRecord, shownFor } from '../src/scan/scanMath';
+import { fromServer } from '../src/train/library';
 import { openStack, type DataStack } from '../src/data/stack';
 import { nodeFetch } from './helpers/nodeFetch';
 import { memoryDb } from './helpers/sqljsDb';
@@ -80,6 +81,45 @@ const phone = async (store: SecretStore) =>
     expect(error).toBeUndefined();
     expect(data).toMatchObject({ outcome: 'edited', portion: 1.25, modelVersion: 'nutrition_v1' });
     expect((await a.api.GET('/v1/scans/{id}', { params: { path: { id: rejected } } })).data).toMatchObject({ outcome: 'not_food' });
+  });
+
+  it('backs up a workout and goals set by hand, and reads Plus status', async () => {
+    const a = await phone(account);
+    stacks.push(a);
+    const w = await a.repo.addWorkout({
+      workoutId: null, programId: null, title: 'Bodyweight full body', startedAt: Date.now() - 20 * 60_000, finishedAt: Date.now(), notes: null, rating: null, caloriesBurned: 120,
+      sets: [{ exercise: 'bodyweight-squat', setNo: 1, reps: 12, weightKg: null, durationS: null }, { exercise: 'plank', setNo: 1, reps: null, weightKg: null, durationS: 30 }],
+    });
+    await saveGoals(a.repo, { calories: 1900, proteinG: 150, carbG: 180, fatG: 60 });
+    await a.sync.syncNow();
+    expect(a.sync.current).toMatchObject({ state: 'idle', pending: 0 });
+    expect((await a.repo.workouts(localDate()))[0]).toMatchObject({ id: w.id, rev: expect.any(Number) });
+    const sessions = await a.api.GET('/v1/training/sessions', { params: { query: { from: localDate(), to: localDate() } } });
+    expect(sessions.error).toBeUndefined();
+    expect(sessions.data?.items.map((s) => s.id)).toContain(w.id);
+    expect((await a.api.GET('/v1/me/profile')).data?.goals).toMatchObject({ calories: 1900, custom: true });
+    expect((await a.api.GET('/v1/entitlements')).data?.plan).toBe('free');
+    await saveGoals(a.repo, 'recommended');
+    await a.sync.syncNow();
+    expect((await a.api.GET('/v1/me/profile')).data?.goals.custom).toBe(false);
+  });
+
+  // Needs workout content on the server: (in calorie-api) node scripts/import-content.mjs content/sample --publish
+  it('lists programs, joins one and reads its next workout in the app\'s shape', async () => {
+    const a = await phone(account);
+    stacks.push(a);
+    const programs = (await a.api.GET('/v1/programs')).data?.items ?? [];
+    if (!programs.length) return console.warn('No programs on this server; import content/sample to test them.');
+    const p = programs[0];
+    await a.api.POST('/v1/programs/{slug}/enroll', { params: { path: { slug: p.slug } } });
+    const enrollment = (await a.api.GET('/v1/programs/current')).data?.enrollment;
+    expect(enrollment?.program.slug).toBe(p.slug);
+    const next = enrollment!.progress.nextWorkout!;
+    const detail = (await a.api.GET('/v1/workouts/{id}', { params: { path: { id: next.id } } })).data!;
+    const plan = fromServer(detail, p.id);
+    expect(plan.exercises.length).toBe(next.exerciseCount);
+    expect(plan.exercises.every((e) => e.sets > 0 && (e.durationS || e.repsMin))).toBe(true);
+    await a.api.DELETE('/v1/programs/{slug}/enroll', { params: { path: { slug: p.slug } } });
   });
 
   it('reads the profile and its goals', async () => {

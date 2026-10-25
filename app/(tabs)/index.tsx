@@ -5,11 +5,11 @@ import { Pressable, View } from 'react-native';
 import { useData } from '../../src/data/DataProvider';
 import { mealForTime } from '../../src/data/dates';
 import { mealLabel } from '../../src/data/entryForm';
-import { useDay, useGoals, useSettings, useStreak, useSyncStatus, useToday, useWater } from '../../src/data/hooks';
+import { useBurned, useDay, useGoals, useSettings, useStreak, useSyncStatus, useToday, useWater } from '../../src/data/hooks';
 import type { DiaryEntry } from '../../src/data/repo';
 import { EntryThumb, MEAL_TINT } from '../../src/ui/EntryThumb';
 import { describeSync } from '../../src/data/syncText';
-import { Pango } from '../../src/pango/Pango';
+import { MyPango } from '../../src/pango/MyPango';
 import { useTheme } from '../../src/theme/theme';
 import { radius, spacing } from '../../src/theme/tokens';
 import { Card, Icon, IconButton, ProgressBar, Ring, Screen, Text } from '../../src/ui';
@@ -21,7 +21,10 @@ export default function Today() {
   const { colors } = useTheme();
   const today = useToday();
   const day = useDay(today);
-  const goals = useGoals();
+  const plan = useGoals();
+  const { added } = useBurned(today);
+  // Energy burned training adds to the day's food (the share is set on Train).
+  const goals = { ...plan, calories: plan.calories + added };
   const streak = useStreak(today) ?? 0;
   const totals = day?.totals ?? { entries: 0, calories: 0, proteinG: 0, carbG: 0, fatG: 0 };
   const left = goals.calories - totals.calories;
@@ -37,7 +40,7 @@ export default function Today() {
     <Screen>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
         <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
-          <Pango crop="face" size={40} motion={false} />
+          <MyPango crop="face" size={40} motion={false} />
         </View>
         <View style={{ flex: 1 }}>
           <Text variant="h2">Hey there</Text>
@@ -60,6 +63,11 @@ export default function Today() {
           <Text variant="caption" tone="muted">
             of {fmt(goals.calories)} kcal
           </Text>
+          {added ? (
+            <Text variant="caption" tone="good">
+              +{fmt(added)} from training
+            </Text>
+          ) : null}
         </Ring>
         <View style={{ flex: 1, gap: spacing.md }}>
           {macros.map((m) => (
@@ -88,7 +96,7 @@ export default function Today() {
       <View style={{ gap: spacing.sm }}>
         {day && day.entries.length === 0 ? (
           <Card style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-            <Pango pose="think" size={72} />
+            <MyPango pose="think" size={72} />
             <View style={{ flex: 1, gap: 2 }}>
               <Text variant="bodyStrong">Nothing logged yet today</Text>
               <Text variant="small" tone="muted">

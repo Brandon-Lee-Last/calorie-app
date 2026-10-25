@@ -50,6 +50,12 @@ Routes in `app/` (Expo Router; tabs use `expo-router/js-tabs` with the custom `s
   `src/data/stack.ts`. Requests the server refuses outright (`ApiError.permanent`) are dropped, not retried.
 - New ids come from `repo.newId()` (expo-crypto on the phone; it returns undefined under Jest, so never call
   `newId` from `src/data/ids.ts` in screens).
+- `useCachedApi(key, load)` keeps a server answer in meta (`cache:<key>`) and refreshes it in the background: use it
+  for read-only server data a screen should show offline (programs, the subscription's products).
+- An effect that writes meta must not depend on an object re-read from meta (useStats re-reads on every meta change):
+  key it on a derived value (ids joined into a string), or it loops forever.
+- Billing: `src/plus/billing.ts` is the only file that imports expo-iap. Tests mock `expo-iap`. Never grant Plus on
+  the phone: send the purchase token to `/v1/subscription/verify`, then acknowledge, then refresh the entitlement.
 - The API client makes the anonymous account on the first call that needs one, so screens can call the API before
   the first sync. `SessionManager.ensure` is single-flight; keep it that way (two calls would make two accounts).
 - Form limits in `src/data/entryForm.ts` mirror the backend's validation, so saved entries are never rejected on sync.

@@ -28,6 +28,13 @@ function Navigator() {
         <Stack.Screen name="food" options={{ presentation: 'modal' }} />
         <Stack.Screen name="diary" />
         <Stack.Screen name="fits" />
+        <Stack.Screen name="wardrobe" />
+        <Stack.Screen name="weigh" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="recap" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
+        <Stack.Screen name="program" />
+        <Stack.Screen name="workout" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
+        <Stack.Screen name="plus" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="goals" options={{ presentation: 'modal' }} />
       </Stack>
     </>
   );
