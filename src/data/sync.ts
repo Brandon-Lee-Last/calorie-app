@@ -32,6 +32,7 @@ export class SyncEngine {
   private running: Promise<void> | null = null;
   private again = false;
   private timer: ReturnType<typeof setTimeout> | null = null;
+  private held = 0;
   private failures = 0;
   private status: SyncStatus = { state: 'idle', pending: 0, lastSyncedAt: null, lastError: null };
   private listeners = new Set<(s: SyncStatus) => void>();
@@ -64,8 +65,24 @@ export class SyncEngine {
     this.listeners.forEach((fn) => fn(this.status));
   }
 
+  /**
+   * Runs `fn` with syncing paused: waits for a round in progress, and starts none until `fn` is done. For work that
+   * must not race a round, such as deleting the account (a round in between would upload the phone's data again).
+   */
+  async hold<T>(fn: () => Promise<T>): Promise<T> {
+    this.held++;
+    this.stop();
+    try {
+      if (this.running) await this.running.catch(() => {});
+      return await fn();
+    } finally {
+      this.held--;
+    }
+  }
+
   /** Syncs soon, coalescing bursts of edits into one round. */
   schedule(delayMs = 1500): void {
+    if (this.held) return;
     if (this.timer) clearTimeout(this.timer);
     this.timer = setTimeout(() => {
       this.timer = null;
@@ -94,6 +111,7 @@ export class SyncEngine {
 
   /** One full round (push, pull, push anything new). Calls during a round queue one more round. */
   syncNow(): Promise<void> {
+    if (this.held) return Promise.resolve();
     if (this.running) {
       this.again = true;
       return this.running;

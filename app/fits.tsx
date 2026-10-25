@@ -9,7 +9,7 @@ import { mealLabel } from '../src/data/entryForm';
 import { LOCAL_IDEAS, ideasFromHistory, portionNote, suggest, type Fit, type Remaining } from '../src/data/fits';
 import { entryLike } from '../src/data/history';
 import { useDay, useGoals, useMealHistory, useToday } from '../src/data/hooks';
-import { Pango } from '../src/pango/Pango';
+import { MyPango } from '../src/pango/MyPango';
 import { useTheme } from '../src/theme/theme';
 import { brand, radius, spacing } from '../src/theme/tokens';
 import { EmptyState, IconButton, Screen, Text } from '../src/ui';
@@ -74,7 +74,7 @@ export default function WhatFits() {
 
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: 14, paddingHorizontal: spacing.lg, borderRadius: radius.xl, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line }}>
         <View style={{ width: 60, height: 60, borderRadius: 18, backgroundColor: colors.raised, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
-          <Pango pose="think" crop="face" size={44} />
+          <MyPango moment="cooking" pose="think" crop="face" size={44} />
         </View>
         <View style={{ flex: 1, flexDirection: 'row', gap: 6 }} accessible accessibilityLabel={`Left today: ${fmt(left.calories)} calories, ${fmt(left.proteinG)} grams protein, ${fmt(left.carbG)} carbs, ${fmt(left.fatG)} fat`}>
           <Left value={fmt(left.calories)} label="kcal" color={colors.accentText} />

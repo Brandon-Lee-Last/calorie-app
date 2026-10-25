@@ -119,7 +119,15 @@ skip it and keep the defaults. Then:
   plus any programs on the server. A workout shows each exercise with how to do it and what you did last time; log
   each set, rest between them, finish to save it. Choose how much of the energy burned goes back into the day's food.
 - **Me > Pango's wardrobe**: looks for Pango earned by logging, streaks, scans, water and workouts. Whatever Pango
-  wears shows up around the app. **Me > Your daily plan** changes the calorie and macro goals by hand.
+  wears shows up around the app. **Dress for the moment** (on by default, at the bottom of the wardrobe) lets Pango
+  borrow a look for the occasion: gym kit on Train and workouts, the chef's hat on What fits, the party look on the
+  weekly recap, and a protea everywhere on Heritage Day. **Me > Your daily plan** changes the calorie and macro goals.
+- **Me > Your data**: **Download my data** backs up, then hands Android's share sheet a JSON file with everything the
+  server holds (save it to Drive, email it). **Delete my account** asks first, deletes the account on the server and
+  empties the phone, then starts again at onboarding; if the server cannot be reached nothing is deleted.
+- **Notes from the server** (`/v1/config`, checked when the app opens): a short-break note on Today during maintenance,
+  an "update" note when a newer version is out (closable), and a full-screen "time to update" when the server no longer
+  accepts this version.
 - **Pango Plus** (Me): every training program and a year of trends, bought through Google Play. Everything else is
   free.
 
@@ -143,7 +151,7 @@ To check the model itself, open **Me > Model lab**, then:
 
 Verified (on a Linux dev box, no phone):
 - `npm run typecheck`: the code type-checks against the installed libraries' real types.
-- `npm test`: 196 tests, including that the JavaScript PNG decoder returns exactly the same pixels as
+- `npm test`: 214 tests, including that the JavaScript PNG decoder returns exactly the same pixels as
   Python/PIL for the golden photo (checked by hash), the output order and units, tensor checks and
   display rounding; for Pango, that every pose and outfit draws every visible part exactly once and renders;
   for the data layer, the real SQL schema (on sql.js) with sync against a fake server: two phones editing the
@@ -249,6 +257,9 @@ phone's secure store.
   from standard MET values and your weight.
 - **Wardrobe unlocks** are worked out from synced data (diary, water, workouts), so they follow you to a new phone.
   The look Pango wears is kept on the phone.
+- **Deleting the account** holds syncing while it runs (`sync.hold`), so no round in between uploads the diary to a new
+  account; then the server deletes everything and signs every device out, and the phone empties every table and its
+  kept photos.
 - **Plus**: Google Play sells the subscription; the app sends the purchase token to the server, which checks it with
   Google before granting anything, and only then acknowledges the purchase. The phone keeps the server's last answer
   for offline use. Development builds show a "Test Plus" button that only works against a development server running
@@ -284,7 +295,10 @@ food output the self-test also checks that the golden photo is accepted as food.
 
 - Change the Android package id (`com.brandonleelast.calorieapp` in `app.json`); it is permanent once
   published.
-- Review permissions, name, icons and splash screen (still Expo's defaults).
+- The launcher icon, adaptive icon and splash are Pango (`scripts/make-icons.py`, from the design canvas's Sizes board).
+  The app's name is still "Calorie App" (`app.json` `name`); change it once the name is settled.
+- Google Play also asks for a web page where people can request account deletion without the app (the in-app option is
+  in Me > Your data). A page on the privacy policy's site that says "email us, or use Me > Your data" is enough.
 - Choose a licence for this repo (none is set).
 - Credit Nutrition5k in the app (shown on the main screen) and re-check the licence terms.
 - Say plainly in the store listing that results are rough estimates, not medical or dietary advice.

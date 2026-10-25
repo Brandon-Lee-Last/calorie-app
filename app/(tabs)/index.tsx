@@ -10,6 +10,7 @@ import type { DiaryEntry } from '../../src/data/repo';
 import { EntryThumb, MEAL_TINT } from '../../src/ui/EntryThumb';
 import { describeSync } from '../../src/data/syncText';
 import { MyPango } from '../../src/pango/MyPango';
+import { ServerNotice } from '../../src/ui/ServerNotice';
 import { useTheme } from '../../src/theme/theme';
 import { radius, spacing } from '../../src/theme/tokens';
 import { Card, Icon, IconButton, ProgressBar, Ring, Screen, Text } from '../../src/ui';
@@ -56,6 +57,8 @@ export default function Today() {
         </View>
         <IconButton icon="calendar" label="Open the diary" onPress={() => router.push('/diary')} />
       </View>
+
+      <ServerNotice />
 
       <Card padding={18} style={{ flexDirection: 'row', alignItems: 'center', gap: 18 }}>
         <Ring value={totals.calories / goals.calories} label={`${fmt(totals.calories)} of ${fmt(goals.calories)} calories eaten`}>

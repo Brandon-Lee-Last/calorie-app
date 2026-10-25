@@ -59,6 +59,14 @@ export class Repo {
     this.listeners.forEach((fn) => fn(set));
   }
 
+  /** Empties every table, for a deleted account: the phone starts again as if just installed. */
+  async wipeAll(): Promise<void> {
+    await this.db.transaction(async (tx) => {
+      for (const table of ['diary_entries', 'water', 'weights', 'workout_sessions', 'scans', 'remote_records', 'outbox', 'meta']) await tx.run(`DELETE FROM ${table}`);
+    });
+    this.emit('diary', 'water', 'weight', 'workout', 'meta', 'outbox');
+  }
+
   // ---- diary
 
   async addEntry(input: NewEntry): Promise<DiaryEntry> {

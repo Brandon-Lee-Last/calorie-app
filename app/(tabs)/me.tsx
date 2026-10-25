@@ -1,15 +1,19 @@
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
-import { Pressable, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, Pressable, View } from 'react-native';
 
 import { API_URL } from '../../src/config';
+import { deleteAccount, exportData, exportFileName } from '../../src/data/account';
 import { useData } from '../../src/data/DataProvider';
+import { shareJson } from '../../src/data/exportFile';
 import { isPlus } from '../../src/data/entitlement';
 import { useEntitlement, useProfile, useRepoQuery, useSession, useSettings, useStats, useSyncStatus, useToday } from '../../src/data/hooks';
 import { DEFAULT_GOALS } from '../../src/data/settings';
 import { MyPango } from '../../src/pango/MyPango';
 import { SEEN_KEY, earnedIds } from '../../src/pango/wardrobe';
 import { describeSync } from '../../src/data/syncText';
+import { deleteAllPhotos } from '../../src/scan/photos';
 import { useTheme } from '../../src/theme/theme';
 import { radius, spacing } from '../../src/theme/tokens';
 import { Button, Card, Icon, Screen, Segmented, Text, type IconName } from '../../src/ui';
@@ -118,6 +122,58 @@ function Backup() {
   );
 }
 
+/** Download everything, or delete the account. Google Play requires the delete option inside the app. */
+function YourData() {
+  const stack = useData();
+  const today = useToday();
+  const [busy, setBusy] = useState<'export' | 'delete' | null>(null);
+
+  const download = async () => {
+    setBusy('export');
+    try {
+      await shareJson(exportFileName(today), await exportData(stack));
+    } catch (e) {
+      Alert.alert('Could not download your data', `${e instanceof Error ? e.message : String(e)}. Your data needs a backup first, so try again when you are online.`);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const remove = async () => {
+    setBusy('delete');
+    try {
+      const { subscriptionNote } = await deleteAccount(stack);
+      deleteAllPhotos();
+      if (subscriptionNote) Alert.alert('Your account is deleted', subscriptionNote);
+      router.replace('/onboarding');
+    } catch {
+      setBusy(null);
+      Alert.alert('Nothing was deleted', "Pango's server could not be reached, so your account is still there. Try again when you are online.");
+    }
+  };
+
+  const confirm = () =>
+    Alert.alert(
+      'Delete your account?',
+      "This erases your diary, weight, water, workouts and photos, on this phone and on Pango's server. There is no undo. A Google Play subscription must be cancelled in the Play Store.",
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete everything', style: 'destructive', onPress: remove },
+      ],
+    );
+
+  return (
+    <Card style={{ gap: spacing.md }}>
+      <Text variant="h3">Your data</Text>
+      <Text variant="small" tone="muted">
+        A copy of everything Pango keeps about you, as a file you can save or send.
+      </Text>
+      <Button title="Download my data" icon="share" variant="secondary" size="md" loading={busy === 'export'} disabled={busy !== null} onPress={download} />
+      <Button title="Delete my account" icon="trash" variant="ghost" size="md" loading={busy === 'delete'} disabled={busy !== null} onPress={confirm} />
+    </Card>
+  );
+}
+
 function WaterSettings() {
   const [settings, update] = useSettings();
   return (
@@ -160,6 +216,7 @@ export default function Me() {
       <Row icon="bolt" title={plus ? 'Pango Plus is on' : 'Pango Plus'} body={plus ? 'Thank you. Manage your subscription' : 'Every training program and a year of trends'} onPress={() => router.push('/plus')} />
       <Backup />
       <WaterSettings />
+      <YourData />
       <Row icon="sparkle" title="Pango studio" body="Every pose and outfit, live" onPress={() => router.push('/studio')} />
       <Row icon="scan" title="Model lab" body="Self-test and raw estimates from the on-phone model" onPress={() => router.push('/lab')} />
       <Text variant="caption" tone="muted" align="center">

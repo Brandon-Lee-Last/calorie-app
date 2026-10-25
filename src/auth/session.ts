@@ -124,6 +124,11 @@ export class SessionManager {
     }
   }
 
+  /** Forgets the session on this phone only, for when the server side is already gone (the account was deleted). */
+  async forget(): Promise<void> {
+    await this.clear();
+  }
+
   async signOut(): Promise<void> {
     const s = await this.load();
     if (s) {

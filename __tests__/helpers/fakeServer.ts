@@ -39,6 +39,12 @@ export class FakeServer {
   foods = new Map<string, Record<string, unknown>>();
   /** Queries sent to GET /v1/foods/search, in order. */
   searches: string[] = [];
+  /** What GET /v1/config says. */
+  maintenance = { enabled: false, message: '' };
+  update: 'unknown' | 'none' | 'available' | 'required' = 'none';
+  latestAppVersion = '1.0.0';
+  /** Accounts deleted through DELETE /v1/account. */
+  deletedAccounts: string[] = [];
   private n = 0;
 
   private session() {
@@ -110,6 +116,24 @@ export class FakeServer {
     }
     if (url.pathname === '/v1/programs') return json(200, { items: this.programs });
     if (url.pathname === '/v1/programs/current') return json(200, { enrollment: null });
+    if (url.pathname === '/v1/config') {
+      return json(200, {
+        apiVersion: 'v1', serverTime: Date.now(), maintenance: this.maintenance, update: this.update, minAppVersion: '1.0.0', latestAppVersion: this.latestAppVersion,
+        features: {}, signIn: { google: false, email: false }, integrity: { required: false }, urls: { store: null, privacy: null, terms: null, supportEmail: null }, plans: {},
+      });
+    }
+    if (url.pathname === '/v1/account' && req.method === 'DELETE') {
+      const body = (await req.json()) as { confirm?: string };
+      if (body.confirm !== 'DELETE MY ACCOUNT') return json(400, { error: { code: 'validation_failed', message: 'confirm' } });
+      this.deletedAccounts.push(this.userId);
+      this.records.clear();
+      this.accessTokens.clear();
+      this.refreshTokens.clear();
+      return json(200, { deleted: true, subscriptionNote: this.plan === 'pro' ? 'Cancel your subscription in Google Play.' : null });
+    }
+    if (url.pathname === '/v1/account/export') {
+      return json(200, { profile: this.profile, records: [...this.records.values()] });
+    }
     if (url.pathname === '/v1/entitlements') {
       return json(200, {
         plan: this.plan, status: this.plan === 'pro' ? 'active' : 'none', expiresAt: null, willRenew: this.plan === 'pro', inGrace: false, isTrial: false,

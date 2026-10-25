@@ -64,6 +64,13 @@ Routes in `app/` (Expo Router; tabs use `expo-router/js-tabs` with the custom `s
   `newId` from `src/data/ids.ts` in screens).
 - `useCachedApi(key, load)` keeps a server answer in meta (`cache:<key>`) and refreshes it in the background: use it
   for read-only server data a screen should show offline (programs, the subscription's products).
+- Work that must not race a sync round (deleting the account) runs inside `sync.hold(...)`: it waits for a round in
+  progress and starts none until done. `repo.wipeAll()` empties every table; `session.forget()` drops the session on
+  the phone only.
+- `useServerConfig()` reads `/v1/config` (kept in meta for offline starts). `src/data/serverConfig.ts` decides what
+  to show: a blocking update screen, a maintenance note, or a closable update note.
+- Pango screens with an occasion pass `moment` to `MyPango` (`src/pango/moments.ts`), not a fixed `outfit`, so the
+  wardrobe's "Dress for the moment" switch is respected.
 - An effect that writes meta must not depend on an object re-read from meta (useStats re-reads on every meta change):
   key it on a derived value (ids joined into a string), or it loops forever.
 - Billing: `src/plus/billing.ts` is the only file that imports expo-iap. Tests mock `expo-iap`. Never grant Plus on

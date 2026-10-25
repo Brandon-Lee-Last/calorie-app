@@ -220,7 +220,7 @@ function UpNext({ enrollment, suggestion }: { enrollment: Enrollment | null; sug
           </Text>
         </Pressable>
       </View>
-      <MyPango pose="cheer" outfit="gym" size={104} />
+      <MyPango pose="cheer" moment="train" size={104} />
     </View>
   );
 }

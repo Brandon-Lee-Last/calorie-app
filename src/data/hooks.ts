@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 
+import { unwrap } from '../api/client';
 import type { Session } from '../auth/session';
 import { useData } from './DataProvider';
 import { localDate, shiftDate, streak, weekOf, type MealType } from './dates';
@@ -146,6 +147,11 @@ export function useCachedApi<T>(key: string, load: (api: Api) => Promise<T>, dep
     };
   }, [api, repo, key, attempt, ...deps]);
   return { data: cached?.data, error, loading, reload: () => setAttempt((n) => n + 1) };
+}
+
+/** What the server says about this app version, maintenance and links; the last answer is kept for offline starts. */
+export function useServerConfig() {
+  return useCachedApi('config', (api) => unwrap(api.GET('/v1/config')), []).data;
 }
 
 /** Finished workouts from `since`. */

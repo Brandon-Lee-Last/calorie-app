@@ -154,7 +154,7 @@ function Session({ plan, last }: { plan: PlannedWorkout; last: Map<string, SetLo
     return (
       <Screen style={{ flexGrow: 1, justifyContent: 'center' }}>
         <View style={{ alignItems: 'center', gap: spacing.md }}>
-          <MyPango pose="cheer" outfit="gym" size={180} />
+          <MyPango pose="cheer" moment="train" size={180} />
           <Text variant="title" align="center">
             {plan.title} done
           </Text>
@@ -286,7 +286,7 @@ function Session({ plan, last }: { plan: PlannedWorkout; last: Map<string, SetLo
       {resting && !exerciseDone ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: 10, paddingHorizontal: 12, borderRadius: 22, backgroundColor: colors.raised, borderWidth: 1, borderColor: colors.line }} accessibilityLiveRegion="polite">
           <View style={{ width: 56, height: 56, borderRadius: 18, backgroundColor: colors.accent, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
-            <MyPango pose="cheer" outfit="gym" crop="face" size={42} motion={false} />
+            <MyPango pose="cheer" moment="train" crop="face" size={42} motion={false} />
           </View>
           <View style={{ flex: 1 }}>
             <Text variant="caption" tone="muted">
@@ -308,7 +308,7 @@ function Session({ plan, last }: { plan: PlannedWorkout; last: Map<string, SetLo
       {exerciseDone ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: 12, borderRadius: 22, backgroundColor: colors.raised, borderWidth: 1, borderColor: colors.line }}>
           <View style={{ width: 56, height: 56, borderRadius: 18, backgroundColor: brand.lime, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
-            <MyPango pose="cheer" outfit="gym" crop="face" size={42} motion={false} />
+            <MyPango pose="cheer" moment="train" crop="face" size={42} motion={false} />
           </View>
           <View style={{ flex: 1 }}>
             <Text variant="bodyStrong">{exercise.name} done</Text>

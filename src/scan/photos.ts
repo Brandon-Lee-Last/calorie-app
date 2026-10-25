@@ -42,3 +42,13 @@ export function deletePhoto(scanId: string | null | undefined): void {
     // nothing to clean up
   }
 }
+
+/** Removes every kept photo (the account was deleted). */
+export function deleteAllPhotos(): void {
+  try {
+    const dir = folder();
+    if (dir.exists) dir.delete();
+  } catch {
+    // nothing to clean up
+  }
+}

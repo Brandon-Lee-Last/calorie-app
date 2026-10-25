@@ -78,7 +78,7 @@ export default function Recap() {
               {label}
             </Text>
             <View style={{ alignItems: 'center', marginVertical: 12 }}>
-              <MyPango pose="cheer" outfit="party" size={220} />
+              <MyPango pose="cheer" moment="celebrate" size={220} />
             </View>
             <Text style={{ color: INK, fontSize: 80, fontFamily: 'PlusJakartaSans_800ExtraBold', letterSpacing: -4, lineHeight: 80 }} accessibilityLabel={`${recap.daysLogged} of 7 days logged`}>
               {recap.daysLogged} of 7

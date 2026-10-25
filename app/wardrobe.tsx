@@ -1,10 +1,11 @@
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, Switch, View } from 'react-native';
 
 import { useData } from '../src/data/DataProvider';
-import { LOOK_KEY, useStats, useToday, useWornLook } from '../src/data/hooks';
+import { LOOK_KEY, useRepoQuery, useStats, useToday, useWornLook } from '../src/data/hooks';
+import { MOMENT_KEY } from '../src/pango/moments';
 import { Pango } from '../src/pango/Pango';
 import { SCARF_PATTERNS, type Outfit, type Pose } from '../src/pango/types';
 import { HAT_COLOURS, SEEN_KEY, WARDROBE, blockerFor, describeLook, earnedIds, lookForOutfit, stateOf, type Item, type Slot, type WornLook } from '../src/pango/wardrobe';
@@ -199,7 +200,32 @@ export default function Wardrobe() {
           {blocker ? 'Keep going to unlock this' : same ? (justWore ? 'Looking good!' : 'Pango is wearing this') : 'Wear this look'}
         </Text>
       </Pressable>
+      <DressForTheMoment />
     </Screen>
+  );
+}
+
+/** Pango switching looks on its own: gym kit on Train, the chef look on What fits, a protea on Heritage Day. */
+function DressForTheMoment() {
+  const { colors } = useTheme();
+  const { repo } = useData();
+  const on = useRepoQuery(['meta'], (r) => r.getMeta<boolean>(MOMENT_KEY), []) !== false;
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: 14, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.surface }}>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text variant="bodyStrong">Dress for the moment</Text>
+        <Text variant="caption" tone="muted">
+          Pango switches looks on its own: gym kit on Train, a chef's hat for meal ideas, the party look for your weekly recap and a protea on Heritage Day.
+        </Text>
+      </View>
+      <Switch
+        accessibilityLabel="Dress for the moment"
+        value={on}
+        onValueChange={(v) => repo.setMeta(MOMENT_KEY, v).catch(() => {})}
+        trackColor={{ true: colors.accent, false: colors.line }}
+        thumbColor={colors.text}
+      />
+    </View>
   );
 }
 
