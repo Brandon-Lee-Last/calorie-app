@@ -10,6 +10,7 @@ name: Android build
 on:
   push:
     branches: [main, 'claude/**']
+    paths-ignore: ['**.md']
   workflow_dispatch:
 
 concurrency:

@@ -25,6 +25,21 @@ the icon. No live reloading, but this app shows its own errors on screen. It is 
 (fine for testing, not for the Play Store). Release minification is switched off in `app.json` on purpose,
 to rule it out while checking that the native model library works; turn it back on later to shrink the APK.
 
+**Easiest: download the one GitHub built.** Every push to `main` or a `claude/...` branch runs
+`.github/workflows/android.yml`. It type-checks, runs the tests, then builds a release APK (arm64, which covers
+phones from the last several years). On the phone or PC:
+1. Open the repo on GitHub > **Actions** > **Android build** > the newest run with a green tick.
+2. Under **Artifacts** at the bottom, download **calorie-app-apk**. It is a `.zip`; inside is `app-release.apk`.
+3. Copy the `.apk` to the phone if needed, open it and install. Allow "install unknown apps" for the browser or file
+   manager when asked. Play Protect may warn that it does not know the app; choose to install anyway.
+4. To update, install a newer one over it. Your diary stays, because every build is signed with the same key.
+   If Android says the package conflicts, uninstall the old app first (this deletes data not yet backed up).
+
+To let that APK reach your backend, set a repository **variable** (not a secret, it is not private) named
+`EXPO_PUBLIC_API_URL` to the deployed `https://` address of calorie-api: **Settings > Secrets and variables > Actions >
+Variables > New repository variable**. Then re-run the workflow (Actions > Android build > **Run workflow**). Without
+it the app works fully offline and Me shows "Offline".
+
 **In Expo's cloud (EAS), no Android Studio needed.** Free Expo account:
 ```bash
 npm install
