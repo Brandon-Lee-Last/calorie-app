@@ -34,6 +34,8 @@ const PATHS = {
   list: 'M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01',
   meal: 'M7 3v7a2 2 0 0 0 4 0V3M9 12v9M17 21V3c-2 1-3 4-3 7 0 2 1 3 3 3',
   clock: 'M21 12a9 9 0 1 1-18 0a9 9 0 1 1 18 0M12 7v5l3 2',
+  chat: 'M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-9l-5 4v-4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM8 11h.01M12 11h.01M16 11h.01',
+  send: 'M21 3L10 14M21 3l-7 18-4-7-7-4z',
 } as const;
 
 const FILLED = new Set<IconName>(['drop', 'play']);

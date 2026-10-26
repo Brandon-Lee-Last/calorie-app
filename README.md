@@ -120,8 +120,12 @@ skip it and keep the defaults. Then:
   tomorrow; Plus plans the week ahead and adds a shopping list by shop aisle, to tick off or send. The meals and their
   numbers come from the backend (`/v1/meal-plans`, worked out from USDA figures; see calorie-api's
   `docs/meal-plans.md`); the planning happens on the phone, so it works offline once loaded.
-- **Ask Pango**: the card on Today. Chat with Pango about food, training, sleep or motivation; Pango knows your goals
-  and what you have logged. Replies are plain text. If someone seems to be in crisis, Pango answers with South African
+- **Ask Pango**: the round Pango button floating above the tab bar on every tab (with an "Ask me anything!" bubble
+  until the chat has been opened once), or the chat card on Today, whose quick questions send straight away. Chat
+  with Pango about food, training, sleep or motivation; Pango knows your goals and what you have logged. While it
+  answers, Pango thinks it over with bouncing dots, then the reply types out (tap it to see it all; crisis replies and
+  "reduce motion" show at once). The server checks the whole answer before releasing it, so the typing is played on
+  the phone rather than streamed. The message box stays above the keyboard. Replies are plain text. If someone seems to be in crisis, Pango answers with South African
   helplines (tap to call). **Meals from my groceries** (on the same card, or a chip in the chat): add what you have at
   home from the food list, pick a meal, and Pango suggests up to three recipes; the calories are worked out by the
   server from your foods' own figures, never by the AI. Free accounts get 10 questions a day (3 before a sign-in is

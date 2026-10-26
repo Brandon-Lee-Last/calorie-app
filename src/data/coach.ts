@@ -15,6 +15,27 @@ export const MAX_MESSAGE = 1000;
 
 export const SUGGESTIONS = ['What should I eat tonight?', 'How much protein do I need?', 'I skipped the gym again. Motivate me!', 'Ideas for a cheap healthy lunch?'];
 
+/** Meta key: set once the person has opened Ask Pango, which retires the "Ask me anything" nudge. */
+export const COACH_SEEN_KEY = 'coach.seen';
+
+/**
+ * Pango's replies type out on screen. The server only releases an answer once it has passed every safety check, so the
+ * phone has the whole reply and plays it out: about 8 ms a letter, never under 0.4 s or over 3.5 s.
+ */
+export const TYPE_TICK_MS = 30;
+const TYPE_MS_PER_CHAR = 8;
+const TYPE_MIN_MS = 400;
+const TYPE_MAX_MS = 3500;
+
+/** How many characters of `text` to show after the next tick when `shown` are showing: a few more, ending on a whole word. Pure. */
+export function typedUpTo(text: string, shown: number): number {
+  const total = Math.min(TYPE_MAX_MS, Math.max(TYPE_MIN_MS, text.length * TYPE_MS_PER_CHAR));
+  const step = Math.max(1, Math.ceil(text.length / (total / TYPE_TICK_MS)));
+  let next = Math.min(text.length, shown + step);
+  while (next < text.length && !/\s/.test(text[next])) next++;
+  return next;
+}
+
 /**
  * Helplines in Pango's crisis replies, to show as call buttons. Only the fixed numbers the server's crisis replies use,
  * never a number from an ordinary answer.

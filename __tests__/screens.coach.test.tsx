@@ -1,11 +1,14 @@
-import { fireEvent, waitFor } from '@testing-library/react-native';
-import { router } from 'expo-router';
-import { Alert, Linking } from 'react-native';
+import { act, fireEvent, waitFor } from '@testing-library/react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Alert, Keyboard, Linking } from 'react-native';
 
 import Coach from '../app/coach';
 import Pantry from '../app/pantry';
 import { ApiError } from '../src/api/errors';
-import { addToPantry, coachProblem, helplinesIn, PANTRY_KEY, recipeEntry, type CoachMessage } from '../src/data/coach';
+import { AskPangoCard } from '../src/coach/AskPangoCard';
+import { AskPangoFab } from '../src/coach/AskPangoFab';
+import { addToPantry, COACH_SEEN_KEY, coachProblem, helplinesIn, PANTRY_KEY, recipeEntry, TYPE_TICK_MS, typedUpTo, type CoachMessage } from '../src/data/coach';
+import { keyboardLift } from '../src/ui/keyboard';
 import { localDate } from '../src/data/dates';
 import type { Food } from '../src/data/foodMath';
 import { FakeServer } from './helpers/fakeServer';
@@ -50,6 +53,7 @@ const food = (id: string, name: string): Food =>
     rev: 1,
   }) as Food;
 const msg = (over: Partial<CoachMessage>): CoachMessage => ({ id: 'm', role: 'assistant', content: '', kind: 'chat', createdAt: 0, ...over });
+const REPLY = 'Try eggs on toast with spinach: about 30 g of protein.';
 
 describe('coach helpers', () => {
   it('offers call buttons only for the fixed helplines in a crisis reply', () => {
@@ -67,6 +71,26 @@ describe('coach helpers', () => {
   it('keeps the grocery list free of repeats', () => {
     const one = addToPantry([], { id: 'a', name: 'Oats', brand: null });
     expect(addToPantry(one, { id: 'a', name: 'Oats', brand: null })).toHaveLength(1);
+  });
+
+  it('types a reply out a few whole words at a time, quickly, and always finishes', () => {
+    const ticks = (text: string) => {
+      const stops = [typedUpTo(text, 0)];
+      while (stops[stops.length - 1] < text.length) stops.push(typedUpTo(text, stops[stops.length - 1]));
+      return stops;
+    };
+    const short = ticks(REPLY);
+    expect(short.length).toBeGreaterThan(3);
+    expect(short.length * TYPE_TICK_MS).toBeLessThanOrEqual(500);
+    for (const at of short.slice(0, -1)) expect(REPLY[at]).toMatch(/\s/); // never stops halfway through a word
+    expect(ticks('protein '.repeat(300)).length * TYPE_TICK_MS).toBeLessThanOrEqual(3600); // long answers speed up
+  });
+
+  it('leaves room for the keyboard, counting Android’s navigation bar, and never twice', () => {
+    expect(keyboardLift('ios', 0, 34, 0)).toBe(0);
+    expect(keyboardLift('ios', 336, 34, 0)).toBe(336);
+    expect(keyboardLift('android', 300, 48, 0)).toBe(348);
+    expect(keyboardLift('android', 300, 48, 348)).toBe(0); // a phone that already shrank the window for it
   });
 });
 
@@ -111,6 +135,87 @@ describe('Ask Pango', () => {
     expect(view.getByLabelText('Message to Pango').props.value).toBe('How much protein?');
     await fireEvent.press(view.getByRole('button', { name: 'See Plus' }));
     expect(router.push).toHaveBeenCalledWith('/plus');
+    await settle(stack);
+    await view.unmount();
+  });
+});
+
+describe('Ask Pango, while it answers', () => {
+  it('shows the question at once, Pango thinking, then types the answer out (a tap shows it all)', async () => {
+    const server = new FakeServer();
+    let release!: () => void;
+    server.coachGate = new Promise((r) => (release = r));
+    const stack = await testStack(server);
+    const view = await renderWith(<Coach />, stack);
+    await fireEvent.changeText(await view.findByLabelText('Message to Pango'), 'How much protein?');
+    await fireEvent.press(view.getByRole('button', { name: 'Send' }));
+    expect(await view.findByLabelText('Pango is thinking')).toBeTruthy();
+    expect(view.getByText('How much protein?')).toBeTruthy();
+    expect(view.getByLabelText('Message to Pango').props.value).toBe('');
+    await act(async () => release());
+    const typing = await view.findByRole('button', { name: REPLY });
+    expect(view.queryByText(REPLY)).toBeNull(); // part of it so far
+    expect(view.queryByLabelText('Pango is thinking')).toBeNull();
+    await fireEvent.press(typing);
+    expect(view.getByText(REPLY)).toBeTruthy();
+    await settle(stack);
+    await view.unmount();
+  });
+
+  it('keeps the message box above the keyboard', async () => {
+    const handlers: Record<string, (e: { endCoordinates: { height: number } }) => void> = {};
+    jest.spyOn(Keyboard, 'addListener').mockImplementation(((name: string, fn: (e: { endCoordinates: { height: number } }) => void) => {
+      handlers[name] = fn;
+      return { remove: () => {} };
+    }) as never);
+    const stack = await testStack(new FakeServer());
+    const view = await renderWith(<Coach />, stack);
+    const screen = () => view.getByTestId('coach-screen').props.style;
+    expect(screen().paddingBottom).toBe(0);
+    const on = (suffix: string) => handlers[Object.keys(handlers).find((k) => k.endsWith(suffix))!];
+    await act(async () => on('Show')({ endCoordinates: { height: 300 } }));
+    expect(screen().paddingBottom).toBe(300);
+    await act(async () => on('Hide')({ endCoordinates: { height: 0 } }));
+    expect(screen().paddingBottom).toBe(0);
+    await settle(stack);
+    await view.unmount();
+  });
+
+  it('asks a question passed in from Today straight away, and remembers the chat was opened', async () => {
+    jest.mocked(useLocalSearchParams).mockReturnValue({ ask: 'How much protein do I need?' });
+    const server = new FakeServer();
+    const stack = await testStack(server);
+    const view = await renderWith(<Coach />, stack);
+    expect(await view.findByText(REPLY, undefined, { timeout: 3000 })).toBeTruthy();
+    expect(server.coachMessages[0]).toMatchObject({ role: 'user', content: 'How much protein do I need?' });
+    expect(await stack.repo.getMeta(COACH_SEEN_KEY)).toBe(true);
+    jest.mocked(useLocalSearchParams).mockReturnValue({});
+    await settle(stack);
+    await view.unmount();
+  });
+});
+
+describe('Finding Ask Pango', () => {
+  it('floats a button over every tab that says what it is until the chat has been opened', async () => {
+    const stack = await testStack(new FakeServer());
+    const view = await renderWith(<AskPangoFab />, stack);
+    expect(await view.findByText('Ask me anything!', { includeHiddenElements: true })).toBeTruthy();
+    await fireEvent.press(view.getByRole('button', { name: 'Ask Pango' }));
+    expect(router.push).toHaveBeenCalledWith('/coach');
+    await act(() => stack.repo.setMeta(COACH_SEEN_KEY, true));
+    await waitFor(() => expect(view.queryByText('Ask me anything!', { includeHiddenElements: true })).toBeNull());
+    expect(view.getByRole('button', { name: 'Ask Pango' })).toBeTruthy();
+    await settle(stack);
+    await view.unmount();
+  });
+
+  it('on Today, opens the chat or asks a quick question in one tap', async () => {
+    const stack = await testStack(new FakeServer());
+    const view = await renderWith(<AskPangoCard />, stack);
+    await fireEvent.press(view.getByRole('button', { name: 'What should I eat tonight?' }));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/coach', params: { ask: 'What should I eat tonight?' } });
+    await fireEvent.press(view.getByRole('button', { name: 'Ask Pango' }));
+    expect(router.push).toHaveBeenCalledWith('/coach');
     await settle(stack);
     await view.unmount();
   });

@@ -2,6 +2,7 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
+import { ASK_PANGO_CLEARANCE } from '../../src/coach/AskPangoFab';
 import { useData } from '../../src/data/DataProvider';
 import { mealForTime } from '../../src/data/dates';
 import { mealLabel } from '../../src/data/entryForm';
@@ -40,7 +41,7 @@ export default function Today() {
   ] as const;
 
   return (
-    <Screen>
+    <Screen bottomInset={ASK_PANGO_CLEARANCE}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
         <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
           <MyPango crop="face" size={40} motion={false} />
@@ -137,8 +138,8 @@ export default function Today() {
         </View>
       </View>
 
-      <PlanCard />
       <AskPangoCard />
+      <PlanCard />
       <WaterCard date={today} />
       <SyncLine />
     </Screen>

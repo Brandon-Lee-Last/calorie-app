@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Pressable, View } from 'react-native';
 
+import { ASK_PANGO_CLEARANCE } from '../../src/coach/AskPangoFab';
 import { API_URL } from '../../src/config';
 import { deleteAccount, exportData, exportFileName } from '../../src/data/account';
 import { useData } from '../../src/data/DataProvider';
@@ -202,7 +203,7 @@ export default function Me() {
   const fresh = stats && seen !== undefined ? earnedIds(stats).filter((id) => !(seen ?? []).includes(id)).length : 0;
   const plus = isPlus(useEntitlement());
   return (
-    <Screen>
+    <Screen bottomInset={ASK_PANGO_CLEARANCE}>
       <Text variant="title">Me</Text>
       <Card raised style={{ alignItems: 'center', gap: spacing.sm }}>
         <MyPango pose="wave" size={150} />

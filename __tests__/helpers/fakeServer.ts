@@ -50,6 +50,8 @@ export class FakeServer {
   /** The conversation with Pango (GET /v1/coach/messages), and how many more messages today's allowance has. */
   coachMessages: Record<string, unknown>[] = [];
   coachLeft = 10;
+  /** While set, POST /v1/coach/messages waits for it before answering (to see the phone while Pango thinks). */
+  coachGate: Promise<void> | null = null;
   /** What POST /v1/coach/pantry-meals answers with, and the bodies it was sent. */
   pantryRecipes: Record<string, unknown>[] = [];
   pantryAsks: Record<string, unknown>[] = [];
@@ -131,6 +133,7 @@ export class FakeServer {
     }
     if (url.pathname === '/v1/coach/messages' && req.method === 'POST') {
       const { message } = (await req.json()) as { message: string };
+      if (this.coachGate) await this.coachGate;
       const crisis = /kill myself/i.test(message);
       if (!crisis && this.coachLeft <= 0) return json(429, { error: { code: 'quota_exceeded', message: 'Daily limit reached' } });
       if (!crisis) this.coachLeft--;
