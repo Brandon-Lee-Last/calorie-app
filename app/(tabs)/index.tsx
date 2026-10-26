@@ -10,6 +10,7 @@ import type { DiaryEntry } from '../../src/data/repo';
 import { EntryThumb, MEAL_TINT } from '../../src/ui/EntryThumb';
 import { describeSync } from '../../src/data/syncText';
 import { MyPango } from '../../src/pango/MyPango';
+import { AskPangoCard } from '../../src/coach/AskPangoCard';
 import { PlanCard } from '../../src/plan/PlanCard';
 import { ServerNotice } from '../../src/ui/ServerNotice';
 import { useTheme } from '../../src/theme/theme';
@@ -137,6 +138,7 @@ export default function Today() {
       </View>
 
       <PlanCard />
+      <AskPangoCard />
       <WaterCard date={today} />
       <SyncLine />
     </Screen>

@@ -120,6 +120,12 @@ skip it and keep the defaults. Then:
   tomorrow; Plus plans the week ahead and adds a shopping list by shop aisle, to tick off or send. The meals and their
   numbers come from the backend (`/v1/meal-plans`, worked out from USDA figures; see calorie-api's
   `docs/meal-plans.md`); the planning happens on the phone, so it works offline once loaded.
+- **Ask Pango**: the card on Today. Chat with Pango about food, training, sleep or motivation; Pango knows your goals
+  and what you have logged. Replies are plain text. If someone seems to be in crisis, Pango answers with South African
+  helplines (tap to call). **Meals from my groceries** (on the same card, or a chip in the chat): add what you have at
+  home from the food list, pick a meal, and Pango suggests up to three recipes; the calories are worked out by the
+  server from your foods' own figures, never by the AI. Free accounts get 10 questions a day (3 before a sign-in is
+  linked), Plus 60. The safety design is in calorie-api's `docs/coach.md`.
 - **Progress**: your weight trend (log a weigh-in or set a goal weight there), the weekly recap (three tap-through
   cards about last week, shareable) and a month calendar of days on target.
 - **Train**: quick workouts built into the app (bodyweight, dumbbells, core, cardio, mobility) that work offline,
@@ -262,6 +268,9 @@ phone's secure store.
   "Search Open Food Facts" sends the words straight from the phone to Open Food Facts (it is their search, with
   their limit of 10 a minute per person, so it never runs while you type). Foods you open are kept on the phone so a
   recent one opens offline.
+- **Ask Pango**: your messages go to the backend, which keeps the conversation for 90 days (in the data export, deleted
+  with the account, "Start over" deletes it) and sends them to Cloudflare Workers AI with your goals and recent numbers.
+  The grocery list stays on the phone; only the food ids go to the server when you ask for ideas.
 - **Meal plans**: the style you pick, swaps and shopping ticks stay on the phone. A planned meal you log is an
   ordinary diary entry.
 - **Workouts** are saved on the phone and synced like meals (`workout_session`). Energy burned is a rough estimate

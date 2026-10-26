@@ -193,6 +193,9 @@
                                         "aiTextPerDay": {
                                             "type": "number"
                                         },
+                                        "coachPerDay": {
+                                            "type": "number"
+                                        },
                                         "mealPhotos": {
                                             "type": "number"
                                         },
@@ -206,6 +209,7 @@
                                     "required": [
                                         "scansPerDay",
                                         "aiTextPerDay",
+                                        "coachPerDay",
                                         "mealPhotos",
                                         "recipes",
                                         "progressPhotos"
@@ -314,6 +318,7 @@
                             "type": "string",
                             "enum": [
                                 "aiText",
+                                "coach",
                                 "emailSignIn",
                                 "workouts",
                                 "scanContributions"
@@ -371,6 +376,7 @@
                             "type": "string",
                             "enum": [
                                 "aiText",
+                                "coach",
                                 "emailSignIn",
                                 "workouts",
                                 "scanContributions"
@@ -3688,6 +3694,9 @@
                             "aiTextPerDay": {
                                 "type": "number"
                             },
+                            "coachPerDay": {
+                                "type": "number"
+                            },
                             "mealPhotos": {
                                 "type": "number"
                             },
@@ -3701,6 +3710,7 @@
                         "required": [
                             "scansPerDay",
                             "aiTextPerDay",
+                            "coachPerDay",
                             "mealPhotos",
                             "recipes",
                             "progressPhotos"
@@ -3744,12 +3754,16 @@
                             },
                             "aiText": {
                                 "type": "integer"
+                            },
+                            "coach": {
+                                "type": "integer"
                             }
                         },
                         "required": [
                             "date",
                             "scans",
-                            "aiText"
+                            "aiText",
+                            "coach"
                         ]
                     }
                 },
@@ -5047,6 +5061,319 @@
                     "minutes",
                     "ingredients",
                     "nutrition"
+                ]
+            },
+            "CoachAskResult": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "$ref": "#/components/schemas/CoachMessage"
+                    },
+                    "reply": {
+                        "$ref": "#/components/schemas/CoachMessage"
+                    },
+                    "usage": {
+                        "type": "object",
+                        "nullable": true,
+                        "properties": {
+                            "used": {
+                                "type": "integer"
+                            },
+                            "limit": {
+                                "type": "integer"
+                            }
+                        },
+                        "required": [
+                            "used",
+                            "limit"
+                        ],
+                        "description": "The day’s allowance after this message; null when the reply did not use any (helplines, a refused request)"
+                    }
+                },
+                "required": [
+                    "message",
+                    "reply",
+                    "usage"
+                ]
+            },
+            "CoachMessage": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "role": {
+                        "type": "string",
+                        "enum": [
+                            "user",
+                            "assistant"
+                        ]
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "Plain text: show it as text, never as markdown or HTML"
+                    },
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "chat",
+                            "crisis",
+                            "scope",
+                            "blocked"
+                        ],
+                        "description": "For replies: chat (an answer), crisis (helplines), scope (a request Pango does not take), blocked (an answer replaced for safety)"
+                    },
+                    "createdAt": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "id",
+                    "role",
+                    "content",
+                    "kind",
+                    "createdAt"
+                ],
+                "description": "What was sent, as stored"
+            },
+            "CoachAsk": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                    },
+                    "planStyle": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 80,
+                        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+                        "description": "The meal plan style picked on the phone, so Pango can mention it"
+                    }
+                },
+                "required": [
+                    "message"
+                ]
+            },
+            "PantryMeals": {
+                "type": "object",
+                "properties": {
+                    "recipes": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "title": {
+                                    "type": "string"
+                                },
+                                "minutes": {
+                                    "type": "integer"
+                                },
+                                "mealType": {
+                                    "type": "string",
+                                    "enum": [
+                                        "breakfast",
+                                        "lunch",
+                                        "dinner",
+                                        "snack"
+                                    ]
+                                },
+                                "ingredients": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "grams": {
+                                                "type": "number"
+                                            },
+                                            "foodId": {
+                                                "type": "string",
+                                                "nullable": true,
+                                                "description": "null for a staple such as salt"
+                                            }
+                                        },
+                                        "required": [
+                                            "name",
+                                            "grams",
+                                            "foodId"
+                                        ]
+                                    }
+                                },
+                                "steps": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "nutrition": {
+                                    "type": "object",
+                                    "properties": {
+                                        "calories": {
+                                            "type": "number"
+                                        },
+                                        "proteinG": {
+                                            "type": "number"
+                                        },
+                                        "carbG": {
+                                            "type": "number"
+                                        },
+                                        "fatG": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "calories",
+                                        "proteinG",
+                                        "carbG",
+                                        "fatG"
+                                    ],
+                                    "description": "One portion, worked out from the foods’ own figures"
+                                }
+                            },
+                            "required": [
+                                "title",
+                                "minutes",
+                                "mealType",
+                                "ingredients",
+                                "steps",
+                                "nutrition"
+                            ]
+                        }
+                    },
+                    "target": {
+                        "type": "integer"
+                    },
+                    "usage": {
+                        "type": "object",
+                        "properties": {
+                            "used": {
+                                "type": "integer"
+                            },
+                            "limit": {
+                                "type": "integer"
+                            }
+                        },
+                        "required": [
+                            "used",
+                            "limit"
+                        ]
+                    }
+                },
+                "required": [
+                    "recipes",
+                    "target",
+                    "usage"
+                ]
+            },
+            "PantryMealsAsk": {
+                "type": "object",
+                "properties": {
+                    "foodIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "description": "Client-generated id (ULID or UUID)",
+                            "example": "01J8Z3K6M4Q2W7X9R5T1V0BHNE"
+                        },
+                        "minItems": 2,
+                        "maxItems": 30,
+                        "description": "Foods the person has (their own or from the food list)"
+                    },
+                    "mealType": {
+                        "type": "string",
+                        "enum": [
+                            "breakfast",
+                            "lunch",
+                            "dinner",
+                            "snack"
+                        ]
+                    },
+                    "calories": {
+                        "type": "integer",
+                        "nullable": true,
+                        "minimum": 100,
+                        "maximum": 2000,
+                        "description": "Calories to aim for; else their goal’s share for that meal"
+                    }
+                },
+                "required": [
+                    "foodIds",
+                    "mealType"
+                ]
+            },
+            "CoachEvalResult": {
+                "type": "object",
+                "properties": {
+                    "reply": {
+                        "type": "string"
+                    },
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "chat",
+                            "crisis",
+                            "scope",
+                            "blocked"
+                        ]
+                    },
+                    "flags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": [
+                    "reply",
+                    "kind",
+                    "flags"
+                ]
+            },
+            "CoachEval": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                    },
+                    "age": {
+                        "type": "integer",
+                        "nullable": true,
+                        "minimum": 10,
+                        "maximum": 100
+                    },
+                    "entries": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "maxLength": 200
+                        },
+                        "maxItems": 6,
+                        "description": "Made-up diary entry names, to test instructions hidden in data"
+                    }
+                },
+                "required": [
+                    "message"
+                ]
+            },
+            "CoachHistory": {
+                "type": "object",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CoachMessage"
+                        },
+                        "description": "Oldest first, up to 60"
+                    }
+                },
+                "required": [
+                    "items"
                 ]
             },
             "WorkoutSessionList": {
@@ -14194,6 +14521,422 @@
                         "description": "Deleted"
                     },
                     "401": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/coach/messages": {
+            "post": {
+                "tags": [
+                    "Coach"
+                ],
+                "summary": "Ask Pango: a message to the coach and its reply",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "description": "The server keeps the conversation (90 days) and adds the person’s own goals and recent numbers. Uses the daily coach allowance (429 `quota_exceeded`), except for replies that need no model: helplines when someone may be in crisis, and requests Pango turns away. Show replies as plain text.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CoachAsk"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "The reply",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CoachAskResult"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing, invalid or expired access token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limited or quota reached",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Coach"
+                ],
+                "summary": "The conversation with Pango so far",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Messages, oldest first",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CoachHistory"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing, invalid or expired access token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limited or quota reached",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Coach"
+                ],
+                "summary": "Start over: delete the conversation",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted"
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing, invalid or expired access token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limited or quota reached",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/coach/pantry-meals": {
+            "post": {
+                "tags": [
+                    "Coach"
+                ],
+                "summary": "Meal ideas from the foods someone has at home",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "description": "The model only chooses recipes from the given foods (plus salt, pepper, herbs, spices, garlic, lemon, vinegar and water); the server checks every ingredient and works out the nutrition from the foods’ own figures, sized to the goal. Uses one unit of the daily coach allowance.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PantryMealsAsk"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Up to three recipes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PantryMeals"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing, invalid or expired access token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limited or quota reached",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/admin/coach/eval": {
+            "post": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Run the coach for a made-up person, saving nothing (red-team checks)",
+                "security": [
+                    {
+                        "adminKey": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CoachEval"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "What Pango would say",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CoachEvalResult"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
                         "description": "Bad request",
                         "content": {
                             "application/json": {

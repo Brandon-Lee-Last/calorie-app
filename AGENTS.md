@@ -42,6 +42,11 @@ using an API. The Expo docs site may be unreachable from sandboxed environments.
   out from USDA figures. A logged planned meal is a normal entry (`source: 'food'`, no `foodId`), matched to the plan
   by name and meal. Free accounts plan two days; Plus plans seven and gets the shopping list.
 
+- Ask Pango (`app/coach.tsx`) and My groceries (`app/pantry.tsx`): the server does all the AI and all the safety
+  (calorie-api `docs/coach.md`). The app shows replies as plain text only: never render them as markdown, links or
+  HTML (that is how an injected instruction would smuggle data out). Call buttons appear only for the fixed helplines
+  in a `crisis` reply (`helplinesIn`). Recipe numbers come from the server; never compute or adjust them on the phone.
+
 ## Layout
 
 Routes in `app/` (Expo Router; tabs use `expo-router/js-tabs` with the custom `src/ui/TabBar`). Tokens in

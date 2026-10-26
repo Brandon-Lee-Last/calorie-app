@@ -47,6 +47,12 @@ export class FakeServer {
   testPurchases = false;
   /** What GET /v1/meal-plans answers, for the current plan (null: 404, as before the server had meal plans). */
   mealPlans: ((plan: 'free' | 'pro') => unknown) | null = null;
+  /** The conversation with Pango (GET /v1/coach/messages), and how many more messages today's allowance has. */
+  coachMessages: Record<string, unknown>[] = [];
+  coachLeft = 10;
+  /** What POST /v1/coach/pantry-meals answers with, and the bodies it was sent. */
+  pantryRecipes: Record<string, unknown>[] = [];
+  pantryAsks: Record<string, unknown>[] = [];
   /** Accounts deleted through DELETE /v1/account. */
   deletedAccounts: string[] = [];
   private n = 0;
@@ -117,6 +123,28 @@ export class FakeServer {
     }
     if (url.pathname === '/v1/subscription') {
       return json(200, { subscription: null, entitlement: null, products: [{ id: 'pro_monthly', plan: 'pro', period: 'P1M', trialDays: 0 }, { id: 'pro_yearly', plan: 'pro', period: 'P1Y', trialDays: 7 }] });
+    }
+    if (url.pathname === '/v1/coach/messages' && req.method === 'GET') return json(200, { items: this.coachMessages });
+    if (url.pathname === '/v1/coach/messages' && req.method === 'DELETE') {
+      this.coachMessages = [];
+      return new Response(null, { status: 204 });
+    }
+    if (url.pathname === '/v1/coach/messages' && req.method === 'POST') {
+      const { message } = (await req.json()) as { message: string };
+      const crisis = /kill myself/i.test(message);
+      if (!crisis && this.coachLeft <= 0) return json(429, { error: { code: 'quota_exceeded', message: 'Daily limit reached' } });
+      if (!crisis) this.coachLeft--;
+      const at = Date.now();
+      const asked = { id: `c${this.coachMessages.length + 1}`, role: 'user', content: message, kind: 'chat', createdAt: at };
+      const reply = crisis
+        ? { id: `c${this.coachMessages.length + 2}`, role: 'assistant', kind: 'crisis', createdAt: at + 1, content: "I'm really sorry. Please call SADAG's Suicide Crisis Helpline on 0800 567 567, or 112." }
+        : { id: `c${this.coachMessages.length + 2}`, role: 'assistant', kind: 'chat', createdAt: at + 1, content: 'Try eggs on toast with spinach: about 30 g of protein.' };
+      this.coachMessages.push(asked, reply);
+      return json(200, { message: asked, reply, usage: crisis ? null : { used: 10 - this.coachLeft, limit: 10 } });
+    }
+    if (url.pathname === '/v1/coach/pantry-meals') {
+      this.pantryAsks.push((await req.json()) as Record<string, unknown>);
+      return json(200, { recipes: this.pantryRecipes, target: 500, usage: { used: 1, limit: 10 } });
     }
     if (url.pathname === '/v1/meal-plans') return this.mealPlans ? json(200, this.mealPlans(this.plan)) : json(404, { error: { code: 'not_found', message: 'Not found' } });
     if (url.pathname === '/v1/programs') return json(200, { items: this.programs });

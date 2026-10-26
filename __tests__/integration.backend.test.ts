@@ -157,6 +157,18 @@ const phone = async (store: SecretStore) =>
     expect(a.sync.current).toMatchObject({ state: 'idle', pending: 0 });
   });
 
+  it('asks Pango a question and gets a checked answer back, kept in the conversation', async () => {
+    const a = await phone(account);
+    stacks.push(a);
+    const out = await unwrap(a.api.POST('/v1/coach/messages', { body: { message: 'What is a good high-protein snack?' } }));
+    expect(out.reply.role).toBe('assistant');
+    expect(['chat', 'blocked']).toContain(out.reply.kind);
+    expect(out.reply.content.length).toBeGreaterThan(20);
+    expect(out.reply.content).not.toMatch(/https?:\/\//);
+    const history = await unwrap(a.api.GET('/v1/coach/messages'));
+    expect(history.items.slice(-2).map((m) => m.id)).toEqual([out.message.id, out.reply.id]);
+  });
+
   it('downloads the data, then deletes the account and empties the phone', async () => {
     const a = await phone(account);
     stacks.push(a);

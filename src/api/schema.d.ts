@@ -7326,6 +7326,413 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/coach/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The conversation with Pango so far */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Messages, oldest first */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CoachHistory"];
+                    };
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Missing, invalid or expired access token */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Validation failed */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Rate limited or quota reached */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Unexpected server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Ask Pango: a message to the coach and its reply
+         * @description The server keeps the conversation (90 days) and adds the person’s own goals and recent numbers. Uses the daily coach allowance (429 `quota_exceeded`), except for replies that need no model: helplines when someone may be in crisis, and requests Pango turns away. Show replies as plain text.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CoachAsk"];
+                };
+            };
+            responses: {
+                /** @description The reply */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CoachAskResult"];
+                    };
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Missing, invalid or expired access token */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Validation failed */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Rate limited or quota reached */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Unexpected server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Bad request */
+                502: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Bad request */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+            };
+        };
+        /** Start over: delete the conversation */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Missing, invalid or expired access token */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Validation failed */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Rate limited or quota reached */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Unexpected server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/coach/pantry-meals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Meal ideas from the foods someone has at home
+         * @description The model only chooses recipes from the given foods (plus salt, pepper, herbs, spices, garlic, lemon, vinegar and water); the server checks every ingredient and works out the nutrition from the foods’ own figures, sized to the goal. Uses one unit of the daily coach allowance.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PantryMealsAsk"];
+                };
+            };
+            responses: {
+                /** @description Up to three recipes */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PantryMeals"];
+                    };
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Missing, invalid or expired access token */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Validation failed */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Rate limited or quota reached */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Unexpected server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Bad request */
+                502: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Bad request */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/coach/eval": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Run the coach for a made-up person, saving nothing (red-team checks) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CoachEval"];
+                };
+            };
+            responses: {
+                /** @description What Pango would say */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CoachEvalResult"];
+                    };
+                };
+                /** @description Bad request */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Bad request */
+                502: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+                /** @description Bad request */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorBody"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/training/sessions": {
         parameters: {
             query?: never;
@@ -8955,6 +9362,7 @@ export interface components {
                     limits: {
                         scansPerDay: number;
                         aiTextPerDay: number;
+                        coachPerDay: number;
                         mealPhotos: number;
                         recipes: number;
                         progressPhotos: number;
@@ -8983,7 +9391,7 @@ export interface components {
             };
             minAppVersion: string;
             latestAppVersion: string;
-            disabledFeatures: ("aiText" | "emailSignIn" | "workouts" | "scanContributions")[];
+            disabledFeatures: ("aiText" | "coach" | "emailSignIn" | "workouts" | "scanContributions")[];
         };
         AppSettingsPatch: {
             /** @description `null` goes back to the deploy’s setting */
@@ -9001,7 +9409,7 @@ export interface components {
              * @example 1.4.0
              */
             latestAppVersion?: string | null;
-            disabledFeatures?: ("aiText" | "emailSignIn" | "workouts" | "scanContributions")[] | null;
+            disabledFeatures?: ("aiText" | "coach" | "emailSignIn" | "workouts" | "scanContributions")[] | null;
         };
         Challenge: {
             challenge: string;
@@ -9925,6 +10333,7 @@ export interface components {
             limits: {
                 scansPerDay: number;
                 aiTextPerDay: number;
+                coachPerDay: number;
                 mealPhotos: number;
                 recipes: number;
                 progressPhotos: number;
@@ -9940,6 +10349,7 @@ export interface components {
                 date: string;
                 scans: number;
                 aiText: number;
+                coach: number;
             };
         };
         SubscriptionState: {
@@ -10242,6 +10652,85 @@ export interface components {
              * @default null
              */
             source: string | null;
+        };
+        CoachAskResult: {
+            message: components["schemas"]["CoachMessage"];
+            reply: components["schemas"]["CoachMessage"];
+            /** @description The day’s allowance after this message; null when the reply did not use any (helplines, a refused request) */
+            usage: {
+                used: number;
+                limit: number;
+            } | null;
+        };
+        /** @description What was sent, as stored */
+        CoachMessage: {
+            id: string;
+            /** @enum {string} */
+            role: "user" | "assistant";
+            /** @description Plain text: show it as text, never as markdown or HTML */
+            content: string;
+            /**
+             * @description For replies: chat (an answer), crisis (helplines), scope (a request Pango does not take), blocked (an answer replaced for safety)
+             * @enum {string}
+             */
+            kind: "chat" | "crisis" | "scope" | "blocked";
+            createdAt: number;
+        };
+        CoachAsk: {
+            message: string;
+            /** @description The meal plan style picked on the phone, so Pango can mention it */
+            planStyle?: string | null;
+        };
+        PantryMeals: {
+            recipes: {
+                title: string;
+                minutes: number;
+                /** @enum {string} */
+                mealType: "breakfast" | "lunch" | "dinner" | "snack";
+                ingredients: {
+                    name: string;
+                    grams: number;
+                    /** @description null for a staple such as salt */
+                    foodId: string | null;
+                }[];
+                steps: string[];
+                /** @description One portion, worked out from the foods’ own figures */
+                nutrition: {
+                    calories: number;
+                    proteinG: number;
+                    carbG: number;
+                    fatG: number;
+                };
+            }[];
+            target: number;
+            usage: {
+                used: number;
+                limit: number;
+            };
+        };
+        PantryMealsAsk: {
+            /** @description Foods the person has (their own or from the food list) */
+            foodIds: string[];
+            /** @enum {string} */
+            mealType: "breakfast" | "lunch" | "dinner" | "snack";
+            /** @description Calories to aim for; else their goal’s share for that meal */
+            calories?: number | null;
+        };
+        CoachEvalResult: {
+            reply: string;
+            /** @enum {string} */
+            kind: "chat" | "crisis" | "scope" | "blocked";
+            flags: string[];
+        };
+        CoachEval: {
+            message: string;
+            age?: number | null;
+            /** @description Made-up diary entry names, to test instructions hidden in data */
+            entries?: string[];
+        };
+        CoachHistory: {
+            /** @description Oldest first, up to 60 */
+            items: components["schemas"]["CoachMessage"][];
         };
         WorkoutSessionList: {
             items: components["schemas"]["WorkoutSession"][];
