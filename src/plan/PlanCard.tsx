@@ -86,7 +86,8 @@ function NextMeal({ dietSlug }: { dietSlug: string }) {
       </Text>
       <Text variant="bodyStrong">{next.meal.title}</Text>
       <Text variant="small" tone="muted">
-        {portionLabel(next.portion)}, {next.calories} kcal
+        {portionLabel(next.portion)}
+        {next.portion !== 1 ? ' to fit your goal' : ''} · {next.calories} kcal
       </Text>
       <View style={{ flexDirection: 'row', gap: spacing.sm }}>
         <Button

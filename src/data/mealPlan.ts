@@ -182,14 +182,42 @@ export function portionLabel(p: number): string {
   return `${whole || ''}${part} ${p > 1 ? 'portions' : 'portion'}`.trim();
 }
 
-/** Ingredients for a number of portions, in grams people can weigh (to 5 g, or 1 g under 20 g). */
+const FRACTIONS: Record<string, number> = { '¼': 0.25, '⅓': 1 / 3, '½': 0.5, '⅔': 2 / 3, '¾': 0.75, '⅕': 0.2 };
+const NUMBER = /^(about )?(\d+)?([¼⅓½⅔¾⅕])?(?: to (\d+))?(?= |$)/;
+const PLURAL: Record<string, string> = { slice: 'slices', egg: 'eggs', cup: 'cups', wrap: 'wraps', fillet: 'fillets', breast: 'breasts', steak: 'steaks', pita: 'pitas', carrot: 'carrots', tomato: 'tomatoes', potato: 'potatoes', banana: 'bananas', apple: 'apples', orange: 'oranges', avo: 'avos', crispbread: 'crispbreads' };
+const asText = (n: number) => {
+  const whole = Math.floor(n + 1e-9);
+  const part = ({ 0.25: '¼', 0.5: '½', 0.75: '¾' } as Record<number, string>)[Math.round((n - whole) * 100) / 100] ?? '';
+  return `${whole || (part ? '' : '0')}${part}`;
+};
+
+/**
+ * A kitchen measure for a number of portions: "3 eggs" for 1¼ portions is "about 4 eggs". Rounded to a quarter (to a
+ * half from 2 up, whole from 10), since nobody uses ⅝ of a cup or 27½ almonds. Null when the measure has no number to scale ("a handful"). Pure.
+ */
+export function scaleMeasure(measure: string | null | undefined, portion: number): string | null {
+  if (!measure) return null;
+  if (portion === 1) return measure;
+  const m = NUMBER.exec(measure);
+  if (!m || (!m[2] && !m[3])) return null;
+  const value = Number(m[2] ?? 0) + (m[3] ? FRACTIONS[m[3]]! : 0);
+  const step = value * portion >= 10 ? 1 : value * portion >= 2 ? 0.5 : 0.25;
+  const round = (n: number) => Math.max(0.25, Math.round(n / step) * step);
+  const scaled = round(value * portion);
+  let rest = measure.slice(m[0].length);
+  if (scaled > 1 && value <= 1) rest = rest.replace(/^ ((?:small |medium |large )?)([a-z]+)\b/, (all, size: string, word: string) => (PLURAL[word] ? ` ${size}${PLURAL[word]}` : all));
+  const amount = m[4] ? `${asText(scaled)} to ${asText(round(Number(m[4]) * portion))}` : asText(scaled);
+  return `about ${amount}${rest}`;
+}
+
+/** Ingredients for a number of portions, in grams people can weigh (to 5 g, or 1 g under 20 g), with kitchen measures. */
 export function scaledIngredients(meal: Meal, portion: number) {
   return meal.ingredients.map((i) => {
     const g = i.grams * portion;
     return {
       ...i,
       grams: g < 20 ? Math.max(1, Math.round(g)) : Math.round(g / 5) * 5,
-      measure: portion === 1 ? i.measure : null,
+      measure: scaleMeasure(i.measure, portion),
     };
   });
 }

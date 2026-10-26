@@ -4,8 +4,9 @@ import { Alert, KeyboardAvoidingView, Platform, View } from 'react-native';
 
 import { useData } from '../src/data/DataProvider';
 import { mealForTime } from '../src/data/dates';
-import { MEALS, emptyForm, formFromEntry, parseEntryForm, type EntryForm, type EntryFormErrors } from '../src/data/entryForm';
+import { MEALS, emptyForm, formForGrams, formFromEntry, kcalPer100g, parseEntryForm, parseNumber, portionText, type EntryForm, type EntryFormErrors } from '../src/data/entryForm';
 import type { MealType } from '../src/data/dates';
+import type { DiaryEntry } from '../src/data/repo';
 import { spacing } from '../src/theme/tokens';
 import { Button, IconButton, Screen, Segmented, Text } from '../src/ui';
 import { deletePhoto } from '../src/scan/photos';
@@ -31,6 +32,9 @@ export default function AddEntry() {
   const [missing, setMissing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [scanId, setScanId] = useState<string | null>(null);
+  /** The entry as saved, when editing one; with its weight known, the amount can be changed and the numbers follow. */
+  const [original, setOriginal] = useState<DiaryEntry | null>(null);
+  const [gramsText, setGramsText] = useState('');
 
   useEffect(() => {
     if (!id) return;
@@ -38,6 +42,8 @@ export default function AddEntry() {
       if (e) {
         setForm(formFromEntry(e));
         setScanId(e.scanId);
+        setOriginal(e);
+        setGramsText(e.quantityG ? String(Math.round(e.quantityG * 10) / 10) : '');
       } else setMissing(true);
       setLoaded(true);
     });
@@ -48,12 +54,26 @@ export default function AddEntry() {
     if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
   };
 
+  const grams = parseNumber(gramsText);
+  const gramsError = original?.quantityG && !(grams !== null && grams > 0 && grams <= 5000) ? 'Enter grams from 1 to 5 000.' : undefined;
+  const changeGrams = (text: string) => {
+    setGramsText(text);
+    const g = parseNumber(text);
+    if (original && g !== null && g > 0 && g <= 5000) setForm((f) => formForGrams(f, original, g));
+  };
+
   const save = async () => {
     const parsed = parseEntryForm(form);
     if (!parsed.ok) return setErrors(parsed.errors);
+    if (gramsError) return;
     setSaving(true);
     try {
-      if (id) await repo.updateEntry(id, parsed.value);
+      if (id) {
+        // A food, scan or barcode keeps where it came from; a new amount replaces the old one (and its servings).
+        const kept = original && !['manual', 'quick_add'].includes(original.source) ? { source: original.source } : {};
+        const portion = original?.quantityG && grams !== original.quantityG ? { quantityG: grams, servings: null } : {};
+        await repo.updateEntry(id, { ...parsed.value, ...kept, ...portion });
+      }
       else await repo.addEntry(parsed.value);
       router.back();
     } catch (e) {
@@ -104,6 +124,14 @@ export default function AddEntry() {
               <Field label="Carbs" value={form.carbG} onChangeText={set('carbG')} keyboardType="decimal-pad" suffix="g" error={errors.carbG} style={{ flex: 1 }} />
               <Field label="Fat" value={form.fatG} onChangeText={set('fatG')} keyboardType="decimal-pad" suffix="g" error={errors.fatG} style={{ flex: 1 }} />
             </View>
+            {original?.quantityG ? (
+              <View style={{ gap: 6 }}>
+                <Field label="Amount eaten" value={gramsText} onChangeText={changeGrams} keyboardType="decimal-pad" suffix="g" error={gramsError} />
+                <Text variant="caption" tone="muted">
+                  {kcalPer100g(original)} kcal per 100 g{original.servings ? `, logged as ${portionText(original)}` : ''}. The same food in a different amount has different calories: change the grams and the numbers above follow.
+                </Text>
+              </View>
+            ) : null}
             <View style={{ gap: 6 }}>
               <Text variant="label" tone="muted">
                 Meal

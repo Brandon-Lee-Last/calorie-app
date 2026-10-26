@@ -136,7 +136,7 @@ export default function Plan() {
 
       <Button title={plus ? 'Shopping list' : 'Shopping list for the week (Plus)'} icon="list" variant="secondary" onPress={() => router.push(plus ? '/shopping' : '/plus')} />
       <Text variant="caption" tone="muted" align="center">
-        Portions are sized to your goal. Numbers are worked out from USDA FoodData Central; your own ingredients and cooking will vary. General guidance, not medical advice.
+        1 portion is the recipe as written; each meal is sized (from ½ to 2 portions) so the day adds up to your goal. Numbers are worked out from USDA FoodData Central; your own ingredients and cooking will vary. General guidance, not medical advice.
       </Text>
     </Screen>
   );

@@ -13,6 +13,7 @@ import {
   portionFor,
   portionLabel,
   scaledIngredients,
+  scaleMeasure,
   shoppingList,
   slotsFor,
   suitsGoal,
@@ -122,7 +123,7 @@ describe('logging a planned meal', () => {
 });
 
 describe('recipes and shopping', () => {
-  it('scales ingredients to weighable amounts and drops the kitchen measure off one portion', () => {
+  it('scales ingredients to weighable amounts, with kitchen measures to match', () => {
     const meal = plans.meals.find((m) => m.slug === 'oats')!;
     expect(scaledIngredients(meal, 1)[0]).toMatchObject({
       grams: 50,
@@ -130,7 +131,7 @@ describe('recipes and shopping', () => {
     });
     expect(scaledIngredients(meal, 1.25)[0]).toMatchObject({
       grams: 65,
-      measure: null,
+      measure: 'about ¾ cup',
     });
     expect(
       scaledIngredients(
@@ -141,6 +142,21 @@ describe('recipes and shopping', () => {
         0.75,
       )[0].grams,
     ).toBe(4);
+  });
+
+  it('scales kitchen measures to what a kitchen can do', () => {
+    expect(scaleMeasure('3 eggs', 1)).toBe('3 eggs');
+    expect(scaleMeasure('3 eggs', 1.25)).toBe('about 4 eggs');
+    expect(scaleMeasure('3 eggs', 0.5)).toBe('about 1½ eggs');
+    expect(scaleMeasure('1 slice', 1.5)).toBe('about 1½ slices');
+    expect(scaleMeasure('1 large wrap', 2)).toBe('about 2 large wraps');
+    expect(scaleMeasure('1 medium', 1.25)).toBe('about 1¼ medium');
+    expect(scaleMeasure('1½ tsp', 0.75)).toBe('about 1¼ tsp');
+    expect(scaleMeasure('⅔ cup', 1.5)).toBe('about 1 cup');
+    expect(scaleMeasure('6 to 8', 0.5)).toBe('about 3 to 4');
+    expect(scaleMeasure('about 22 almonds', 1.25)).toBe('about 28 almonds');
+    expect(scaleMeasure('a handful', 1.25)).toBeNull(); // nothing to scale: the grams say it
+    expect(scaleMeasure('1 cup cooked', 0.25)).toBe('about ¼ cup cooked');
   });
 
   it('adds up what the planned days need by aisle', () => {

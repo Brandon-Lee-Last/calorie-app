@@ -11,6 +11,7 @@ import { entryFor, itemFor, portionLabel, PORTIONS, scaledIngredients } from '..
 import { useTheme } from '../src/theme/theme';
 import { radius, spacing } from '../src/theme/tokens';
 import { Button, Card, EmptyState, IconButton, Screen, Text } from '../src/ui';
+import { Steps } from '../src/ui/Steps';
 
 const fmt = (n: number) => Math.round(n).toLocaleString('en-ZA');
 
@@ -102,6 +103,9 @@ export default function MealScreen() {
               </View>
               <IconButton icon="plus" label="Bigger portion" onPress={() => step(1)} />
             </View>
+            <Text variant="caption" tone="muted" align="center">
+              1 portion is the recipe as written. Your plan sizes each meal to fit your goal; change it with − and +, and the ingredients below follow.
+            </Text>
             <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
               <Text variant="caption" tone="protein">
                 Protein {fmt(item.proteinG)} g
@@ -146,17 +150,14 @@ export default function MealScreen() {
             ))}
           </View>
 
+          {meal.ingredients.some((i) => /cooked|boiled|roasted|baked|grilled/i.test(i.name)) ? (
+            <Text variant="caption" tone="muted">
+              Weights are as eaten: where it says cooked, weigh it after cooking. Raw meat and chicken lose about a quarter of their weight as they cook.
+            </Text>
+          ) : null}
+
           {meal.steps.length ? <Text variant="h3">Method</Text> : null}
-          {meal.steps.map((s, n) => (
-            <View key={n} style={{ flexDirection: 'row', gap: spacing.md }}>
-              <Text variant="bodyStrong" tone="accent">
-                {n + 1}
-              </Text>
-              <Text variant="body" style={{ flex: 1 }}>
-                {s}
-              </Text>
-            </View>
-          ))}
+          <Steps steps={meal.steps} />
 
           {canLog ? <Button title={logged ? 'Logged' : `Log as ${mealLabel(mealType).toLowerCase()}`} icon={logged ? 'check' : undefined} disabled={logged} onPress={log} /> : null}
           <Text variant="caption" tone="muted" align="center">

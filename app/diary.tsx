@@ -5,7 +5,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 
 import { useData } from '../src/data/DataProvider';
 import { dateAt, mealForTime, shiftDate, weekStart, type MealType } from '../src/data/dates';
-import { mealLabel } from '../src/data/entryForm';
+import { mealLabel, portionText } from '../src/data/entryForm';
 import { atDate, entryLike, mealTimeOn, sourceText, type Usual } from '../src/data/history';
 import { useDay, useGoals, useLastMeal, useToday, useUsuals, useWeek } from '../src/data/hooks';
 import type { DiaryEntry } from '../src/data/repo';
@@ -125,7 +125,8 @@ export default function Diary() {
 
 function TimelineRow({ entry }: { entry: DiaryEntry }) {
   const { colors } = useTheme();
-  const detail = `${mealLabel(entry.mealType)}, ${sourceText(entry.source)}`;
+  const portion = portionText(entry);
+  const detail = `${mealLabel(entry.mealType)}, ${sourceText(entry.source)}${portion ? ` · ${portion}` : ''}`;
   return (
     <View style={{ flexDirection: 'row', gap: spacing.md }}>
       <Text variant="caption" tone="muted" style={{ width: 42, paddingTop: 24 }}>

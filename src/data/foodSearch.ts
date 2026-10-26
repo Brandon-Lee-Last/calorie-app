@@ -28,11 +28,15 @@ export function matchMeals(meals: Usual[], query: string, limit = 5): Usual[] {
 
 type Describable = Pick<Food, 'brand' | 'servingG' | 'servingLabel' | 'calories100g'>;
 
-/** What a result row shows: the energy for one serving when the pack gives one, else for 100 g. */
+/**
+ * What a result row shows: the energy for one serving when the pack gives one, else for 100 g. With a serving, the
+ * figure per 100 g is shown too, so foods with the same name but different servings can be compared.
+ */
 export function describeFood(f: Describable): { kcal: number; per: string; detail: string } {
   const per = f.servingG ? f.servingLabel || `${f.servingG} g` : '100 g';
   const kcal = Math.round(f.servingG ? (f.calories100g * f.servingG) / 100 : f.calories100g);
-  return { kcal, per, detail: [f.brand, per].filter(Boolean).join(' · ') };
+  const per100 = f.servingG ? `${Math.round(f.calories100g)} kcal per 100 g` : null;
+  return { kcal, per, detail: [f.brand, per, per100].filter(Boolean).join(' · ') };
 }
 
 export const SOURCE_LABEL: Record<Food['source'], string> = {

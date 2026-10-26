@@ -104,19 +104,24 @@ skip it and keep the defaults. Then:
   lists your recent meals (one tap to log again, offline too). As you type it shows your own meals that match, then
   the shared food list: generic foods from USDA and packaged South African products from Open Food Facts, which the
   backend's **Food catalogue** workflow loads (see calorie-api's `docs/operations.md`). Not there? **Search Open Food
-  Facts** asks their whole database (millions of products) from the phone. Pick a food, choose servings or grams and
-  the meal, save. **Barcode**, **Photo** and **Type it in** are on the same screen. Search needs the backend.
+  Facts** asks their whole database (millions of products) from the phone. Each result shows its calories per 100 g
+  as well as per serving, so foods with the same name can be compared. Pick a food, choose servings or grams and the
+  meal, save. **Barcode**, **Photo** and **Type it in** are on the same screen. Search needs the backend.
 - **Scan a meal**: the round button in the middle of the tab bar opens the camera. *Plate* takes a photo for the
   model; *Barcode* reads a pack's barcode and looks it up (needs a connection). The photo button picks one from the
   gallery instead. On the result, change the portion, name it if you like, pick the meal and save.
 - **Diary**: the calendar button on Today. Pick any day of the week, copy a meal from the last time you had it,
-  or add one of your usuals (meals you have logged at least twice) in one tap.
+  or add one of your usuals (meals you have logged at least twice) in one tap. Every row shows how much was eaten
+  ("172 g", "1 serving (30 g)"), because the same food in a different amount has different calories. Open one to see
+  its calories per 100 g and change the amount: the calories and macros follow.
 - **What fits?**: on Today and in the diary. Ideas from your own meals and common South African dishes, shrunk to a
   smaller portion when the whole plate would not fit what is left today.
 - **Meal plans**: "Want a meal plan?" on Today, or open the plan from there. Pick a style (Balanced and Budget are
   free; High protein, Mediterranean, Low carb, Vegetarian and Plant-based come with Plus) and Pango plans breakfast,
   lunch, dinner and a snack (two from 2,400 kcal) with portions sized to your calorie goal. Log a planned meal in one
-  tap, swap one you do not fancy, open its recipe (ingredients scaled to your portion). Free plans today and
+  tap, swap one you do not fancy, open its recipe: ingredients scaled to your portion in grams and kitchen measures
+  ("about 4 eggs" for 1¼ portions of a three-egg scramble), and a step-by-step method. 1 portion is the recipe as
+  written; the plan sizes each meal from ½ to 2 portions so the day adds up to your goal. Free plans today and
   tomorrow; Plus plans the week ahead and adds a shopping list by shop aisle, to tick off or send. The meals and their
   numbers come from the backend (`/v1/meal-plans`, worked out from USDA figures; see calorie-api's
   `docs/meal-plans.md`); the planning happens on the phone, so it works offline once loaded.
@@ -125,10 +130,11 @@ skip it and keep the defaults. Then:
   what you have logged. While it answers, Pango thinks it over with bouncing dots, then the reply types out at a
   steady pace inside a bubble that is already its final size, so nothing jumps (tap it to see it all; crisis replies
   and "reduce motion" show at once). The server checks the whole answer before releasing it, so the typing is played
-  on the phone rather than streamed. The message box stays above the keyboard. Replies are plain text. If someone seems to be in crisis, Pango answers with South African
-  helplines (tap to call). **Meals from my groceries** (on the same card, or a chip in the chat): add what you have at
-  home from the food list, pick a meal, and Pango suggests up to three recipes; the calories are worked out by the
-  server from your foods' own figures, never by the AI. Free accounts get 10 questions a day (3 before a sign-in is
+  on the phone rather than streamed. The message box stays above the keyboard. Replies are plain text. If someone
+  seems to be in crisis, Pango answers with South African helplines (tap to call). **Meals from my groceries** (on the same card, or a chip in the chat): add what you have at
+  home from the food list, pick a meal, and Pango suggests up to three recipes, each with the ingredients for your
+  portion (and each one's calories) and a numbered method; the calories are worked out by the server from your foods'
+  own figures, never by the AI. Free accounts get 10 questions a day (3 before a sign-in is
   linked), Plus 60. The safety design is in calorie-api's `docs/coach.md`.
 - **Progress**: your weight trend (log a weigh-in or set a goal weight there), the weekly recap (three tap-through
   cards about last week, shareable) and a month calendar of days on target.

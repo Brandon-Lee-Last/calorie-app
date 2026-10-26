@@ -213,11 +213,11 @@ describe('My groceries', () => {
         minutes: 8,
         mealType: 'breakfast',
         ingredients: [
-          { name: 'Rolled oats', grams: 60, foodId: 'f-oats' },
-          { name: 'Low fat milk', grams: 250, foodId: 'f-milk' },
-          { name: 'Salt', grams: 1, foodId: null },
+          { name: 'Rolled oats', grams: 60, foodId: 'f-oats', calories: 227 },
+          { name: 'Low fat milk', grams: 250, foodId: 'f-milk', calories: 125 },
+          { name: 'Salt', grams: 1, foodId: null, calories: 0 },
         ],
-        steps: ['Cook the oats in the milk.'],
+        steps: ['Bring the milk to a simmer over medium heat.', 'Stir in the oats and cook for 4 minutes, stirring, until creamy.'],
         nutrition: { calories: 352, proteinG: 16.2, carbG: 52.6, fatG: 8.9 },
       },
     ];
@@ -232,6 +232,10 @@ describe('My groceries', () => {
     await fireEvent.press(view.getByRole('button', { name: 'Breakfast' }));
     await fireEvent.press(view.getByRole('button', { name: 'Make breakfast ideas' }));
     expect(await view.findByText('Creamy oats')).toBeTruthy();
+    expect(view.getByText('60 g · 227 kcal')).toBeTruthy(); // where the calories come from
+    expect(view.getByText('1 g')).toBeTruthy(); // a staple: no calories to show
+    expect(view.getByText('Stir in the oats and cook for 4 minutes, stirring, until creamy.')).toBeTruthy();
+    expect(view.getByLabelText('Step 2')).toBeTruthy();
     expect(server.pantryAsks[0]).toEqual({ foodIds: ['f-oats', 'f-milk'], mealType: 'breakfast' });
     await fireEvent.press(view.getByRole('button', { name: 'Log it' }));
     await waitFor(async () => expect((await stack.repo.entriesFor(localDate()))[0]).toMatchObject({ name: 'Creamy oats', calories: 352, mealType: 'breakfast' }));

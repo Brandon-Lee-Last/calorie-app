@@ -150,7 +150,7 @@ describe('A meal', () => {
     const view = await renderWith(<MealScreen />, stack);
     expect(await view.findByText('50 g (½ cup)')).toBeTruthy();
     await fireEvent.press(view.getByRole('button', { name: 'Bigger portion' }));
-    expect(view.getByText('65 g')).toBeTruthy();
+    expect(view.getByText('65 g (about ¾ cup)')).toBeTruthy(); // the kitchen measure follows the portion
     expect(view.getByText('500 kcal')).toBeTruthy();
     await fireEvent.press(view.getByRole('button', { name: 'Log as breakfast' }));
     await waitFor(async () =>

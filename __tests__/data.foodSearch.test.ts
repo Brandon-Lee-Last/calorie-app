@@ -50,8 +50,8 @@ describe('as you type', () => {
 
 describe('result rows', () => {
   it('show the energy for one serving when the pack gives one, else for 100 g', () => {
-    expect(describeFood({ brand: 'Ouma', servingG: 32, servingLabel: '1 rusk (32 g)', calories100g: 430 })).toEqual({ kcal: 138, per: '1 rusk (32 g)', detail: 'Ouma · 1 rusk (32 g)' });
-    expect(describeFood({ brand: null, servingG: 50, servingLabel: null, calories100g: 100 })).toEqual({ kcal: 50, per: '50 g', detail: '50 g' });
+    expect(describeFood({ brand: 'Ouma', servingG: 32, servingLabel: '1 rusk (32 g)', calories100g: 430 })).toEqual({ kcal: 138, per: '1 rusk (32 g)', detail: 'Ouma · 1 rusk (32 g) · 430 kcal per 100 g' });
+    expect(describeFood({ brand: null, servingG: 50, servingLabel: null, calories100g: 100 })).toEqual({ kcal: 50, per: '50 g', detail: '50 g · 100 kcal per 100 g' });
     expect(describeFood({ brand: null, servingG: null, servingLabel: null, calories100g: 52 })).toEqual({ kcal: 52, per: '100 g', detail: '100 g' });
   });
 });

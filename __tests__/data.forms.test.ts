@@ -1,4 +1,4 @@
-import { emptyForm, formFromEntry, parseEntryForm, parseNumber, QUICK_ADD_NAME } from '../src/data/entryForm';
+import { emptyForm, formForGrams, formFromEntry, kcalPer100g, parseEntryForm, parseNumber, portionText, QUICK_ADD_NAME } from '../src/data/entryForm';
 import type { DiaryEntry } from '../src/data/repo';
 import type { SyncStatus } from '../src/data/sync';
 import { describeSync } from '../src/data/syncText';
@@ -42,6 +42,27 @@ describe('parseEntryForm', () => {
   it('round-trips an entry for editing', () => {
     const entry = { name: 'Pap', calories: 300, proteinG: 0, carbG: 64, fatG: 1.5, mealType: 'dinner' } as DiaryEntry;
     expect(formFromEntry(entry)).toEqual({ name: 'Pap', calories: '300', proteinG: '', carbG: '64', fatG: '1.5', mealType: 'dinner' });
+  });
+});
+
+describe('portions', () => {
+  // The same chicken logged twice: 172 g and 197 g of a food with 165 kcal per 100 g.
+  const lunch = { name: 'Grilled Chicken Breast', calories: 283, proteinG: 53.3, carbG: 0, fatG: 6.2, quantityG: 171.5, servings: null } as DiaryEntry;
+  const dinner = { ...lunch, calories: 325, quantityG: 197 } as DiaryEntry;
+
+  it('says how much was eaten, so two of the same food can be told apart', () => {
+    expect(portionText(lunch)).toBe('172 g');
+    expect(portionText(dinner)).toBe('197 g');
+    expect(portionText({ quantityG: 45, servings: 1.5 })).toBe('1½ servings (45 g)');
+    expect(portionText({ quantityG: 30, servings: 1 })).toBe('1 serving (30 g)');
+    expect(portionText({ quantityG: null, servings: null })).toBeNull(); // typed in: only the calories are known
+    expect([kcalPer100g(lunch), kcalPer100g(dinner)]).toEqual([165, 165]); // same food, different portion
+  });
+
+  it('scales every number with a new amount', () => {
+    const form = formFromEntry(lunch);
+    expect(formForGrams(form, lunch, 197)).toMatchObject({ calories: '325', proteinG: '61.2', fatG: '7.1' });
+    expect(formForGrams(form, lunch, 0)).toBe(form);
   });
 });
 

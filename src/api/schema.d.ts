@@ -10692,7 +10692,10 @@ export interface components {
                     grams: number;
                     /** @description null for a staple such as salt */
                     foodId: string | null;
+                    /** @description This ingredient at these grams, from its own figures; 0 for a staple */
+                    calories: number;
                 }[];
+                /** @description How to make it; amounts are in `ingredients`, never in the steps */
                 steps: string[];
                 /** @description One portion, worked out from the foods’ own figures */
                 nutrition: {

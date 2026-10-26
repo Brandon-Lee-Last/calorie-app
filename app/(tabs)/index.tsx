@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native';
 
 import { useData } from '../../src/data/DataProvider';
 import { mealForTime } from '../../src/data/dates';
-import { mealLabel } from '../../src/data/entryForm';
+import { mealLabel, portionText } from '../../src/data/entryForm';
 import { useBurned, useDay, useGoals, useSettings, useStreak, useSyncStatus, useToday, useWater } from '../../src/data/hooks';
 import type { DiaryEntry } from '../../src/data/repo';
 import { EntryThumb, MEAL_TINT } from '../../src/ui/EntryThumb';
@@ -160,7 +160,8 @@ export default function Today() {
 function EntryRow({ entry }: { entry: DiaryEntry }) {
   const { colors } = useTheme();
   const scanned = entry.source === 'scan';
-  const detail = `${mealLabel(entry.mealType)}, ${time(entry.loggedAt)}${scanned ? ', scanned' : ''}`;
+  const portion = portionText(entry);
+  const detail = `${mealLabel(entry.mealType)}, ${time(entry.loggedAt)}${scanned ? ', scanned' : ''}${portion ? ` · ${portion}` : ''}`;
   return (
     <Pressable
       accessibilityRole="button"

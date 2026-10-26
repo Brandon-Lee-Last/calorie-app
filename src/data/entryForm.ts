@@ -58,3 +58,29 @@ export function parseEntryForm(form: EntryForm): { ok: true; value: NewEntry } |
     value: { name: name || QUICK_ADD_NAME, calories: calories!, proteinG, carbG, fatG, mealType: form.mealType, source: name ? 'manual' : 'quick_add' },
   };
 }
+
+const fmtG = (n: number) => Math.round(n).toLocaleString('en-ZA');
+const servingsText = (n: number) => {
+  const whole = Math.floor(n);
+  const part = ({ 0.25: '¼', 0.5: '½', 0.75: '¾' } as Record<number, string>)[Math.round((n - whole) * 100) / 100];
+  const text = part === undefined ? String(Math.round(n * 100) / 100) : `${whole || ''}${part}`;
+  return `${text} serving${n === 1 ? '' : 's'}`;
+};
+
+/** How much was eaten, for a diary row: "172 g", "1 serving (30 g)", or null when only the calories were typed. Pure. */
+export function portionText(e: Pick<DiaryEntry, 'quantityG' | 'servings'>): string | null {
+  if (!e.quantityG) return null;
+  return e.servings ? `${servingsText(e.servings)} (${fmtG(e.quantityG)} g)` : `${fmtG(e.quantityG)} g`;
+}
+
+/** Calories in 100 g of what was logged, when its weight is known: the figure that tells two same-named foods apart. Pure. */
+export const kcalPer100g = (e: Pick<DiaryEntry, 'quantityG' | 'calories'>) => (e.quantityG ? Math.round((e.calories * 100) / e.quantityG) : null);
+
+/** The form for `entry` eaten in a different amount: every number scales with the grams. Pure. */
+export function formForGrams(form: EntryForm, entry: Pick<DiaryEntry, 'quantityG' | 'calories' | 'proteinG' | 'carbG' | 'fatG'>, grams: number): EntryForm {
+  if (!entry.quantityG || !(grams > 0)) return form;
+  const f = grams / entry.quantityG;
+  const tenth = (n: number) => String(Math.round(n * f * 10) / 10);
+  return { ...form, calories: String(Math.round(entry.calories * f)), proteinG: tenth(entry.proteinG), carbG: tenth(entry.carbG), fatG: tenth(entry.fatG) };
+}
+

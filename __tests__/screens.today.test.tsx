@@ -98,6 +98,27 @@ describe('Add food', () => {
     await fireEvent.press(edit.getByRole('button', { name: 'Save changes' }));
     await waitFor(() => expect(router.back).toHaveBeenCalled());
     expect((await stack.repo.entry(e.id))?.calories).toBe(350);
+    expect(edit.queryByLabelText('Amount eaten')).toBeNull(); // typed in by hand: no weight to change
+    await settle(stack);
+    await edit.unmount();
+  });
+
+  it('shows the amount of a food and changes it, with the numbers following', async () => {
+    const { view, stack } = await mount(<Today />);
+    const e = await stack.repo.addEntry({ name: 'Grilled Chicken Breast', calories: 283, proteinG: 53.3, fatG: 6.2, quantityG: 171.5, servings: 1, mealType: 'lunch', source: 'food' });
+    expect(await view.findByText(/· 1 serving \(172 g\)$/)).toBeTruthy();
+    await settle(stack);
+    await view.unmount();
+
+    jest.mocked(useLocalSearchParams).mockReturnValue({ id: e.id });
+    const edit = await renderWith(<AddEntry />, stack);
+    expect(await edit.findByText(/^165 kcal per 100 g, logged as 1 serving \(172 g\)\./)).toBeTruthy();
+    await fireEvent.changeText(edit.getByLabelText('Amount eaten'), '197');
+    expect(edit.getByLabelText('Calories').props.value).toBe('325');
+    await fireEvent.press(edit.getByRole('button', { name: 'Save changes' }));
+    await waitFor(() => expect(router.back).toHaveBeenCalled());
+    expect(await stack.repo.entry(e.id)).toMatchObject({ calories: 325, proteinG: 61.2, quantityG: 197, servings: null, source: 'food' });
+    jest.mocked(useLocalSearchParams).mockReturnValue({});
     await settle(stack);
     await edit.unmount();
   });

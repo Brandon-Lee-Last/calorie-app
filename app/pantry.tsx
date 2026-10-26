@@ -13,6 +13,7 @@ import { useRepoQuery } from '../src/data/hooks';
 import { useTheme } from '../src/theme/theme';
 import { fontFamily, radius, spacing } from '../src/theme/tokens';
 import { Button, Chip, Icon, IconButton, Screen, Text } from '../src/ui';
+import { Steps } from '../src/ui/Steps';
 
 const fmt = (n: number) => Math.round(n).toLocaleString('en-ZA');
 
@@ -157,29 +158,8 @@ export default function Pantry() {
         </View>
       ) : null}
 
-      {(recipes ?? []).map((r) => (
-        <View key={r.title} style={{ gap: spacing.sm, padding: spacing.lg, borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: spacing.sm }}>
-            <Text variant="h3" style={{ flex: 1 }}>
-              {r.title}
-            </Text>
-            <Text variant="label">{fmt(r.nutrition.calories)} kcal</Text>
-          </View>
-          <Text variant="small" tone="muted">
-            {r.minutes} min. Protein {fmt(r.nutrition.proteinG)} g, carbs {fmt(r.nutrition.carbG)} g, fat {fmt(r.nutrition.fatG)} g
-          </Text>
-          {r.ingredients.map((i) => (
-            <Text key={i.name} variant="small">
-              {i.name}: {i.grams} g
-            </Text>
-          ))}
-          {r.steps.map((s, n) => (
-            <Text key={n} variant="small" tone="muted">
-              {n + 1}. {s}
-            </Text>
-          ))}
-          <Button title={logged.includes(r.title) ? 'Logged' : 'Log it'} icon={logged.includes(r.title) ? 'check' : undefined} disabled={logged.includes(r.title)} size="md" onPress={() => log(r)} />
-        </View>
+      {(recipes ?? []).map((r, n) => (
+        <RecipeCard key={r.title} recipe={r} open={n === 0} logged={logged.includes(r.title)} onLog={() => log(r)} />
       ))}
       {recipes?.length ? (
         <Text variant="caption" tone="muted" align="center">
@@ -187,5 +167,57 @@ export default function Pantry() {
         </Text>
       ) : null}
     </Screen>
+  );
+}
+
+/** One idea: what it is and its numbers, then the ingredients for one portion (each with its calories) and the method. */
+function RecipeCard({ recipe: r, open: startOpen, logged, onLog }: { recipe: PantryRecipe; open: boolean; logged: boolean; onLog: () => void }) {
+  const { colors } = useTheme();
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <View style={{ gap: spacing.md, padding: spacing.lg, borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: spacing.sm }}>
+        <Text variant="h3" style={{ flex: 1 }}>
+          {r.title}
+        </Text>
+        <Text variant="label">{fmt(r.nutrition.calories)} kcal</Text>
+      </View>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
+        <Text variant="caption" tone="muted">
+          {r.minutes} min
+        </Text>
+        <Text variant="caption" tone="protein">
+          Protein {fmt(r.nutrition.proteinG)} g
+        </Text>
+        <Text variant="caption" tone="carbs">
+          Carbs {fmt(r.nutrition.carbG)} g
+        </Text>
+        <Text variant="caption" tone="fat">
+          Fat {fmt(r.nutrition.fatG)} g
+        </Text>
+      </View>
+      {open ? (
+        <>
+          <Text variant="bodyStrong">Ingredients for your portion</Text>
+          <View style={{ borderRadius: radius.md, borderWidth: 1, borderColor: colors.line }}>
+            {r.ingredients.map((i, n) => (
+              <View key={i.name} style={{ flexDirection: 'row', gap: spacing.md, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderTopWidth: n ? 1 : 0, borderColor: colors.line }}>
+                <Text variant="small" style={{ flex: 1 }}>
+                  {i.name}
+                </Text>
+                <Text variant="small" tone="muted">
+                  {i.grams} g{i.foodId && typeof i.calories === 'number' ? ` · ${fmt(i.calories)} kcal` : ''}
+                </Text>
+              </View>
+            ))}
+          </View>
+          {r.steps.length ? <Text variant="bodyStrong">Method</Text> : null}
+          <Steps steps={r.steps} />
+        </>
+      ) : (
+        <Button title="See the recipe" variant="secondary" size="md" onPress={() => setOpen(true)} />
+      )}
+      <Button title={logged ? 'Logged' : 'Log it'} icon={logged ? 'check' : undefined} disabled={logged} size="md" onPress={onLog} />
+    </View>
   );
 }

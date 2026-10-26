@@ -5194,12 +5194,17 @@
                                                 "type": "string",
                                                 "nullable": true,
                                                 "description": "null for a staple such as salt"
+                                            },
+                                            "calories": {
+                                                "type": "integer",
+                                                "description": "This ingredient at these grams, from its own figures; 0 for a staple"
                                             }
                                         },
                                         "required": [
                                             "name",
                                             "grams",
-                                            "foodId"
+                                            "foodId",
+                                            "calories"
                                         ]
                                     }
                                 },
@@ -5207,7 +5212,8 @@
                                     "type": "array",
                                     "items": {
                                         "type": "string"
-                                    }
+                                    },
+                                    "description": "How to make it; amounts are in `ingredients`, never in the steps"
                                 },
                                 "nutrition": {
                                     "type": "object",
