@@ -1,11 +1,11 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
-import { Alert, Linking, Pressable, ScrollView, TextInput, View, type ViewStyle } from 'react-native';
+import { Alert, Linking, Pressable, ScrollView, TextInput, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import Animated, { useReducedMotion, type CSSAnimationKeyframes } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { unwrap } from '../src/api/client';
-import { COACH_SEEN_KEY, coachProblem, helplinesIn, MAX_MESSAGE, SUGGESTIONS, telUrl, TYPE_TICK_MS, typedUpTo, type CoachMessage } from '../src/data/coach';
+import { coachProblem, helplinesIn, MAX_MESSAGE, SUGGESTIONS, telUrl, typedAt, type CoachMessage } from '../src/data/coach';
 import { useData } from '../src/data/DataProvider';
 import { usePlanDiet } from '../src/data/hooks';
 import { MyPango } from '../src/pango/MyPango';
@@ -20,7 +20,7 @@ import { useKeyboardLift } from '../src/ui/keyboard';
  */
 export default function Coach() {
   const { colors } = useTheme();
-  const { api, repo } = useData();
+  const { api } = useData();
   const [planStyle] = usePlanDiet();
   const { ask } = useLocalSearchParams<{ ask?: string }>();
   const [messages, setMessages] = useState<CoachMessage[] | null>(null);
@@ -31,13 +31,15 @@ export default function Coach() {
   const [typingId, setTypingId] = useState<string | null>(null);
   const [problem, setProblem] = useState<ReturnType<typeof coachProblem> | null>(null);
   const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
+  /** The scroll view's visible height, and where to hold the scroll instead of the end (the top of a long reply). */
+  const viewport = useRef(0);
+  const holdAt = useRef<number | null>(null);
   const asked = useRef(false);
   const insets = useSafeAreaInsets();
   const keyboard = useKeyboardLift(insets.bottom);
   const busy = pending !== null;
 
   useEffect(() => {
-    repo.setMeta(COACH_SEEN_KEY, true).catch(() => {});
     let alive = true;
     unwrap(api.GET('/v1/coach/messages'))
       .then((h) => alive && setMessages(h.items))
@@ -49,7 +51,7 @@ export default function Coach() {
     return () => {
       alive = false;
     };
-  }, [api, repo]);
+  }, [api]);
 
   useEffect(() => {
     if (keyboard.open) scroll.current?.scrollToEnd({ animated: true });
@@ -60,6 +62,7 @@ export default function Coach() {
     if (!message || busy) return;
     setPending(message);
     setTypingId(null); // a reply still typing finishes at once
+    holdAt.current = null;
     setProblem(null);
     setDraft('');
     try {
@@ -116,7 +119,8 @@ export default function Coach() {
         ref={scroll}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ padding: spacing.lg, gap: spacing.md }}
-        onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: typingId === null })}
+        onLayout={(e) => (viewport.current = e.nativeEvent.layout.height)}
+        onContentSizeChange={() => (holdAt.current === null ? scroll.current?.scrollToEnd({ animated: true }) : scroll.current?.scrollTo({ y: holdAt.current, animated: true }))}
       >
         <Text variant="caption" tone="muted" align="center">
           Pango gives general tips about food, training and motivation, not medical advice.
@@ -136,7 +140,23 @@ export default function Coach() {
           </View>
         ) : null}
         {(messages ?? []).map((m) => (
-          <Bubble key={m.id} message={m} typing={m.id === typingId} onTyped={() => setTypingId((t) => (t === m.id ? null : t))} />
+          <Bubble
+            key={m.id}
+            message={m}
+            typing={m.id === typingId}
+            onTyped={() => setTypingId((t) => (t === m.id ? null : t))}
+            onLayout={
+              m.id === typingId
+                ? (e) => {
+                    // A reply taller than the screen is read from its top as it types, not from its (still blank) end.
+                    const { y, height } = e.nativeEvent.layout;
+                    if (height <= viewport.current - spacing.xxl) return;
+                    holdAt.current = Math.max(0, y - spacing.md);
+                    scroll.current?.scrollTo({ y: holdAt.current, animated: true });
+                  }
+                : undefined
+            }
+          />
         ))}
         {pending !== null ? <Bubble message={{ id: 'pending', role: 'user', content: pending, kind: 'chat', createdAt: 0 }} /> : null}
         {busy ? <Thinking /> : null}
@@ -210,28 +230,39 @@ function Avatar() {
   );
 }
 
-/** One message. A reply that is `typing` plays out a few words at a time; a tap shows it all. */
-function Bubble({ message, typing = false, onTyped }: { message: CoachMessage; typing?: boolean; onTyped?: () => void }) {
+/**
+ * One message. A reply that is `typing` plays out letter by letter, a tap shows it all. The bubble is laid out with the
+ * whole reply from the start (the part still to come is there but invisible), so it never resizes or reflows as it types.
+ */
+function Bubble({ message, typing = false, onTyped, onLayout }: { message: CoachMessage; typing?: boolean; onTyped?: () => void; onLayout?: (e: LayoutChangeEvent) => void }) {
   const { colors } = useTheme();
   const reduced = useReducedMotion();
   const mine = message.role === 'user';
   const crisis = message.kind === 'crisis';
   const text = message.content;
   const animate = typing && !reduced;
-  const [shown, setShown] = useState(() => (animate ? typedUpTo(text, 0) : text.length));
+  const [shown, setShown] = useState(animate ? 0 : text.length);
+  const skipped = useRef(false);
   const done = shown >= text.length;
 
   useEffect(() => {
-    if (!animate) setShown(text.length);
-  }, [animate, text]);
-  useEffect(() => {
-    if (done) {
-      if (typing) onTyped?.();
+    if (!animate || skipped.current) {
+      setShown(text.length);
       return;
     }
-    const t = setTimeout(() => setShown((s) => typedUpTo(text, s)), TYPE_TICK_MS);
-    return () => clearTimeout(t);
-  }, [shown, done, text]); // eslint-disable-line react-hooks/exhaustive-deps
+    // Paced by the clock, a frame at a time, so it keeps a steady speed even when the phone is busy.
+    const start = Date.now();
+    let frame = requestAnimationFrame(function tick() {
+      if (skipped.current) return;
+      const next = typedAt(text.length, Date.now() - start);
+      setShown(next);
+      if (next < text.length) frame = requestAnimationFrame(tick);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [animate, text]);
+  useEffect(() => {
+    if (done && typing) onTyped?.();
+  }, [done, typing]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const style: ViewStyle = {
     maxWidth: '80%',
@@ -245,7 +276,7 @@ function Bubble({ message, typing = false, onTyped }: { message: CoachMessage; t
     borderColor: crisis ? colors.warn : mine ? colors.accent : colors.line,
   };
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: mine ? 'flex-end' : 'flex-start', gap: spacing.sm }}>
+    <View onLayout={onLayout} style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: mine ? 'flex-end' : 'flex-start', gap: spacing.sm }}>
       {!mine ? <Avatar /> : null}
       {done ? (
         <View style={style}>
@@ -267,8 +298,22 @@ function Bubble({ message, typing = false, onTyped }: { message: CoachMessage; t
         </View>
       ) : (
         // While it types, screen readers get the whole answer at once, and a tap shows it all.
-        <Pressable accessibilityRole="button" accessibilityLabel={text} accessibilityHint="Shows the whole answer" onPress={() => setShown(text.length)} style={style}>
-          <Text variant="body">{text.slice(0, shown)}</Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={text}
+          accessibilityHint="Shows the whole answer"
+          onPress={() => {
+            skipped.current = true;
+            setShown(text.length);
+          }}
+          style={style}
+        >
+          <Text variant="body">
+            {text.slice(0, shown)}
+            <Text variant="body" style={{ color: 'transparent' }}>
+              {text.slice(shown)}
+            </Text>
+          </Text>
         </Pressable>
       )}
     </View>

@@ -46,7 +46,7 @@ using an API. The Expo docs site may be unreachable from sandboxed environments.
   (calorie-api `docs/coach.md`). The app shows replies as plain text only: never render them as markdown, links or
   HTML (that is how an injected instruction would smuggle data out). Call buttons appear only for the fixed helplines
   in a `crisis` reply (`helplinesIn`). Recipe numbers come from the server; never compute or adjust them on the phone.
-  Replies type out on the phone (`typedUpTo`) because the server releases an answer only after its safety checks: do
+  Replies type out on the phone (`typedAt`, with the rest of the reply laid out invisibly so the bubble never resizes) because the server releases an answer only after its safety checks: do
   not switch to streaming the model's words, which would show text before it is checked. Crisis replies never type.
 - Android draws edge to edge, so the window does not shrink for the keyboard: a screen with an input at the bottom
   uses `useKeyboardLift` (`src/ui/keyboard.ts`) rather than `KeyboardAvoidingView`.

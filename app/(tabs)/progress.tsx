@@ -2,7 +2,6 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { ASK_PANGO_CLEARANCE } from '../../src/coach/AskPangoFab';
 import { dateAt, shiftDate } from '../../src/data/dates';
 import { isPlus } from '../../src/data/entitlement';
 import { useCaloriesByDay, useEntitlement, useGoals, useProfile, useToday, useWeights } from '../../src/data/hooks';
@@ -35,7 +34,7 @@ export default function Progress() {
   const good = series.delta === null || !profile ? null : target ? Math.sign(target - (series.latest ?? 0)) === Math.sign(series.delta) || series.delta === 0 : profile.goal === 'gain' ? series.delta >= 0 : series.delta <= 0;
 
   return (
-    <Screen gap={14} bottomInset={ASK_PANGO_CLEARANCE}>
+    <Screen gap={14}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 44 }}>
         <Text variant="title">Progress</Text>
         <Pressable

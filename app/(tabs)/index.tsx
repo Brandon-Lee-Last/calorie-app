@@ -2,7 +2,6 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
-import { ASK_PANGO_CLEARANCE } from '../../src/coach/AskPangoFab';
 import { useData } from '../../src/data/DataProvider';
 import { mealForTime } from '../../src/data/dates';
 import { mealLabel } from '../../src/data/entryForm';
@@ -41,11 +40,23 @@ export default function Today() {
   ] as const;
 
   return (
-    <Screen bottomInset={ASK_PANGO_CLEARANCE}>
+    <Screen>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-        <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
-          <MyPango crop="face" size={40} motion={false} />
-        </View>
+        {/* Pango's face is the way into Ask Pango; the badge says so. */}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Chat with Pango"
+          accessibilityHint="Ask about food, training or motivation"
+          onPress={() => router.push('/coach')}
+          style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+        >
+          <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.surface, borderWidth: 2, borderColor: colors.accent, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
+            <MyPango crop="face" size={40} motion={false} />
+          </View>
+          <View style={{ position: 'absolute', right: -3, bottom: -3, width: 24, height: 24, borderRadius: 12, backgroundColor: colors.accent, borderWidth: 2, borderColor: colors.bg, alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="chat" size={12} color={colors.onAccent} strokeWidth={2.6} />
+          </View>
+        </Pressable>
         <View style={{ flex: 1 }}>
           <Text variant="h2">Hey there</Text>
           <Text variant="small" tone="muted">

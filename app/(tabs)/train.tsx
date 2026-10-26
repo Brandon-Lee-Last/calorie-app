@@ -2,7 +2,6 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 
-import { ASK_PANGO_CLEARANCE } from '../../src/coach/AskPangoFab';
 import { unwrap } from '../../src/api/client';
 import type { components } from '../../src/api/schema';
 import { dateAt, weekOf, weekStart } from '../../src/data/dates';
@@ -51,7 +50,7 @@ export default function Train() {
   const list = listFor(filter, BUILT_IN, programs.data ?? [], enrollment);
 
   return (
-    <Screen gap={12} bottomInset={ASK_PANGO_CLEARANCE}>
+    <Screen gap={12}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 44 }}>
         <Text variant="title">Train</Text>
         {plus ? (

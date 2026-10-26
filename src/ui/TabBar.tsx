@@ -3,7 +3,6 @@ import { router } from 'expo-router';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { Pressable, View } from 'react-native';
 
-import { AskPangoFab } from '../coach/AskPangoFab';
 import { useTheme } from '../theme/theme';
 import { spacing } from '../theme/tokens';
 import { Icon, type IconName } from './Icon';
@@ -16,7 +15,7 @@ const TABS: Record<string, { label: string; icon: IconName }> = {
   me: { label: 'Me', icon: 'me' },
 };
 
-/** Today, Train, a raised Scan button in the middle, Progress, Me; Ask Pango floats above, on the right. */
+/** Today, Train, a raised Scan button in the middle, Progress, Me. */
 export function TabBar({ state, navigateToTab, insets }: BottomTabBarProps) {
   const { colors } = useTheme();
   const tab = (index: number) => {
@@ -54,7 +53,6 @@ export function TabBar({ state, navigateToTab, insets }: BottomTabBarProps) {
         borderTopColor: colors.line,
       }}
     >
-      <AskPangoFab />
       {tab(0)}
       {tab(1)}
       <Pressable

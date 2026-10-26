@@ -30,6 +30,14 @@ describe('Today', () => {
     await view.unmount();
   });
 
+  it('opens Ask Pango from Pango at the top', async () => {
+    const { view, stack } = await mount(<Today />);
+    await fireEvent.press(await view.findByRole('button', { name: 'Chat with Pango' }));
+    expect(router.push).toHaveBeenCalledWith('/coach');
+    await settle(stack);
+    await view.unmount();
+  });
+
   it('adds and takes back glasses of water', async () => {
     const { view, stack } = await mount(<Today />);
     await settle(stack);
