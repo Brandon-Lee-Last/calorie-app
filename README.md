@@ -136,6 +136,15 @@ skip it and keep the defaults. Then:
   portion (and each one's calories) and a numbered method; the calories are worked out by the server from your foods'
   own figures, never by the AI. Free accounts get 10 questions a day (3 before a sign-in is
   linked), Plus 60. The safety design is in calorie-api's `docs/coach.md`.
+- **Activity**: the Activity card on Today, and its screen. Steps and calories burned against daily goals (8,000 steps
+  and 300 kcal to start; change them there). On Android, **Connect Health Connect** reads your step count from Health
+  Connect, where Samsung Health, Google Fit, Fitbit and most watches save theirs (read only; Health Connect is built
+  into Android 14 and up, and on Google Play for older phones). Pango reads it while open: on start, when you come back
+  to it, and every five minutes. Without Health Connect, type a day's steps in. Distance and calories are estimates
+  from your height and weight (walking burns about 0.5 kcal per kg per km on top of resting). Walking beyond a usual
+  day for your activity level (7,500 steps for "light") adds to the day's food at the eat-back setting on Train, as
+  workouts do. **Celebrations**: Pango cheers, with confetti, when you reach either goal, beat your best day, or reach
+  a streak of 3, 7, 14, 30, 50, 100 or 365 days; each is shown once.
 - **Progress**: your weight trend (log a weigh-in or set a goal weight there), the weekly recap (three tap-through
   cards about last week, shareable) and a month calendar of days on target.
 - **Train**: quick workouts built into the app (bodyweight, dumbbells, core, cardio, mobility) that work offline,
@@ -278,6 +287,9 @@ phone's secure store.
   "Search Open Food Facts" sends the words straight from the phone to Open Food Facts (it is their search, with
   their limit of 10 a minute per person, so it never runs while you type). Foods you open are kept on the phone so a
   recent one opens offline.
+- **Steps**: read from Health Connect only after you allow it (steps only, never written), and only while Pango is
+  open. Each day's total, with its estimated distance and calories, is backed up like the diary (so Ask Pango can
+  mention your walking). Take access back any time in Health Connect.
 - **Ask Pango**: your messages go to the backend, which keeps the conversation for 90 days (in the data export, deleted
   with the account, "Start over" deletes it) and sends them to Cloudflare Workers AI with your goals and recent numbers.
   The grocery list stays on the phone; only the food ids go to the server when you ask for ideas.

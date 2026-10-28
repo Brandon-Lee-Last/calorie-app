@@ -19,6 +19,9 @@
       "blockedPermissions": [
         "android.permission.READ_PHONE_STATE",
         "android.permission.SYSTEM_ALERT_WINDOW"
+      ],
+      "permissions": [
+        "android.permission.health.READ_STEPS"
       ]
     },
     "web": {
@@ -64,11 +67,13 @@
           "microphonePermission": false
         }
       ],
+      "react-native-health-connect",
       [
         "expo-build-properties",
         {
           "android": {
-            "enableMinifyInReleaseBuilds": false
+            "enableMinifyInReleaseBuilds": false,
+            "minSdkVersion": 26
           }
         }
       ]

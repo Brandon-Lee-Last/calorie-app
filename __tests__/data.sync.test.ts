@@ -76,6 +76,22 @@ describe('SyncEngine', () => {
     expect(await b.repo.entriesFor('2026-10-22')).toEqual([]);
   });
 
+  it('keeps one steps record a day across two phones', async () => {
+    const a = await device(server, clock);
+    const b = await device(server, clock, a.store);
+    const first = await a.repo.setDaySteps('2026-10-22', 4200, { caloriesBurned: 103, distanceKm: 2.96, note: 'Health Connect' });
+    await a.sync.syncNow();
+    await b.sync.syncNow();
+    expect(await b.repo.stepsFor('2026-10-22')).toMatchObject({ id: first.id, kind: 'steps', steps: 4200, note: 'Health Connect' });
+
+    clock.t += 60_000;
+    await b.repo.setDaySteps('2026-10-22', 6100, { caloriesBurned: 150, distanceKm: 4.29, note: 'Health Connect' });
+    await b.sync.syncNow();
+    await a.sync.syncNow();
+    expect(await a.repo.stepsFor('2026-10-22')).toMatchObject({ id: first.id, steps: 6100 });
+    expect(await a.repo.stepsByDay('2026-10-01')).toEqual(new Map([['2026-10-22', 6100]]));
+  });
+
   it('lets the later edit win when two phones change the same entry', async () => {
     const a = await device(server, clock);
     const b = await device(server, clock, a.store);

@@ -15,6 +15,7 @@ import type { Area, DayTotals, DiaryEntry, Repo } from './repo';
 import { DEFAULT_GOALS, DEFAULT_SETTINGS, EAT_BACK_FACTOR, PROFILE_KEY, SETTINGS_KEY, type CachedProfile, type Goals, type Profile, type Settings } from './settings';
 import type { Api } from '../api/client';
 import type { SyncStatus } from './sync';
+import { extraSteps, kcalForSteps, kmForSteps } from './steps';
 
 /**
  * Reads from the phone's database now and again whenever one of `areas` changes. `read` may only depend on `deps`.
@@ -179,12 +180,33 @@ export function useWorkouts(since: string) {
   return useRepoQuery(['workout'], (repo) => repo.workouts(since), [since]);
 }
 
-/** Energy burned training on `date`, and how much of it goes back into the day's food budget. */
-export function useBurned(date: string): { burned: number; added: number } {
+/** The day's steps (0 when none are known), with the distance and energy they mean for this person. */
+export function useSteps(date: string): { steps: number; km: number; kcal: number; from: string | null } | undefined {
+  const profile = useProfile();
+  const record = useRepoQuery(['activity'], (repo) => repo.stepsFor(date), [date]);
+  if (record === undefined) return undefined;
+  const steps = record?.steps ?? 0;
+  const body = { heightCm: profile?.heightCm, weightKg: profile?.weightKg };
+  return { steps, km: kmForSteps(steps, body), kcal: kcalForSteps(steps, body), from: record?.note ?? null };
+}
+
+/**
+ * Energy burned on `date`: `burned` training and `walking` from the day's steps. `added` is what goes back into the
+ * day's food budget at the eat-back setting: training, and walking only for steps beyond a usual day at the person's
+ * activity level, which the calorie goal already counts.
+ */
+export function useBurned(date: string): { burned: number; walking: number; total: number; added: number; trainingAdded: number; walkingAdded: number } {
   const workouts = useWorkouts(date);
+  const record = useRepoQuery(['activity'], (repo) => repo.stepsFor(date), [date]);
+  const profile = useProfile();
   const [{ eatBack }] = useSettings();
   const burned = Math.round((workouts ?? []).filter((w) => w.localDate === date).reduce((s, w) => s + (w.caloriesBurned ?? 0), 0));
-  return { burned, added: Math.round(burned * EAT_BACK_FACTOR[eatBack]) };
+  const steps = record?.steps ?? 0;
+  const body = { heightCm: profile?.heightCm, weightKg: profile?.weightKg };
+  const walking = kcalForSteps(steps, body);
+  const trainingAdded = Math.round(burned * EAT_BACK_FACTOR[eatBack]);
+  const walkingAdded = Math.round(kcalForSteps(extraSteps(steps, profile?.activityLevel), body) * EAT_BACK_FACTOR[eatBack]);
+  return { burned, walking, total: burned + walking, added: trainingAdded + walkingAdded, trainingAdded, walkingAdded };
 }
 
 export const LOOK_KEY = 'pango.look';

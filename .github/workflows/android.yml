@@ -75,6 +75,8 @@ jobs:
           badging=$("$tools/aapt2" dump badging "$apk")
           echo "$badging" | grep -E "^(package|targetSdkVersion|uses-permission|native-code|application-label):"
           if echo "$badging" | grep -qE "RECORD_AUDIO|READ_PHONE_STATE|SYSTEM_ALERT_WINDOW"; then echo "A blocked permission is back"; exit 1; fi
+          # Steps are read from Health Connect, which only answers apps that declare the permission.
+          echo "$badging" | grep -q "android.permission.health.READ_STEPS" || { echo "READ_STEPS is missing"; exit 1; }
           "$tools/apksigner" verify --print-certs "$apk" | grep -E "certificate (DN|SHA-256)"
           # The backend the app will talk to: app.json's expo.extra.apiUrl, embedded by expo-constants.
           unzip -p "$apk" assets/app.config | grep -o '"apiUrl":"[^"]*"'

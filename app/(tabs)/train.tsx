@@ -37,7 +37,7 @@ export default function Train() {
   const [settings, update] = useSettings();
   const week = weekOf(today);
   const workouts = useWorkouts(weekStart(today)) ?? [];
-  const { burned, added } = useBurned(today);
+  const { burned, trainingAdded: added } = useBurned(today);
   const [filter, setFilter] = useState<Filter>('foryou');
   const programs = useCachedApi('programs', async (api) => (await unwrap(api.GET('/v1/programs'))).items, []);
   const current = useCachedApi('programs/current', async (api) => (await unwrap(api.GET('/v1/programs/current'))).enrollment, []);

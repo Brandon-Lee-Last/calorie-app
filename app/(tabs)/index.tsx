@@ -11,6 +11,7 @@ import { EntryThumb, MEAL_TINT } from '../../src/ui/EntryThumb';
 import { describeSync } from '../../src/data/syncText';
 import { MyPango } from '../../src/pango/MyPango';
 import { AskPangoCard } from '../../src/coach/AskPangoCard';
+import { ActivityCard } from '../../src/steps/ActivityCard';
 import { PlanCard } from '../../src/plan/PlanCard';
 import { ServerNotice } from '../../src/ui/ServerNotice';
 import { useTheme } from '../../src/theme/theme';
@@ -26,7 +27,7 @@ export default function Today() {
   const day = useDay(today);
   const plan = useGoals();
   const { added } = useBurned(today);
-  // Energy burned training adds to the day's food (the share is set on Train).
+  // Energy burned training, and walking beyond a usual day, adds to the day's food (the share is set on Train).
   const goals = { ...plan, calories: plan.calories + added };
   const streak = useStreak(today) ?? 0;
   const totals = day?.totals ?? { entries: 0, calories: 0, proteinG: 0, carbG: 0, fatG: 0 };
@@ -82,7 +83,7 @@ export default function Today() {
           </Text>
           {added ? (
             <Text variant="caption" tone="good">
-              +{fmt(added)} from training
+              +{fmt(added)} from activity
             </Text>
           ) : null}
         </Ring>
@@ -149,6 +150,7 @@ export default function Today() {
         </View>
       </View>
 
+      <ActivityCard />
       <AskPangoCard />
       <PlanCard />
       <WaterCard date={today} />

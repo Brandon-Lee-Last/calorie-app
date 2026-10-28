@@ -42,6 +42,12 @@ using an API. The Expo docs site may be unreachable from sandboxed environments.
   out from USDA figures. A logged planned meal is a normal entry (`source: 'food'`, no `foodId`), matched to the plan
   by name and meal. Free accounts plan two days; Plus plans seven and gets the shopping list.
 
+- Steps (`src/steps/`, `src/data/steps.ts`, `app/activity.tsx`): one `steps` activity record a day (`repo.setDaySteps`
+  finds the day's record and reuses its id, and writes nothing when the numbers have not changed, so reading Health
+  Connect every few minutes costs no sync). Health Connect is read only and only while the app is open (`StepSync`);
+  its daily aggregate already de-duplicates a phone and a watch. Celebrations (`src/celebrate/`) are keyed per day
+  and kept in meta, so each shows once. Tests run as iOS: use `jest.replaceProperty(Platform, 'OS', 'android')` for
+  Health Connect.
 - Ask Pango (`app/coach.tsx`) and My groceries (`app/pantry.tsx`): the server does all the AI and all the safety
   (calorie-api `docs/coach.md`). The app shows replies as plain text only: never render them as markdown, links or
   HTML (that is how an injected instruction would smuggle data out). Call buttons appear only for the fixed helplines

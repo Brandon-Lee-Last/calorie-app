@@ -6,6 +6,7 @@ export type DiaryRecord = components['schemas']['DiaryEntry'];
 export type WaterRecord = components['schemas']['WaterRecord'];
 export type WeightRecord = components['schemas']['WeightRecord'];
 export type WorkoutRecord = components['schemas']['WorkoutSession'];
+export type ActivityRecord = components['schemas']['ActivityRecord'];
 
 /** `bool` is stored as 0/1, `json` as text. */
 type Column = { key: string; col: string; bool?: boolean; json?: boolean };
@@ -57,7 +58,17 @@ export const WORKOUT: TableSpec = {
   input: ['workoutId', 'programId', 'title', 'startedAt', 'finishedAt', 'localDate', 'sets', 'notes', 'rating', 'caloriesBurned', 'clientUpdatedAt'],
 };
 
-export const TABLES: Partial<Record<SyncType, TableSpec>> = { diary_entry: DIARY, water: WATER, weight: WEIGHT, workout_session: WORKOUT };
+/** Activity logged outside the app's workouts. The app writes one `steps` record a day (from Health Connect or typed in). */
+export const ACTIVITY: TableSpec = {
+  type: 'activity',
+  table: 'activity_logs',
+  columns: ['id', 'loggedAt', 'localDate', 'kind', 'name', 'durationMin', 'steps', 'distanceKm', 'caloriesBurned', 'note', 'clientUpdatedAt', 'updatedAt', 'rev']
+    .map((k) => col(k))
+    .concat([col('caloriesEstimated', true)]),
+  input: ['loggedAt', 'localDate', 'kind', 'name', 'durationMin', 'steps', 'distanceKm', 'caloriesBurned', 'note', 'clientUpdatedAt'],
+};
+
+export const TABLES: Partial<Record<SyncType, TableSpec>> = { diary_entry: DIARY, water: WATER, weight: WEIGHT, workout_session: WORKOUT, activity: ACTIVITY };
 
 export function fromRow<T>(spec: TableSpec, row: Record<string, unknown>): T {
   const out: Record<string, unknown> = {};

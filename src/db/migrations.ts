@@ -112,6 +112,28 @@ const STEPS: string[] = [
   DELETE FROM remote_records WHERE type = 'workout_session';
   UPDATE meta SET value = '0' WHERE key = 'sync.rev';
   `,
+  // v4: activity (a day's steps, from Health Connect or typed in) gets its own table, pulled again from the server.
+  `
+  CREATE TABLE activity_logs (
+    id TEXT PRIMARY KEY,
+    logged_at INTEGER NOT NULL,
+    local_date TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    name TEXT,
+    duration_min REAL,
+    steps INTEGER,
+    distance_km REAL,
+    calories_burned REAL,
+    calories_estimated INTEGER NOT NULL DEFAULT 0,
+    note TEXT,
+    client_updated_at INTEGER NOT NULL,
+    updated_at INTEGER,
+    rev INTEGER NOT NULL DEFAULT 0
+  );
+  CREATE INDEX activity_logs_date ON activity_logs (local_date, kind);
+  DELETE FROM remote_records WHERE type = 'activity';
+  UPDATE meta SET value = '0' WHERE key = 'sync.rev';
+  `,
 ];
 
 export const SCHEMA_VERSION = STEPS.length;

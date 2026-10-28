@@ -1,7 +1,9 @@
 import { Redirect } from 'expo-router';
 import { Tabs } from 'expo-router/js-tabs';
 
+import { CelebrationHost } from '../../src/celebrate/Celebration';
 import { useOnboarded, useServerConfig } from '../../src/data/hooks';
+import { StepSync } from '../../src/steps/StepSync';
 import { useTheme } from '../../src/theme/theme';
 import { UpdateRequired } from '../../src/ui/ServerNotice';
 import { TabBar } from '../../src/ui/TabBar';
@@ -14,11 +16,15 @@ export default function TabsLayout() {
   if (onboarded === undefined) return null;
   if (!onboarded) return <Redirect href="/onboarding" />;
   return (
-    <Tabs tabBar={(props) => <TabBar {...props} />} screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: colors.bg } }}>
-      <Tabs.Screen name="index" />
-      <Tabs.Screen name="train" />
-      <Tabs.Screen name="progress" />
-      <Tabs.Screen name="me" />
-    </Tabs>
+    <>
+      <Tabs tabBar={(props) => <TabBar {...props} />} screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: colors.bg } }}>
+        <Tabs.Screen name="index" />
+        <Tabs.Screen name="train" />
+        <Tabs.Screen name="progress" />
+        <Tabs.Screen name="me" />
+      </Tabs>
+      <StepSync />
+      <CelebrationHost />
+    </>
   );
 }

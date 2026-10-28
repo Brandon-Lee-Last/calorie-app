@@ -1,10 +1,10 @@
 import type { components } from '../api/schema';
 import type { Db, Statements } from '../db/types';
 import { localDate, mealForTime, type MealType } from './dates';
-import { DIARY, WATER, WEIGHT, WORKOUT, fromRow, pushData, readRecord, writeRecord, type DiaryRecord, type SyncType, type TableSpec, type WaterRecord, type WeightRecord, type WorkoutRecord } from './tables';
+import { ACTIVITY, DIARY, WATER, WEIGHT, WORKOUT, fromRow, pushData, readRecord, writeRecord, type ActivityRecord, type DiaryRecord, type SyncType, type TableSpec, type WaterRecord, type WeightRecord, type WorkoutRecord } from './tables';
 
 /** 'outbox' means a local change was queued for the server. */
-export type Area = 'diary' | 'water' | 'weight' | 'workout' | 'meta' | 'outbox';
+export type Area = 'diary' | 'water' | 'weight' | 'workout' | 'activity' | 'meta' | 'outbox';
 export type ScanRecord = components['schemas']['ScanInput'];
 export type DiaryEntry = DiaryRecord;
 export type DayTotals = { entries: number; calories: number; proteinG: number; carbG: number; fatG: number };
@@ -28,7 +28,7 @@ export type NewEntry = {
   note?: string | null;
 };
 
-const AREA_OF: Record<string, Area> = { diary_entry: 'diary', water: 'water', weight: 'weight', workout_session: 'workout' };
+const AREA_OF: Record<string, Area> = { diary_entry: 'diary', water: 'water', weight: 'weight', workout_session: 'workout', activity: 'activity' };
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
 /**
@@ -62,9 +62,9 @@ export class Repo {
   /** Empties every table, for a deleted account: the phone starts again as if just installed. */
   async wipeAll(): Promise<void> {
     await this.db.transaction(async (tx) => {
-      for (const table of ['diary_entries', 'water', 'weights', 'workout_sessions', 'scans', 'remote_records', 'outbox', 'meta']) await tx.run(`DELETE FROM ${table}`);
+      for (const table of ['diary_entries', 'water', 'weights', 'workout_sessions', 'activity_logs', 'scans', 'remote_records', 'outbox', 'meta']) await tx.run(`DELETE FROM ${table}`);
     });
-    this.emit('diary', 'water', 'weight', 'workout', 'meta', 'outbox');
+    this.emit('diary', 'water', 'weight', 'workout', 'activity', 'meta', 'outbox');
   }
 
   // ---- diary
@@ -229,6 +229,58 @@ export class Repo {
   async workouts(since: string): Promise<WorkoutRecord[]> {
     const rows = await this.db.all<Record<string, unknown>>('SELECT * FROM workout_sessions WHERE local_date >= ? AND finished_at IS NOT NULL ORDER BY started_at', [since]);
     return rows.map((r) => fromRow<WorkoutRecord>(WORKOUT, r));
+  }
+
+  // ---- steps (one `steps` activity record a day)
+
+  /** The day's steps record, if any. */
+  async stepsFor(date: string): Promise<ActivityRecord | null> {
+    const row = await this.db.get<Record<string, unknown>>("SELECT * FROM activity_logs WHERE local_date = ? AND kind = 'steps' ORDER BY client_updated_at DESC LIMIT 1", [date]);
+    return row ? fromRow<ActivityRecord>(ACTIVITY, row) : null;
+  }
+
+  /**
+   * Sets a day's steps, keeping one record a day (the same id, so a second phone's sync replaces rather than adds).
+   * Nothing is written or queued when the numbers have not changed, so reading Health Connect often costs nothing.
+   */
+  async setDaySteps(date: string, steps: number, extra: { caloriesBurned: number; distanceKm: number; note: string | null }): Promise<ActivityRecord> {
+    const current = await this.stepsFor(date);
+    if (current && current.steps === steps && current.caloriesBurned === extra.caloriesBurned && current.note === extra.note) return current;
+    const now = this.now();
+    // Today's record is stamped now; an earlier day's at its midday, so it always falls on that date.
+    const loggedAt = date === localDate(now) ? now : new Date(`${date}T12:00:00`).getTime();
+    const record: ActivityRecord = {
+      id: current?.id ?? this.ids(),
+      loggedAt,
+      localDate: date,
+      kind: 'steps',
+      name: null,
+      durationMin: null,
+      steps,
+      distanceKm: Math.round(extra.distanceKm * 100) / 100,
+      caloriesBurned: extra.caloriesBurned,
+      caloriesEstimated: true,
+      note: extra.note,
+      clientUpdatedAt: Math.max(now, (current?.clientUpdatedAt ?? 0) + 1),
+      updatedAt: current?.updatedAt ?? 0,
+      deletedAt: null,
+      rev: current?.rev ?? 0,
+    };
+    await this.saveLocal(ACTIVITY, record as unknown as Record<string, unknown>);
+    this.emit('activity', 'outbox');
+    return record;
+  }
+
+  /** Steps a day from `since` onwards (days with none are left out). */
+  async stepsByDay(since: string): Promise<Map<string, number>> {
+    const rows = await this.db.all<{ local_date: string; steps: number }>("SELECT local_date, MAX(steps) AS steps FROM activity_logs WHERE kind = 'steps' AND local_date >= ? GROUP BY local_date", [since]);
+    return new Map(rows.map((r) => [r.local_date, r.steps]));
+  }
+
+  /** The day with the most steps before `before`, for personal bests. */
+  async bestStepDay(before: string): Promise<{ date: string; steps: number } | null> {
+    const row = await this.db.get<{ local_date: string; steps: number }>("SELECT local_date, steps FROM activity_logs WHERE kind = 'steps' AND local_date < ? ORDER BY steps DESC LIMIT 1", [before]);
+    return row ? { date: row.local_date, steps: row.steps } : null;
   }
 
   // ---- scan records (numbers only; photos never leave the phone)
