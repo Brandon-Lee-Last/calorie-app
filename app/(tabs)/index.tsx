@@ -41,7 +41,7 @@ export default function Today() {
   ] as const;
 
   return (
-    <Screen>
+    <Screen gap={spacing.md}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
         {/* Pango's face is the way into Ask Pango; the badge says so. */}
         <Pressable
@@ -75,8 +75,8 @@ export default function Today() {
 
       <ServerNotice />
 
-      <Card padding={18} style={{ flexDirection: 'row', alignItems: 'center', gap: 18 }}>
-        <Ring value={totals.calories / goals.calories} label={`${fmt(totals.calories)} of ${fmt(goals.calories)} calories eaten`}>
+      <Card padding={14} style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+        <Ring size={128} stroke={12} value={totals.calories / goals.calories} label={`${fmt(totals.calories)} of ${fmt(goals.calories)} calories eaten`}>
           <Text variant="number">{fmt(totals.calories)}</Text>
           <Text variant="caption" tone="muted">
             of {fmt(goals.calories)} kcal
@@ -203,25 +203,23 @@ function WaterCard({ date }: { date: string }) {
     repo.removeLastWater(date).catch((e) => console.warn(e));
   };
   return (
-    <Card style={{ gap: spacing.md }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-        <Icon name="drop" size={22} color={colors.water} />
-        <Text variant="bodyStrong" style={{ flex: 1 }}>
-          Water
+    <Card padding={12} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+      <Icon name="drop" size={20} color={colors.water} />
+      <View style={{ flex: 1, gap: 6 }}>
+        <Text variant="small">
+          Water{' '}
+          <Text variant="small" tone="muted">
+            {litres(ml)} / {litres(waterGoalMl)} L
+          </Text>
         </Text>
-        <Text variant="label" tone="muted">
-          {litres(ml)} / {litres(waterGoalMl)} L
-        </Text>
-      </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-        <View accessible accessibilityLabel={`${filled} of ${glasses} glasses`} style={{ flex: 1, flexDirection: 'row', gap: 4 }}>
+        <View accessible accessibilityLabel={`${filled} of ${glasses} glasses`} style={{ flexDirection: 'row', gap: 3 }}>
           {Array.from({ length: glasses }, (_, i) => (
-            <View key={i} style={{ flex: 1, height: 22, borderRadius: 6, backgroundColor: i < filled ? colors.water : colors.track }} />
+            <View key={i} style={{ flex: 1, height: 8, borderRadius: 4, backgroundColor: i < filled ? colors.water : colors.track }} />
           ))}
         </View>
-        <IconButton icon="minus" label="Take back a glass" onPress={remove} />
-        <IconButton icon="plus" label={`Add a glass, ${glassMl} millilitres`} tone="accent" onPress={add} />
       </View>
+      <IconButton icon="minus" label="Take back a glass" onPress={remove} />
+      <IconButton icon="plus" label={`Add a glass, ${glassMl} millilitres`} tone="accent" onPress={add} />
     </Card>
   );
 }

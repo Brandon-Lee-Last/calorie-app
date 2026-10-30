@@ -5,8 +5,8 @@ import { View } from 'react-native';
 import { useData } from '../data/DataProvider';
 import { mealForTime, shiftDate } from '../data/dates';
 import { isPlus } from '../data/entitlement';
-import { useDay, useEntitlement, useGoals, useMealPlans, usePlanDiet, usePlanSwaps, useRepoQuery, useToday } from '../data/hooks';
-import { entryFor, isLogged, nextPlanned, planDay, PLAN_INVITE_KEY, portionLabel, SLOT_LABEL } from '../data/mealPlan';
+import { useDay, useEntitlement, useGoals, useMealPlans, usePlanDiet, usePlanOwn, usePlanSwaps, useRepoQuery, useToday } from '../data/hooks';
+import { entryFor, isLogged, nextPlanned, planDay, PLAN_INVITE_KEY, portionLabel, SLOT_LABEL, withOwnMeals } from '../data/mealPlan';
 import { MyPango } from '../pango/MyPango';
 import { spacing } from '../theme/tokens';
 import { Button, Card, Text } from '../ui';
@@ -44,6 +44,7 @@ function NextMeal({ dietSlug }: { dietSlug: string }) {
   const plus = isPlus(useEntitlement());
   const data = useMealPlans().data;
   const swaps = usePlanSwaps();
+  const own = usePlanOwn();
   const entries = useDay(today)?.entries;
   const diet = data?.diets.find((d) => d.slug === dietSlug);
   if (!entries) return null;
@@ -56,7 +57,7 @@ function NextMeal({ dietSlug }: { dietSlug: string }) {
       </Card>
     );
 
-  const plan = planDay(data, diet, today, goals.calories, swaps);
+  const plan = withOwnMeals(planDay(data, diet, today, goals.calories, swaps), own);
   const next = nextPlanned(plan, entries, mealForTime());
   if (!next)
     return (

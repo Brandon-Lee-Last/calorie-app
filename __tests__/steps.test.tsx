@@ -11,7 +11,7 @@ import { Repo } from '../src/data/repo';
 import { SETTINGS_KEY } from '../src/data/settings';
 import { celebrationFor, extraSteps, goalStreak, kcalForSteps, kmForSteps, parseSteps } from '../src/data/steps';
 import { migrate } from '../src/db/migrations';
-import { FROM_HEALTH_CONNECT, readHealthSteps, STEPS_BACKFILLED_KEY, type StepSource } from '../src/steps/healthConnect';
+import { appName, FROM_HEALTH_CONNECT, hasSteps, readHealthSteps, STEPS_BACKFILLED_KEY, STEPS_LAST_READ_KEY, type StepSource } from '../src/steps/healthConnect';
 import { mount, renderWith, settle, testStack } from './helpers/screen';
 import { memoryDb } from './helpers/sqljsDb';
 
@@ -106,10 +106,15 @@ describe('a day of steps', () => {
   it('is read from Health Connect: a month the first time, then the last few days', async () => {
     const repo = await repoAt(noon);
     const asked: string[] = [];
-    const source: StepSource = { state: async () => 'connected', stepsOn: async (date) => (asked.push(date), date === '2026-10-28' ? 6400 : date === '2026-10-01' ? 9100 : 0) };
+    const source: StepSource = {
+      state: async () => 'connected',
+      stepsOn: async (date) => (asked.push(date), { steps: date === '2026-10-28' ? 6400 : date === '2026-10-01' ? 9100 : 0, origins: date === '2026-10-28' ? ['com.sec.android.app.shealth'] : [] }),
+    };
     expect(await readHealthSteps(repo, source, {}, '2026-10-28', noon)).toBe(30);
     expect(asked).toHaveLength(30);
     expect(await repo.getMeta(STEPS_BACKFILLED_KEY)).toBe(true);
+    expect(await repo.getMeta(STEPS_LAST_READ_KEY)).toEqual({ at: noon, today: 6400, origins: ['com.sec.android.app.shealth'], error: null });
+    expect(appName('com.sec.android.app.shealth')).toBe('Samsung Health');
     expect(await repo.stepsFor('2026-10-28')).toMatchObject({ steps: 6400, note: FROM_HEALTH_CONNECT, caloriesBurned: kcalForSteps(6400) });
     expect(await repo.stepsFor('2026-10-01')).toMatchObject({ steps: 9100 });
     expect(await repo.stepsFor('2026-10-27')).toBeNull(); // nothing recorded: nothing written
@@ -117,6 +122,15 @@ describe('a day of steps', () => {
     expect(await readHealthSteps(repo, source, {}, '2026-10-28', noon)).toBe(3);
     expect(asked).toEqual(['2026-10-28', '2026-10-27', '2026-10-26']);
     expect(await readHealthSteps(repo, { ...source, state: async () => 'not-connected' }, {}, '2026-10-28', noon)).toBeNull();
+    // A failed read says why on the activity screen.
+    await expect(readHealthSteps(repo, { ...source, stepsOn: async () => Promise.reject(new Error('Rate limited')) }, {}, '2026-10-28', noon)).rejects.toThrow('Rate limited');
+    expect(await repo.getMeta(STEPS_LAST_READ_KEY)).toMatchObject({ error: 'Rate limited' });
+  });
+
+  it('takes the steps permission in either shape Health Connect answers with', () => {
+    expect(hasSteps([{ accessType: 'read', recordType: 'Steps' }])).toBe(true);
+    expect(hasSteps(['android.permission.health.READ_STEPS'])).toBe(true);
+    expect(hasSteps([{ accessType: 'read', recordType: 'HeartRate' }, 'android.permission.health.READ_HEART_RATE'])).toBe(false);
   });
 });
 
@@ -153,6 +167,7 @@ describe('Activity screen', () => {
     const { view, stack } = await mount(<ActivityScreen />);
     await fireEvent.press(await view.findByRole('button', { name: 'Connect Health Connect' }));
     expect(await view.findByText('Counting from Health Connect')).toBeTruthy();
+    expect(await view.findByText(/: 9 000 steps today\.$/)).toBeTruthy();
     expect(await stack.repo.getMeta(SETTINGS_KEY)).toMatchObject({ stepsFrom: 'health-connect' });
     expect(await stack.repo.stepsFor(localDate())).toMatchObject({ steps: 9000, note: FROM_HEALTH_CONNECT });
     expect(view.queryByRole('button', { name: 'Save steps' })).toBeNull(); // the watch counts, not typing

@@ -14,6 +14,9 @@ import {
   portionLabel,
   scaledIngredients,
   scaleMeasure,
+  mealFromRecipe,
+  withOwnMeals,
+  isOwnMeal,
   shoppingList,
   slotsFor,
   suitsGoal,
@@ -157,6 +160,30 @@ describe('recipes and shopping', () => {
     expect(scaleMeasure('about 22 almonds', 1.25)).toBe('about 28 almonds');
     expect(scaleMeasure('a handful', 1.25)).toBeNull(); // nothing to scale: the grams say it
     expect(scaleMeasure('1 cup cooked', 0.25)).toBe('about ¼ cup cooked');
+  });
+
+  it('puts a meal made from the groceries in its slot, redoes the totals, and keeps it off the shopping list', () => {
+    const day = planDay(plans, balanced, '2026-10-26', 2000);
+    const first = day.items[0];
+    const recipe = {
+      title: 'Egg and spinach wrap',
+      minutes: 10,
+      mealType: first.mealType,
+      ingredients: [{ name: 'Eggs', grams: 100 }, { name: 'Wrap', grams: 70 }],
+      steps: ['Scramble the eggs.', 'Roll them in the wrap.'],
+      nutrition: { calories: 420, proteinG: 22, carbG: 36, fatG: 18 },
+    };
+    const key = swapKey('2026-10-26', first.slot);
+    const meal = mealFromRecipe(recipe, key);
+    expect(isOwnMeal(meal)).toBe(true);
+    expect(meal.slug).toBe(`own:${key}`);
+    const mine = withOwnMeals(day, { [key]: meal, [swapKey('2026-10-27', first.slot)]: meal });
+    expect(mine.items[0]).toMatchObject({ meal: { title: 'Egg and spinach wrap' }, portion: 1, calories: 420, target: first.target });
+    expect(mine.items.slice(1)).toEqual(day.items.slice(1)); // only that slot, only that day
+    expect(mine.calories).toBe(day.calories - first.calories + 420);
+    expect(entryFor(mine.items[0])).toMatchObject({ name: 'Egg and spinach wrap', calories: 420, quantityG: 170 });
+    expect(shoppingList([mine]).flatMap((g) => g.items.map((i) => i.name))).not.toContain('Eggs');
+    expect(withOwnMeals(day, null)).toBe(day);
   });
 
   it('adds up what the planned days need by aisle', () => {

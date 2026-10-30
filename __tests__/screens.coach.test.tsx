@@ -9,6 +9,7 @@ import { AskPangoCard } from '../src/coach/AskPangoCard';
 import { addToPantry, coachProblem, helplinesIn, PANTRY_KEY, recipeEntry, typedAt, typingMs, type CoachMessage } from '../src/data/coach';
 import { keyboardLift } from '../src/ui/keyboard';
 import { localDate } from '../src/data/dates';
+import { PLAN_OWN_KEY } from '../src/data/mealPlan';
 import type { Food } from '../src/data/foodMath';
 import { FakeServer } from './helpers/fakeServer';
 import { renderWith, settle, testStack } from './helpers/screen';
@@ -203,6 +204,26 @@ describe('Finding Ask Pango', () => {
 });
 
 describe('My groceries', () => {
+  it('makes a planned meal from what is at home, aimed at its calories, and puts the pick in the plan', async () => {
+    jest.mocked(useLocalSearchParams).mockReturnValue({ meal: 'dinner', calories: '640', date: '2026-10-30', slot: 'dinner' });
+    const server = new FakeServer();
+    server.pantryRecipes = [
+      { title: 'Chicken rice bowl', minutes: 20, mealType: 'dinner', ingredients: [{ name: 'Rice', grams: 150, foodId: 'f-rice', calories: 185 }, { name: 'Chicken', grams: 150, foodId: 'f-chicken', calories: 450 }], steps: ['Cook the rice.', 'Fry the chicken through.'], nutrition: { calories: 635, proteinG: 50, carbG: 40, fatG: 20 } },
+    ];
+    const stack = await testStack(server);
+    await stack.repo.setMeta(PANTRY_KEY, [{ id: 'f-rice', name: 'Rice', brand: null }, { id: 'f-chicken', name: 'Chicken', brand: null }]);
+    const view = await renderWith(<Pantry />, stack);
+    expect(await view.findByText(/^Making dinner from what you have, about 640 kcal/)).toBeTruthy();
+    await fireEvent.press(view.getByRole('button', { name: 'Make dinner ideas' }));
+    await fireEvent.press(await view.findByRole('button', { name: 'Put in my plan' }));
+    expect(server.pantryAsks[0]).toEqual({ foodIds: ['f-rice', 'f-chicken'], mealType: 'dinner', calories: 640 });
+    await waitFor(async () => expect((await stack.repo.getMeta<Record<string, { title: string; slug: string }>>(PLAN_OWN_KEY))?.['2026-10-30:dinner']).toMatchObject({ title: 'Chicken rice bowl', slug: 'own:2026-10-30:dinner' }));
+    expect(router.back).toHaveBeenCalled();
+    jest.mocked(useLocalSearchParams).mockReturnValue({});
+    await settle(stack);
+    await view.unmount();
+  });
+
   it('adds foods from search, asks for ideas and logs one with the server’s numbers', async () => {
     const server = new FakeServer();
     server.foods.set('oats', food('f-oats', 'Rolled oats'));

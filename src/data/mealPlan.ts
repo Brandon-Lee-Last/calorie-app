@@ -11,6 +11,8 @@ export type Aisle = NonNullable<components['schemas']['MealIngredient']['aisle']
 export const PLAN_DIET_KEY = 'plan.diet';
 export const PLAN_SWAPS_KEY = 'plan.swaps';
 export const SHOPPING_TICKS_KEY = 'plan.shopping';
+/** Meta key: planned meals replaced by one made from the person's groceries, by `swapKey` (see `withOwnMeals`). */
+export const PLAN_OWN_KEY = 'plan.own';
 /** Meta key: the person closed the "Want a meal plan?" card on Today. */
 export const PLAN_INVITE_KEY = 'plan.invite.dismissed';
 
@@ -146,6 +148,43 @@ export function planDay(plans: MealPlans, diet: Diet, date: string, calories: nu
   };
 }
 
+/** Planned meals the person made from their groceries instead, by `swapKey(date, slot)`. */
+export type OwnMeals = Record<string, Meal>;
+const OWN_TAG = 'own';
+export const isOwnMeal = (meal: Meal) => meal.tags.includes(OWN_TAG);
+
+/** A recipe from the groceries as a plan meal: one portion is the recipe as the server sized it. Pure. */
+export function mealFromRecipe(
+  r: { title: string; minutes: number; mealType: MealType; ingredients: { name: string; grams: number }[]; steps: string[]; nutrition: { calories: number; proteinG: number; carbG: number; fatG: number } },
+  key: string,
+): Meal {
+  return {
+    slug: `own:${key}`,
+    title: r.title,
+    summary: 'Made from your groceries',
+    slots: [r.mealType],
+    diets: [],
+    minutes: r.minutes,
+    tags: [OWN_TAG],
+    nutrition: { ...r.nutrition, fibreG: null },
+    locked: false,
+    ingredients: r.ingredients.map((i) => ({ name: i.name, grams: i.grams, measure: null, aisle: null })),
+    steps: r.steps,
+    source: 'Ideas by Pango (AI); calories worked out from your foods\' own figures',
+  } as Meal;
+}
+
+/** The day's plan with the person's own meals in their slots (one portion each), and the totals redone. Pure. */
+export function withOwnMeals(plan: DayPlan, own: OwnMeals | null | undefined): DayPlan {
+  if (!own) return plan;
+  const items = plan.items.map((item) => {
+    const meal = own[swapKey(plan.date, item.slot)];
+    return meal ? { ...itemFor(meal, 1, item.slot, item.mealType), target: item.target, options: item.options } : item;
+  });
+  const sum = (k: 'calories' | 'proteinG' | 'carbG' | 'fatG') => items.reduce((s, x) => s + x[k], 0);
+  return { ...plan, items, calories: sum('calories'), proteinG: round1(sum('proteinG')), carbG: round1(sum('carbG')), fatG: round1(sum('fatG')) };
+}
+
 /** A meal at a number of portions, with its numbers scaled. */
 export function itemFor(meal: Meal, portion: number, slot: SlotKey, mealType: MealType): PlanItem {
   return {
@@ -274,7 +313,8 @@ export function shoppingList(days: DayPlan[]): {
   const totals = new Map<string, { name: string; grams: number; aisle: Aisle | 'other' }>();
   for (const d of days)
     for (const item of d.items)
-      for (const i of item.meal.ingredients) {
+      // A meal made from the groceries is already in the kitchen.
+      for (const i of isOwnMeal(item.meal) ? [] : item.meal.ingredients) {
         const t = totals.get(i.name) ?? {
           name: i.name,
           grams: 0,

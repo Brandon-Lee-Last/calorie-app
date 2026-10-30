@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, TextInput, View } from 'react-native';
 
@@ -7,6 +7,7 @@ import { unwrap } from '../src/api/client';
 import { addToPantry, coachProblem, PANTRY_KEY, recipeEntry, type PantryItem, type PantryRecipe } from '../src/data/coach';
 import { useData } from '../src/data/DataProvider';
 import { mealForTime, type MealType } from '../src/data/dates';
+import { mealFromRecipe, PLAN_OWN_KEY, SLOT_LABEL, swapKey, type OwnMeals, type SlotKey } from '../src/data/mealPlan';
 import { MEALS } from '../src/data/entryForm';
 import type { Food } from '../src/data/foodMath';
 import { useRepoQuery } from '../src/data/hooks';
@@ -21,10 +22,14 @@ const fmt = (n: number) => Math.round(n).toLocaleString('en-ZA');
 export default function Pantry() {
   const { colors } = useTheme();
   const { api, repo } = useData();
+  // Opened from a planned meal: aim at its calories, and offer to put an idea in its place.
+  const params = useLocalSearchParams<{ meal?: string; calories?: string; date?: string; slot?: string }>();
+  const target = Number(params.calories) >= 100 && Number(params.calories) <= 2000 ? Math.round(Number(params.calories)) : null;
+  const forPlan = params.date && params.slot ? { date: params.date, slot: params.slot as SlotKey } : null;
   const items = useRepoQuery(['meta'], (r) => r.getMeta<PantryItem[]>(PANTRY_KEY), []) ?? [];
   const [query, setQuery] = useState('');
   const [found, setFound] = useState<Food[]>([]);
-  const [meal, setMeal] = useState<MealType>(mealForTime());
+  const [meal, setMeal] = useState<MealType>(() => (MEALS.some((m) => m.value === params.meal) ? (params.meal as MealType) : mealForTime()));
   const [busy, setBusy] = useState(false);
   const [recipes, setRecipes] = useState<PantryRecipe[] | null>(null);
   const [problem, setProblem] = useState<ReturnType<typeof coachProblem> | null>(null);
@@ -56,7 +61,7 @@ export default function Pantry() {
     setBusy(true);
     setProblem(null);
     try {
-      const out = await unwrap(api.POST('/v1/coach/pantry-meals', { body: { foodIds: items.map((i) => i.id), mealType: meal } }));
+      const out = await unwrap(api.POST('/v1/coach/pantry-meals', { body: { foodIds: items.map((i) => i.id), mealType: meal, ...(target ? { calories: target } : {}) } }));
       setRecipes(out.recipes);
       setLogged([]);
     } catch (e) {
@@ -64,6 +69,14 @@ export default function Pantry() {
     } finally {
       setBusy(false);
     }
+  };
+  const putInPlan = async (r: PantryRecipe) => {
+    if (!forPlan) return;
+    const key = swapKey(forPlan.date, forPlan.slot);
+    const own = (await repo.getMeta<OwnMeals>(PLAN_OWN_KEY)) ?? {};
+    await repo.setMeta(PLAN_OWN_KEY, { ...own, [key]: mealFromRecipe(r, key) });
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    router.back();
   };
   const log = async (r: PantryRecipe) => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
@@ -86,6 +99,13 @@ export default function Pantry() {
       <Text variant="body" tone="muted">
         Add what you have at home and Pango suggests meals that fit your goal. Salt, pepper, herbs, spices, garlic, lemon and vinegar are assumed.
       </Text>
+      {forPlan ? (
+        <View style={{ padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.raised }}>
+          <Text variant="small">
+            Making {SLOT_LABEL[forPlan.slot]?.toLowerCase() ?? 'this meal'} from what you have{target ? `, about ${fmt(target)} kcal to fit your plan` : ''}. Pick an idea and put it in your plan.
+          </Text>
+        </View>
+      ) : null}
 
       <View style={{ gap: spacing.xs }}>
         <TextInput
@@ -159,7 +179,7 @@ export default function Pantry() {
       ) : null}
 
       {(recipes ?? []).map((r, n) => (
-        <RecipeCard key={r.title} recipe={r} open={n === 0} logged={logged.includes(r.title)} onLog={() => log(r)} />
+        <RecipeCard key={r.title} recipe={r} open={n === 0} logged={logged.includes(r.title)} onLog={() => log(r)} onPlan={forPlan ? () => putInPlan(r) : undefined} />
       ))}
       {recipes?.length ? (
         <Text variant="caption" tone="muted" align="center">
@@ -171,7 +191,7 @@ export default function Pantry() {
 }
 
 /** One idea: what it is and its numbers, then the ingredients for one portion (each with its calories) and the method. */
-function RecipeCard({ recipe: r, open: startOpen, logged, onLog }: { recipe: PantryRecipe; open: boolean; logged: boolean; onLog: () => void }) {
+function RecipeCard({ recipe: r, open: startOpen, logged, onLog, onPlan }: { recipe: PantryRecipe; open: boolean; logged: boolean; onLog: () => void; onPlan?: () => void }) {
   const { colors } = useTheme();
   const [open, setOpen] = useState(startOpen);
   return (
@@ -217,7 +237,8 @@ function RecipeCard({ recipe: r, open: startOpen, logged, onLog }: { recipe: Pan
       ) : (
         <Button title="See the recipe" variant="secondary" size="md" onPress={() => setOpen(true)} />
       )}
-      <Button title={logged ? 'Logged' : 'Log it'} icon={logged ? 'check' : undefined} disabled={logged} size="md" onPress={onLog} />
+      {onPlan ? <Button title="Put in my plan" icon="check" size="md" onPress={onPlan} /> : null}
+      <Button title={logged ? 'Logged' : 'Log it'} icon={logged ? 'check' : undefined} disabled={logged} size="md" variant={onPlan ? 'secondary' : 'primary'} onPress={onLog} />
     </View>
   );
 }

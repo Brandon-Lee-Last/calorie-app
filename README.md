@@ -119,7 +119,9 @@ skip it and keep the defaults. Then:
 - **Meal plans**: "Want a meal plan?" on Today, or open the plan from there. Pick a style (Balanced and Budget are
   free; High protein, Mediterranean, Low carb, Vegetarian and Plant-based come with Plus) and Pango plans breakfast,
   lunch, dinner and a snack (two from 2,400 kcal) with portions sized to your calorie goal. Log a planned meal in one
-  tap, swap one you do not fancy, open its recipe: ingredients scaled to your portion in grams and kitchen measures
+  tap, swap one you do not fancy, or tap **Use what I have** to make that meal from your groceries instead (My groceries
+  opens aimed at its calories; **Put in my plan** swaps the idea in, **Back to the planned meal** undoes it, and it
+  stays off the shopping list). Open a recipe: ingredients scaled to your portion in grams and kitchen measures
   ("about 4 eggs" for 1¼ portions of a three-egg scramble), and a step-by-step method. 1 portion is the recipe as
   written; the plan sizes each meal from ½ to 2 portions so the day adds up to your goal. Free plans today and
   tomorrow; Plus plans the week ahead and adds a shopping list by shop aisle, to tick off or send. The meals and their

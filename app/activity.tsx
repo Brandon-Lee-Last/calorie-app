@@ -8,7 +8,7 @@ import { dateAt, shiftDate } from '../src/data/dates';
 import { useBurned, useProfile, useRepoQuery, useSettings, useSteps, useToday } from '../src/data/hooks';
 import { BURN_GOAL_RANGE, STEP_GOAL_RANGE, USUAL_STEPS, goalStreak, kcalForSteps, kmForSteps, parseSteps } from '../src/data/steps';
 import { MyPango } from '../src/pango/MyPango';
-import { healthConnect, type HealthState } from '../src/steps/healthConnect';
+import { appName, healthConnect, STEPS_LAST_READ_KEY, type HealthState, type LastRead } from '../src/steps/healthConnect';
 import { syncHealthSteps } from '../src/steps/StepSync';
 import { useTheme } from '../src/theme/theme';
 import { radius, spacing } from '../src/theme/tokens';
@@ -46,6 +46,12 @@ export default function ActivityScreen() {
   }, [checkHealth]);
 
   const connected = settings.stepsFrom === 'health-connect' && health === 'connected';
+  const lastRead = useRepoQuery(['meta'], (r) => r.getMeta<LastRead>(STEPS_LAST_READ_KEY), []);
+  // Opening this screen reads Health Connect at once, so the number here is fresh.
+  useEffect(() => {
+    if (connected) syncHealthSteps(repo, body).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connected]);
   const week = Array.from({ length: 7 }, (_, i) => shiftDate(today, i - 6));
   const streak = history ? goalStreak(history, settings.stepGoal, today) : 0;
   const count = steps?.steps ?? 0;
@@ -53,7 +59,7 @@ export default function ActivityScreen() {
   const connect = async () => {
     setBusy(true);
     try {
-      if (await healthConnect.connect()) {
+      if ((await healthConnect.connect()) || (await healthConnect.state()) === 'connected') {
         await update({ stepsFrom: 'health-connect' });
         await syncHealthSteps(repo, body);
       }
@@ -152,6 +158,15 @@ export default function ActivityScreen() {
           <Text variant="small" tone="muted">
             Pango reads your step count while it is open: when you open it, when you come back to it, and every few minutes. It only reads steps and never writes anything.
           </Text>
+          {lastRead ? (
+            <Text variant="small" tone={lastRead.error ? 'bad' : lastRead.today ? 'good' : 'default'} accessibilityLiveRegion="polite">
+              {lastRead.error
+                ? `Reading Health Connect failed: ${lastRead.error}`
+                : lastRead.today
+                  ? `Read at ${new Date(lastRead.at).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}: ${fmt(lastRead.today)} steps today${lastRead.origins.length ? `, from ${lastRead.origins.map(appName).join(' and ')}` : ''}.`
+                  : `Read at ${new Date(lastRead.at).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}: Health Connect has no steps for today yet. Steps only get there from an app that counts them: in Samsung Health, open Settings, then Health Connect, and allow it to share steps (or do the same in Google Fit or your watch's app). Samsung Health can take a few minutes to pass new steps on.`}
+            </Text>
+          ) : null}
           <View style={{ flexDirection: 'row', gap: spacing.sm }}>
             <Button title="Refresh" icon="swap" size="md" variant="secondary" loading={busy} style={{ flex: 1 }} onPress={refresh} />
             <Button title="Manage access" size="md" variant="ghost" style={{ flex: 1 }} onPress={() => healthConnect.openSettings()} />

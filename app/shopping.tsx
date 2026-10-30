@@ -4,8 +4,8 @@ import { Pressable, Share, View } from 'react-native';
 
 import { useData } from '../src/data/DataProvider';
 import { isPlus } from '../src/data/entitlement';
-import { useEntitlement, useGoals, useMealPlans, usePlanDiet, usePlanSwaps, useRepoQuery, useToday } from '../src/data/hooks';
-import { gramsText, planDates, planDay, shoppingList, SHOPPING_TICKS_KEY } from '../src/data/mealPlan';
+import { useEntitlement, useGoals, useMealPlans, usePlanDiet, usePlanOwn, usePlanSwaps, useRepoQuery, useToday } from '../src/data/hooks';
+import { gramsText, planDates, planDay, shoppingList, SHOPPING_TICKS_KEY, withOwnMeals } from '../src/data/mealPlan';
 import { useTheme } from '../src/theme/theme';
 import { radius, spacing } from '../src/theme/tokens';
 import { Button, Chip, EmptyState, Icon, IconButton, Screen, Text } from '../src/ui';
@@ -25,6 +25,7 @@ export default function Shopping() {
   const data = useMealPlans().data;
   const [dietSlug] = usePlanDiet();
   const swaps = usePlanSwaps();
+  const own = usePlanOwn();
   const ticks = useRepoQuery(['meta'], (r) => r.getMeta<Record<string, boolean>>(SHOPPING_TICKS_KEY), []) ?? {};
   const [span, setSpan] = useState<number>(7);
   const diet = data?.diets.find((d) => d.slug === dietSlug && !d.locked);
@@ -56,7 +57,7 @@ export default function Shopping() {
 
   const days = planDates(today, true)
     .slice(0, span)
-    .map((d) => planDay(data, diet, d, goals.calories, swaps));
+    .map((d) => withOwnMeals(planDay(data, diet, d, goals.calories, swaps), own));
   const groups = shoppingList(days);
   const toggle = (name: string) => repo.setMeta(SHOPPING_TICKS_KEY, { ...ticks, [name]: !ticks[name] });
   const send = () =>

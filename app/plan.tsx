@@ -5,8 +5,8 @@ import { Alert, Pressable, ScrollView, View } from 'react-native';
 
 import { useData } from '../src/data/DataProvider';
 import { isPlus } from '../src/data/entitlement';
-import { useDay, useEntitlement, useGoals, useMealPlans, usePlanDiet, usePlanSwaps, useToday } from '../src/data/hooks';
-import { dayName, entryFor, isLogged, keepRecentSwaps, planDates, planDay, portionLabel, PLAN_SWAPS_KEY, SLOT_LABEL, swapKey, type PlanItem } from '../src/data/mealPlan';
+import { useDay, useEntitlement, useGoals, useMealPlans, usePlanDiet, usePlanOwn, usePlanSwaps, useToday } from '../src/data/hooks';
+import { dayName, entryFor, isLogged, isOwnMeal, keepRecentSwaps, planDates, planDay, portionLabel, PLAN_OWN_KEY, PLAN_SWAPS_KEY, SLOT_LABEL, swapKey, withOwnMeals, type PlanItem } from '../src/data/mealPlan';
 import { MyPango } from '../src/pango/MyPango';
 import { useTheme } from '../src/theme/theme';
 import { radius, spacing } from '../src/theme/tokens';
@@ -24,6 +24,7 @@ export default function Plan() {
   const plans = useMealPlans();
   const [dietSlug] = usePlanDiet();
   const swaps = usePlanSwaps();
+  const own = usePlanOwn();
   const params = useLocalSearchParams<{ date?: string }>();
   const dates = planDates(today, plus);
   const [picked, setPicked] = useState(params.date ?? today);
@@ -71,7 +72,7 @@ export default function Plan() {
       </Screen>
     );
 
-  const plan = planDay(data, diet, date, goals.calories, swaps);
+  const plan = withOwnMeals(planDay(data, diet, date, goals.calories, swaps), own);
   const isToday = date === today;
 
   const log = async (item: PlanItem) => {
@@ -86,6 +87,14 @@ export default function Plan() {
     Haptics.selectionAsync().catch(() => {});
     const key = swapKey(date, item.slot);
     await repo.setMeta(PLAN_SWAPS_KEY, keepRecentSwaps({ ...swaps, [key]: (swaps[key] ?? 0) + 1 }, today));
+  };
+  /** Make this meal from what is at home instead: My groceries opens aimed at this slot's calories. */
+  const useWhatIHave = (item: PlanItem) =>
+    router.push({ pathname: '/pantry', params: { meal: item.mealType, calories: String(item.target), date, slot: item.slot } });
+  const backToPlan = async (item: PlanItem) => {
+    const { [swapKey(date, item.slot)]: _gone, ...rest } = own;
+    void _gone;
+    await repo.setMeta(PLAN_OWN_KEY, Object.fromEntries(Object.entries(rest).filter(([k]) => k.split(':')[0] >= today)));
   };
 
   return (
@@ -131,7 +140,7 @@ export default function Plan() {
       ) : null}
 
       {plan.items.map((item) => (
-        <PlanRow key={item.slot} item={item} date={date} logged={isLogged(item, entries)} canLog={isToday} onLog={() => log(item)} onSwap={() => swap(item)} />
+        <PlanRow key={item.slot} item={item} date={date} logged={isLogged(item, entries)} canLog={isToday} onLog={() => log(item)} onSwap={() => swap(item)} onOwn={() => useWhatIHave(item)} onBack={() => backToPlan(item)} />
       ))}
 
       <Button title={plus ? 'Shopping list' : 'Shopping list for the week (Plus)'} icon="list" variant="secondary" onPress={() => router.push(plus ? '/shopping' : '/plus')} />
@@ -142,9 +151,10 @@ export default function Plan() {
   );
 }
 
-function PlanRow({ item, date, logged, canLog, onLog, onSwap }: { item: PlanItem; date: string; logged: boolean; canLog: boolean; onLog: () => void; onSwap: () => void }) {
+function PlanRow({ item, date, logged, canLog, onLog, onSwap, onOwn, onBack }: { item: PlanItem; date: string; logged: boolean; canLog: boolean; onLog: () => void; onSwap: () => void; onOwn: () => void; onBack: () => void }) {
   const { colors } = useTheme();
   const m = item.meal;
+  const own = isOwnMeal(m);
   return (
     <View
       style={{
@@ -159,6 +169,7 @@ function PlanRow({ item, date, logged, canLog, onLog, onSwap }: { item: PlanItem
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text variant="label" tone="muted">
           {SLOT_LABEL[item.slot]}
+          {own ? ' · from your groceries' : ''}
         </Text>
         <Text variant="label">{fmt(item.calories)} kcal</Text>
       </View>
@@ -205,10 +216,15 @@ function PlanRow({ item, date, logged, canLog, onLog, onSwap }: { item: PlanItem
         ) : canLog ? (
           <Button title="Log it" size="md" style={{ flex: 1 }} onPress={onLog} accessibilityLabel={`Log ${m.title}`} />
         ) : null}
-        {item.options > 1 && !logged ? (
+        {item.options > 1 && !logged && !own ? (
           <Button title="Swap" icon="swap" size="md" variant="secondary" style={{ flex: canLog ? undefined : 1 }} onPress={onSwap} accessibilityLabel={`Swap ${m.title} for something else`} />
         ) : null}
       </View>
+      {logged ? null : own ? (
+        <Button title="Back to the planned meal" variant="ghost" size="md" onPress={onBack} />
+      ) : (
+        <Button title="Use what I have" icon="list" variant="ghost" size="md" onPress={onOwn} accessibilityLabel={`Make ${SLOT_LABEL[item.slot].toLowerCase()} from what I have instead`} />
+      )}
     </View>
   );
 }

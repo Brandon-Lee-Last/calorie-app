@@ -8,7 +8,7 @@ import { localDate, shiftDate, streak, weekOf, type MealType } from './dates';
 import { learnUsuals, mealsFrom, type Usual } from './history';
 import { computeStats, type Stats } from './achievements';
 import { ENTITLEMENT_KEY, isPlus, type CachedEntitlement, type Entitlement } from './entitlement';
-import { PLAN_DIET_KEY, PLAN_SWAPS_KEY, type Swaps } from './mealPlan';
+import { PLAN_DIET_KEY, PLAN_OWN_KEY, PLAN_SWAPS_KEY, type OwnMeals, type Swaps } from './mealPlan';
 import { CLASSIC_LOOK, type WornLook } from '../pango/wardrobe';
 import { ONBOARDED_KEY } from './profile';
 import type { Area, DayTotals, DiaryEntry, Repo } from './repo';
@@ -171,6 +171,11 @@ export function usePlanDiet(): [string | null | undefined, (slug: string | null)
 }
 
 /** How many times each planned meal was swapped, by day and slot. */
+/** Planned meals replaced by one made from the groceries. */
+export function usePlanOwn(): OwnMeals {
+  return useRepoQuery(['meta'], (r) => r.getMeta<OwnMeals>(PLAN_OWN_KEY), []) ?? {};
+}
+
 export function usePlanSwaps(): Swaps {
   return useRepoQuery(['meta'], (r) => r.getMeta<Swaps>(PLAN_SWAPS_KEY), []) ?? {};
 }

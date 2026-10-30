@@ -12,9 +12,32 @@ export type HealthState = 'unsupported' | 'not-installed' | 'needs-update' | 'no
 export const FROM_HEALTH_CONNECT = 'Health Connect';
 /** Meta key: set once the first month has been read, after which only the last few days are refreshed. */
 export const STEPS_BACKFILLED_KEY = 'steps.backfilled';
+/** Meta key: the last read, so the activity screen can say what Health Connect gave (or why nothing came). */
+export const STEPS_LAST_READ_KEY = 'steps.lastRead';
+export type LastRead = { at: number; today: number; origins: string[]; error: string | null };
+
+const APP_NAMES: Record<string, string> = {
+  'com.sec.android.app.shealth': 'Samsung Health',
+  'com.google.android.apps.fitness': 'Google Fit',
+  'com.google.android.apps.healthdata': 'your phone',
+  'com.fitbit.FitbitMobile': 'Fitbit',
+  'com.garmin.android.apps.connectmobile': 'Garmin Connect',
+  'com.huawei.health': 'Huawei Health',
+  'com.xiaomi.wearable': 'Mi Fitness',
+  'com.ouraring.oura': 'Oura',
+  'com.strava': 'Strava',
+};
+/** An app's name for a Health Connect data origin (its package name). */
+export const appName = (pkg: string) => APP_NAMES[pkg] ?? pkg;
 
 const STEPS_READ = { accessType: 'read', recordType: 'Steps' } as const;
-const hasSteps = (granted: readonly unknown[]) => granted.some((p) => typeof p === 'object' && p !== null && (p as { recordType?: string }).recordType === 'Steps' && (p as { accessType?: string }).accessType === 'read');
+/** Whether reading steps is allowed. Accepts the permission as an object or as Android's permission name. */
+export const hasSteps = (granted: readonly unknown[]) =>
+  granted.some((p) =>
+    typeof p === 'string'
+      ? p.endsWith('READ_STEPS')
+      : typeof p === 'object' && p !== null && (p as { recordType?: string }).recordType === 'Steps' && (p as { accessType?: string }).accessType === 'read',
+  );
 
 /**
  * Steps from Health Connect (Android), read only. Samsung Health, Google Fit, Fitbit and most watches save their step
@@ -30,19 +53,21 @@ export const healthConnect = {
     return hasSteps(await HC.getGrantedPermissions()) ? 'connected' : 'not-connected';
   },
 
-  /** Asks to read steps. True when allowed. */
+  /** Asks to read steps. True when allowed, checked against what Health Connect says is granted afterwards. */
   async connect(): Promise<boolean> {
     if (!(await HC.initialize())) return false;
-    return hasSteps(await HC.requestPermission([STEPS_READ]));
+    const answer = await HC.requestPermission([STEPS_READ]);
+    return hasSteps(answer) || hasSteps(await HC.getGrantedPermissions());
   },
 
-  /** The day's total steps, from local midnight to the end of the day (or now, for today). */
-  async stepsOn(date: string, now: number = Date.now()): Promise<number> {
+  /** The day's total steps, from local midnight to the end of the day (or now, for today), and which apps counted them. */
+  async stepsOn(date: string, now: number = Date.now()): Promise<{ steps: number; origins: string[] }> {
     const start = new Date(`${date}T00:00:00`).getTime();
     const end = Math.min(new Date(`${shiftDate(date, 1)}T00:00:00`).getTime(), now);
-    if (end <= start) return 0;
+    if (end <= start) return { steps: 0, origins: [] };
     const result = await HC.aggregateRecord({ recordType: 'Steps', timeRangeFilter: { operator: 'between', startTime: new Date(start).toISOString(), endTime: new Date(end).toISOString() } });
-    return Math.max(0, Math.round(result.COUNT_TOTAL ?? 0));
+    const origins = ((result as { dataOrigins?: unknown[] }).dataOrigins ?? []).map((o) => String(o));
+    return { steps: Math.max(0, Math.round(result.COUNT_TOTAL ?? 0)), origins };
   },
 
   /** Health Connect's own screen, where access can be changed or taken back. */
@@ -67,11 +92,20 @@ export async function readHealthSteps(repo: Repo, source: StepSource, body: Body
   if ((await source.state()) !== 'connected') return null;
   const backfilled = await repo.getMeta<boolean>(STEPS_BACKFILLED_KEY);
   const days = backfilled ? 3 : 30;
-  for (let i = 0; i < days; i++) {
-    const date = shiftDate(today, -i);
-    const steps = await source.stepsOn(date, now);
-    if (steps > 0) await repo.setDaySteps(date, steps, { caloriesBurned: kcalForSteps(steps, body), distanceKm: kmForSteps(steps, body), note: FROM_HEALTH_CONNECT });
+  let last: LastRead = { at: now, today: 0, origins: [], error: null };
+  try {
+    for (let i = 0; i < days; i++) {
+      const date = shiftDate(today, -i);
+      const { steps, origins } = await source.stepsOn(date, now);
+      if (i === 0) last = { ...last, today: steps, origins };
+      if (steps > 0) await repo.setDaySteps(date, steps, { caloriesBurned: kcalForSteps(steps, body), distanceKm: kmForSteps(steps, body), note: FROM_HEALTH_CONNECT });
+    }
+  } catch (e) {
+    last = { ...last, error: e instanceof Error ? e.message : String(e) };
+    await repo.setMeta(STEPS_LAST_READ_KEY, last);
+    throw e;
   }
+  await repo.setMeta(STEPS_LAST_READ_KEY, last);
   if (!backfilled) await repo.setMeta(STEPS_BACKFILLED_KEY, true);
   return days;
 }

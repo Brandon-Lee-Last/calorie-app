@@ -6,7 +6,7 @@ import { Alert, View } from 'react-native';
 import { useData } from '../src/data/DataProvider';
 import type { MealType } from '../src/data/dates';
 import { mealLabel } from '../src/data/entryForm';
-import { useMealPlans, useToday } from '../src/data/hooks';
+import { useMealPlans, usePlanOwn, useToday } from '../src/data/hooks';
 import { entryFor, itemFor, portionLabel, PORTIONS, scaledIngredients } from '../src/data/mealPlan';
 import { useTheme } from '../src/theme/theme';
 import { radius, spacing } from '../src/theme/tokens';
@@ -26,7 +26,10 @@ export default function MealScreen() {
     meal?: MealType;
     date?: string;
   }>();
-  const meal = useMealPlans().data?.meals.find((m) => m.slug === params.slug);
+  const own = usePlanOwn();
+  const plans = useMealPlans().data;
+  // A meal made from the groceries lives on the phone; the rest come from the meal plans.
+  const meal = params.slug?.startsWith('own:') ? Object.values(own).find((m) => m.slug === params.slug) : plans?.meals.find((m) => m.slug === params.slug);
   const [portion, setPortion] = useState(() => {
     const p = Number(params.portion);
     return (PORTIONS as readonly number[]).includes(p) ? p : 1;
