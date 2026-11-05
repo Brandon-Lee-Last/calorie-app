@@ -147,6 +147,11 @@ skip it and keep the defaults. Then:
   day for your activity level (7,500 steps for "light") adds to the day's food at the eat-back setting on Train, as
   workouts do. **Celebrations**: Pango cheers, with confetti, when you reach either goal, beat your best day, or reach
   a streak of 3, 7, 14, 30, 50, 100 or 365 days; each is shown once.
+- **Pango Points**: Me, then Pango Points. Earn points by adding foods to the food list from the pack (**Add this
+  product** when a barcode is not found, **Add it to the food list** in search: 20 points with a barcode, 10 without,
+  5 a day, only when the numbers add up) and by inviting friends (share your code; 200 for you and 100 for them once
+  they have logged food on 3 days). 1,000 points buy a month of Plus. **Have a code?** takes a friend's invite code or
+  a gym's code in your first 30 days. The rules and the gym programme are in calorie-api's `docs/rewards.md`.
 - **Progress**: your weight trend (log a weigh-in or set a goal weight there), the weekly recap (three tap-through
   cards about last week, shareable) and a month calendar of days on target.
 - **Train**: quick workouts built into the app (bodyweight, dumbbells, core, cardio, mobility) that work offline,

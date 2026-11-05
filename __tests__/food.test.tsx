@@ -56,10 +56,12 @@ describe('Food screen', () => {
     await view.unmount();
   });
 
-  it('says when a product is unknown, and offers to add it by hand', async () => {
+  it('says when a product is unknown, and offers to add it to the food list for points, or just log it', async () => {
     const { view, stack } = await mount(<FoodScreen />);
     expect(await view.findByText('Pango does not know this one yet')).toBeTruthy();
-    await fireEvent.press(view.getByRole('button', { name: 'Add it by hand' }));
+    await fireEvent.press(view.getByRole('button', { name: 'Add this product (+20 points)' }));
+    expect(router.replace).toHaveBeenCalledWith({ pathname: '/newfood', params: { barcode: '6001087340069' } });
+    await fireEvent.press(view.getByRole('button', { name: 'Just log it by hand' }));
     expect(router.replace).toHaveBeenCalledWith('/add');
     await settle(stack);
     await view.unmount();

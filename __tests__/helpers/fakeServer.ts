@@ -37,6 +37,16 @@ export class FakeServer {
   programs: Record<string, unknown>[] = [];
   /** Foods by barcode for GET /v1/foods/barcode/{code}; also what search and GET /v1/foods/{id} find. */
   foods = new Map<string, Record<string, unknown>>();
+  /** Pango Points: what GET /v1/rewards answers, the codes that work, and what was sent. */
+  rewards = {
+    points: 120, monthCost: 1000, monthDays: 30, inviteCode: 'PK7XQ2M',
+    codeEntry: { open: true, until: Date.UTC(2026, 11, 1), usedInvite: false, partner: null as { name: string } | null },
+    invites: { joined: 0, rewarded: 0 }, plusFromPointsUntil: null as number | null,
+    rules: { food: 10, foodWithBarcode: 20, foodsPerDay: 5, invitedFriend: 200, joinedWithInvite: 100, referralDays: 3 },
+    history: [{ amount: 20, reason: 'food', at: Date.UTC(2026, 10, 1) }],
+  }; // fmt: skip
+  partnerCodes: Record<string, string> = { FITHUB: 'Fit Hub Sandton' };
+  codesTried: string[] = [];
   /** Queries sent to GET /v1/foods/search, in order. */
   searches: string[] = [];
   /** What GET /v1/config says. */
@@ -184,7 +194,33 @@ export class FakeServer {
       this.searches.push(url.searchParams.get('q') ?? '');
       return json(200, { items: items.slice(0, Number(url.searchParams.get('limit') ?? 25)) });
     }
+    if (url.pathname === '/v1/rewards' && req.method === 'GET') return json(200, this.rewards);
+    if (url.pathname === '/v1/rewards/code') {
+      const code = String(((await req.json()) as { code: string }).code).toUpperCase().replace(/[\s-]/g, '');
+      this.codesTried.push(code);
+      if (code === this.rewards.inviteCode) return json(400, { error: { code: 'bad_request', message: 'own', details: { reason: 'own_code' } } });
+      const partner = this.partnerCodes[code];
+      if (partner) {
+        if (this.rewards.codeEntry.partner) return json(409, { error: { code: 'conflict', message: 'set', details: { reason: 'partner_already_set' } } });
+        this.rewards.codeEntry.partner = { name: partner };
+        this.rewards.points += 200;
+        return json(200, { kind: 'partner', name: partner, points: 200 });
+      }
+      return json(404, { error: { code: 'not_found', message: 'No code', details: { reason: 'unknown_code' } } });
+    }
+    if (url.pathname === '/v1/rewards/redeem') {
+      if (this.rewards.points < this.rewards.monthCost) return json(409, { error: { code: 'conflict', message: 'A month of Plus takes 1000 points', details: { reason: 'not_enough_points' } } });
+      this.rewards.points -= this.rewards.monthCost;
+      this.rewards.plusFromPointsUntil = Date.UTC(2026, 11, 5);
+      return json(200, { plusUntil: this.rewards.plusFromPointsUntil, points: this.rewards.points });
+    }
     const foodId = url.pathname.match(/^\/v1\/foods\/([^/]+)$/);
+    if (foodId && req.method === 'PUT') {
+      const body = (await req.json()) as Record<string, unknown>;
+      const food = { ...body, id: foodId[1], source: 'custom', isOwn: true, perServing: null, fiber100g: null, sugar100g: null, sodiumMg100g: null, dishId: null, updatedAt: Date.now(), deletedAt: null, rev: 1 };
+      this.foods.set(String(body.barcode ?? foodId[1]), food);
+      return json(200, { applied: true, record: food });
+    }
     if (foodId && req.method === 'GET' && foodId[1] !== 'barcode') {
       const food = [...this.foods.values()].find((f) => f.id === foodId[1]);
       return food ? json(200, food) : json(404, { error: { code: 'not_found', message: 'Food not found' } });

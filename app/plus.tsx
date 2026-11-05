@@ -217,6 +217,9 @@ export default function Plus() {
           </Text>
         </>
       )}
+      {!plus ? (
+        <Button title="Or earn a free month with Pango Points" icon="sparkle" variant="ghost" onPress={() => router.push('/rewards')} />
+      ) : null}
     </Screen>
   );
 }

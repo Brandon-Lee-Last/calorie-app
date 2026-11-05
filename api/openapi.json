@@ -5367,6 +5367,132 @@
                     "message"
                 ]
             },
+            "PantryEvalResult": {
+                "type": "object",
+                "properties": {
+                    "recipes": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "title": {
+                                    "type": "string"
+                                },
+                                "minutes": {
+                                    "type": "integer"
+                                },
+                                "mealType": {
+                                    "type": "string",
+                                    "enum": [
+                                        "breakfast",
+                                        "lunch",
+                                        "dinner",
+                                        "snack"
+                                    ]
+                                },
+                                "ingredients": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "grams": {
+                                                "type": "number"
+                                            },
+                                            "foodId": {
+                                                "type": "string",
+                                                "nullable": true,
+                                                "description": "null for a staple such as salt"
+                                            },
+                                            "calories": {
+                                                "type": "integer",
+                                                "description": "This ingredient at these grams, from its own figures; 0 for a staple"
+                                            }
+                                        },
+                                        "required": [
+                                            "name",
+                                            "grams",
+                                            "foodId",
+                                            "calories"
+                                        ]
+                                    }
+                                },
+                                "steps": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "How to make it; amounts are in `ingredients`, never in the steps"
+                                },
+                                "nutrition": {
+                                    "type": "object",
+                                    "properties": {
+                                        "calories": {
+                                            "type": "number"
+                                        },
+                                        "proteinG": {
+                                            "type": "number"
+                                        },
+                                        "carbG": {
+                                            "type": "number"
+                                        },
+                                        "fatG": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "calories",
+                                        "proteinG",
+                                        "carbG",
+                                        "fatG"
+                                    ],
+                                    "description": "One portion, worked out from the foods’ own figures"
+                                }
+                            },
+                            "required": [
+                                "title",
+                                "minutes",
+                                "mealType",
+                                "ingredients",
+                                "steps",
+                                "nutrition"
+                            ]
+                        }
+                    },
+                    "target": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "recipes",
+                    "target"
+                ]
+            },
+            "PantryEvalAsk": {
+                "type": "object",
+                "properties": {
+                    "mealType": {
+                        "type": "string",
+                        "enum": [
+                            "breakfast",
+                            "lunch",
+                            "dinner",
+                            "snack"
+                        ]
+                    },
+                    "calories": {
+                        "type": "integer",
+                        "minimum": 100,
+                        "maximum": 2000
+                    }
+                },
+                "required": [
+                    "mealType",
+                    "calories"
+                ]
+            },
             "CoachHistory": {
                 "type": "object",
                 "properties": {
@@ -5380,6 +5506,414 @@
                 },
                 "required": [
                     "items"
+                ]
+            },
+            "Rewards": {
+                "type": "object",
+                "properties": {
+                    "points": {
+                        "type": "integer",
+                        "description": "Pango Points to spend"
+                    },
+                    "monthCost": {
+                        "type": "integer",
+                        "description": "Points for a month of Plus"
+                    },
+                    "monthDays": {
+                        "type": "integer"
+                    },
+                    "inviteCode": {
+                        "type": "string",
+                        "description": "This person’s code to share with friends"
+                    },
+                    "codeEntry": {
+                        "type": "object",
+                        "properties": {
+                            "open": {
+                                "type": "boolean",
+                                "description": "Whether a code can still be entered (the first weeks of an account, one of each kind)"
+                            },
+                            "until": {
+                                "type": "integer"
+                            },
+                            "usedInvite": {
+                                "type": "boolean"
+                            },
+                            "partner": {
+                                "type": "object",
+                                "nullable": true,
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "name"
+                                ],
+                                "description": "The gym or partner this person joined through"
+                            }
+                        },
+                        "required": [
+                            "open",
+                            "until",
+                            "usedInvite",
+                            "partner"
+                        ]
+                    },
+                    "invites": {
+                        "type": "object",
+                        "properties": {
+                            "joined": {
+                                "type": "integer"
+                            },
+                            "rewarded": {
+                                "type": "integer"
+                            }
+                        },
+                        "required": [
+                            "joined",
+                            "rewarded"
+                        ]
+                    },
+                    "plusFromPointsUntil": {
+                        "type": "integer",
+                        "nullable": true,
+                        "description": "When Plus bought with points ends, if it is running"
+                    },
+                    "rules": {
+                        "type": "object",
+                        "properties": {
+                            "food": {
+                                "type": "integer"
+                            },
+                            "foodWithBarcode": {
+                                "type": "integer"
+                            },
+                            "foodsPerDay": {
+                                "type": "integer"
+                            },
+                            "invitedFriend": {
+                                "type": "integer"
+                            },
+                            "joinedWithInvite": {
+                                "type": "integer"
+                            },
+                            "referralDays": {
+                                "type": "integer"
+                            }
+                        },
+                        "required": [
+                            "food",
+                            "foodWithBarcode",
+                            "foodsPerDay",
+                            "invitedFriend",
+                            "joinedWithInvite",
+                            "referralDays"
+                        ]
+                    },
+                    "history": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "amount": {
+                                    "type": "integer"
+                                },
+                                "reason": {
+                                    "type": "string"
+                                },
+                                "at": {
+                                    "type": "integer"
+                                }
+                            },
+                            "required": [
+                                "amount",
+                                "reason",
+                                "at"
+                            ]
+                        }
+                    }
+                },
+                "required": [
+                    "points",
+                    "monthCost",
+                    "monthDays",
+                    "inviteCode",
+                    "codeEntry",
+                    "invites",
+                    "plusFromPointsUntil",
+                    "rules",
+                    "history"
+                ]
+            },
+            "RewardCodeResult": {
+                "type": "object",
+                "properties": {
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "invite",
+                            "partner"
+                        ]
+                    },
+                    "name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The partner’s name, for a partner code"
+                    },
+                    "points": {
+                        "type": "integer",
+                        "description": "Points it gives (an invite’s come once the person has logged on a few days)"
+                    }
+                },
+                "required": [
+                    "kind",
+                    "name",
+                    "points"
+                ]
+            },
+            "RewardCodeInput": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 24
+                    }
+                },
+                "required": [
+                    "code"
+                ]
+            },
+            "RewardRedeemResult": {
+                "type": "object",
+                "properties": {
+                    "plusUntil": {
+                        "type": "integer"
+                    },
+                    "points": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "plusUntil",
+                    "points"
+                ]
+            },
+            "Partner": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "code": {
+                        "type": "string"
+                    },
+                    "sharePct": {
+                        "type": "number"
+                    },
+                    "months": {
+                        "type": "integer",
+                        "description": "Months after joining that members earn the partner a share; 0 is for as long as they pay"
+                    },
+                    "welcomePoints": {
+                        "type": "integer"
+                    },
+                    "contact": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "active": {
+                        "type": "boolean"
+                    },
+                    "createdAt": {
+                        "type": "integer"
+                    },
+                    "members": {
+                        "type": "integer"
+                    },
+                    "plusMembers": {
+                        "type": "integer"
+                    },
+                    "earnedCents": {
+                        "type": "integer"
+                    },
+                    "owedCents": {
+                        "type": "integer",
+                        "description": "Earned, not refunded, not yet paid out"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "code",
+                    "sharePct",
+                    "months",
+                    "welcomePoints",
+                    "contact",
+                    "active",
+                    "createdAt",
+                    "members",
+                    "plusMembers",
+                    "earnedCents",
+                    "owedCents"
+                ]
+            },
+            "PartnerInput": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                    },
+                    "code": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 24
+                    },
+                    "sharePct": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                    },
+                    "months": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 120
+                    },
+                    "welcomePoints": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 5000
+                    },
+                    "contact": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 200
+                    }
+                },
+                "required": [
+                    "name",
+                    "code"
+                ]
+            },
+            "PartnerPatch": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                    },
+                    "sharePct": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                    },
+                    "months": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 120
+                    },
+                    "welcomePoints": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 5000
+                    },
+                    "contact": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 200
+                    },
+                    "active": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PartnerReport": {
+                "type": "object",
+                "properties": {
+                    "partner": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "code": {
+                                "type": "string"
+                            },
+                            "sharePct": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "code",
+                            "sharePct"
+                        ]
+                    },
+                    "month": {
+                        "type": "string"
+                    },
+                    "joined": {
+                        "type": "integer"
+                    },
+                    "payments": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "at": {
+                                    "type": "integer"
+                                },
+                                "productId": {
+                                    "type": "string"
+                                },
+                                "grossCents": {
+                                    "type": "integer"
+                                },
+                                "earningCents": {
+                                    "type": "integer"
+                                },
+                                "refunded": {
+                                    "type": "boolean"
+                                },
+                                "paid": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "required": [
+                                "at",
+                                "productId",
+                                "grossCents",
+                                "earningCents",
+                                "refunded",
+                                "paid"
+                            ]
+                        }
+                    },
+                    "totalEarningCents": {
+                        "type": "integer"
+                    },
+                    "unpaidCents": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "partner",
+                    "month",
+                    "joined",
+                    "payments",
+                    "totalEarningCents",
+                    "unpaidCents"
                 ]
             },
             "WorkoutSessionList": {
@@ -14943,6 +15477,665 @@
                         }
                     },
                     "503": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/admin/coach/pantry-eval": {
+            "post": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Make recipes from a fixed set of everyday foods, saving nothing (checks after a deploy)",
+                "security": [
+                    {
+                        "adminKey": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PantryEvalAsk"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Recipes as the app would get them",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PantryEvalResult"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rewards": {
+            "get": {
+                "tags": [
+                    "Rewards"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "summary": "Pango Points: the balance, the invite code, what earns points and what was earned",
+                "responses": {
+                    "200": {
+                        "description": "Rewards",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Rewards"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing, invalid or expired access token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limited or quota reached",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rewards/code": {
+            "post": {
+                "tags": [
+                    "Rewards"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "summary": "Enter a friend’s invite code or a partner’s (gym’s) code",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RewardCodeInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "What the code was",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RewardCodeResult"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing, invalid or expired access token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limited or quota reached",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rewards/redeem": {
+            "post": {
+                "tags": [
+                    "Rewards"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "summary": "Spend points on a month of Plus",
+                "responses": {
+                    "200": {
+                        "description": "Plus until",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RewardRedeemResult"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing, invalid or expired access token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limited or quota reached",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/admin/partners": {
+            "get": {
+                "tags": [
+                    "Admin"
+                ],
+                "security": [
+                    {
+                        "adminKey": []
+                    }
+                ],
+                "summary": "Partners with their members, members on Plus, and what they earned and are owed",
+                "responses": {
+                    "200": {
+                        "description": "Partners",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Partner"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "items"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Admin"
+                ],
+                "security": [
+                    {
+                        "adminKey": []
+                    }
+                ],
+                "summary": "Add a partner (gym) with its own code",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PartnerInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "The partner",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Partner"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/admin/partners/{id}": {
+            "patch": {
+                "tags": [
+                    "Admin"
+                ],
+                "security": [
+                    {
+                        "adminKey": []
+                    }
+                ],
+                "summary": "Change a partner’s terms, or stop its code (active: false)",
+                "parameters": [
+                    {
+                        "schema": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                        },
+                        "required": true,
+                        "name": "id",
+                        "in": "path"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PartnerPatch"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "The partner",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Partner"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/admin/partners/{id}/report": {
+            "get": {
+                "tags": [
+                    "Admin"
+                ],
+                "security": [
+                    {
+                        "adminKey": []
+                    }
+                ],
+                "summary": "A partner’s statement for a month: sign-ups, each paid Plus period and its share",
+                "parameters": [
+                    {
+                        "schema": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                        },
+                        "required": true,
+                        "name": "id",
+                        "in": "path"
+                    },
+                    {
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-(0[1-9]|1[0-2])$"
+                        },
+                        "required": true,
+                        "name": "month",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The statement",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PartnerReport"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/admin/partners/{id}/paid": {
+            "post": {
+                "tags": [
+                    "Admin"
+                ],
+                "security": [
+                    {
+                        "adminKey": []
+                    }
+                ],
+                "summary": "Record a payout: everything owed before `until` is marked paid",
+                "parameters": [
+                    {
+                        "schema": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                        },
+                        "required": true,
+                        "name": "id",
+                        "in": "path"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "until": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": [
+                                    "until"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "What was marked paid",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "rows": {
+                                            "type": "integer"
+                                        },
+                                        "cents": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "required": [
+                                        "rows",
+                                        "cents"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorBody"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
                         "description": "Bad request",
                         "content": {
                             "application/json": {

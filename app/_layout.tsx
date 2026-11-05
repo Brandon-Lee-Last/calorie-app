@@ -40,6 +40,8 @@ function Navigator() {
         <Stack.Screen name="coach" />
         <Stack.Screen name="pantry" />
         <Stack.Screen name="activity" />
+        <Stack.Screen name="rewards" />
+        <Stack.Screen name="newfood" options={{ presentation: 'modal' }} />
         <Stack.Screen name="workout" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
         <Stack.Screen name="plus" options={{ presentation: 'modal' }} />
         <Stack.Screen name="goals" options={{ presentation: 'modal' }} />

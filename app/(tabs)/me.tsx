@@ -211,6 +211,7 @@ export default function Me() {
           Earn new looks for Pango by logging, scanning and training.
         </Text>
       </Card>
+      <Row icon="bolt" title="Pango Points" body="Add foods and invite friends for a free month of Plus. Got a gym code? Enter it here" onPress={() => router.push('/rewards')} />
       <Row icon="sparkle" title="Pango's wardrobe" body="Looks you have earned, and how to earn the rest" badge={fresh ? `${fresh} new` : undefined} onPress={() => router.push('/wardrobe')} />
       <Plan />
       <Row icon="bolt" title={plus ? 'Pango Plus is on' : 'Pango Plus'} body={plus ? 'Thank you. Manage your subscription' : 'Every training program and a year of trends'} onPress={() => router.push('/plus')} />

@@ -207,6 +207,7 @@ export default function Search() {
                 <ActionRow icon="search" label={`Search Open Food Facts for "${q}"`} detail={off?.status === 'problem' ? off.message : 'Millions of packaged foods from around the world'} busy={off?.status === 'loading'} onPress={searchOff} />
               ) : null}
               <ActionRow icon="edit" label={`Type in "${q}" yourself`} onPress={typeIt} />
+              <ActionRow icon="plus" label="Add it to the food list" detail="From the pack, for everyone: +10 Pango Points, +20 with its barcode" onPress={() => router.push({ pathname: '/newfood', params: { name: q, meal } })} />
               <ActionRow icon="barcode" label="Scan a barcode" onPress={scan} />
             </List>
           </>

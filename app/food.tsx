@@ -26,7 +26,7 @@ function problemFor(e: unknown, byId: boolean): State {
   if (e instanceof ApiError) {
     if (e.status === 0) return { kind: 'problem', pose: 'sleep', title: 'No connection', body: `${byId ? 'Opening a food from the list' : 'Looking up a barcode'} needs the internet. Try again when you are online, or add the food by hand.`, retry: true };
     if (e.status === 404 && byId) return { kind: 'problem', pose: 'think', title: 'This food is not there any more', body: 'It may have been taken off the food list. Search again, or add it by hand.' };
-    if (e.status === 404) return { kind: 'problem', pose: 'think', title: 'Pango does not know this one yet', body: 'No product with nutrition facts was found for this barcode. Add it by hand from the pack.' };
+    if (e.status === 404) return { kind: 'problem', pose: 'think', title: 'Pango does not know this one yet', body: 'No product with nutrition facts was found for this barcode. Add it from the pack and earn 20 Pango Points: everyone who scans it after you gets it right.' };
     if (e.status === 422) return { kind: 'problem', pose: 'oops', title: 'That barcode did not read properly', body: 'Hold the phone steady with the whole barcode in view, then scan it again.' };
   }
   return { kind: 'problem', pose: 'oops', title: 'The food list is not answering', body: 'Try again in a moment.', retry: true };
@@ -34,7 +34,7 @@ function problemFor(e: unknown, byId: boolean): State {
 
 /** A food found by its barcode or picked from search: choose how much, pick the meal, save. */
 export default function FoodScreen() {
-  const { barcode, id, meal: mealParam } = useLocalSearchParams<{ barcode?: string; id?: string; meal?: string }>();
+  const { barcode, id, meal: mealParam, added } = useLocalSearchParams<{ barcode?: string; id?: string; meal?: string; added?: string }>();
   const { api, repo } = useData();
   const { colors } = useTheme();
   const [state, setState] = useState<State>({ kind: 'loading' });
@@ -125,10 +125,21 @@ export default function FoodScreen() {
           ) : (
             <Button title="Back to search" variant={state.retry ? 'secondary' : 'primary'} onPress={() => router.back()} style={{ alignSelf: 'stretch' }} />
           )}
-          <Button title="Add it by hand" variant="ghost" onPress={() => router.replace('/add')} />
+          {barcode && !state.retry ? (
+            <Button title="Add this product (+20 points)" icon="plus" onPress={() => router.replace({ pathname: '/newfood', params: { barcode, ...(mealParam ? { meal: mealParam } : {}) } })} style={{ alignSelf: 'stretch' }} />
+          ) : null}
+          <Button title="Just log it by hand" variant="ghost" onPress={() => router.replace('/add')} />
         </View>
       ) : food && n ? (
         <>
+          {added ? (
+            <View accessibilityLiveRegion="polite" style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.raised }}>
+              <Icon name="sparkle" size={18} color={colors.goodText} />
+              <Text variant="small" style={{ flex: 1 }}>
+                {Number(added) > 0 ? `Added to the food list. +${added} Pango Points (up to 5 foods a day).` : 'Added to the food list. Its numbers did not add up, so no points this time.'} Now log it.
+              </Text>
+            </View>
+          ) : null}
           <View style={{ gap: 4 }}>
             <Text variant="title" accessibilityRole="header">
               {food.name}
